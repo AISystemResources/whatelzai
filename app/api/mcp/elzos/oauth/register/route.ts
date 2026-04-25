@@ -3,6 +3,7 @@ import crypto from "crypto";
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
+  console.log("[elzos/register] body", body);
   const client_id = `mcp_${crypto.randomBytes(8).toString("hex")}`;
   return NextResponse.json(
     {

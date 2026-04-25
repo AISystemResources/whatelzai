@@ -18,6 +18,14 @@ export async function POST(req: NextRequest) {
   const form = await req.formData();
   const code = String(form.get("code") ?? "");
   const code_verifier = String(form.get("code_verifier") ?? "");
+  console.log("[elzos/token] hit", {
+    grant_type: form.get("grant_type"),
+    code_len: code.length,
+    code_verifier_len: code_verifier.length,
+    redirect_uri: form.get("redirect_uri"),
+    client_id: form.get("client_id"),
+    origin: req.headers.get("origin"),
+  });
 
   const [payloadB64, sig] = code.split(".");
   if (!payloadB64 || !sig)

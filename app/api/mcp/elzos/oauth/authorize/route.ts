@@ -18,6 +18,17 @@ export async function GET(req: NextRequest) {
   const code_challenge_method =
     url.searchParams.get("code_challenge_method") ?? "";
 
+  console.log("[elzos/authorize] params", {
+    client_id: url.searchParams.get("client_id"),
+    redirect_uri,
+    response_type: url.searchParams.get("response_type"),
+    scope: url.searchParams.get("scope"),
+    state_len: state.length,
+    code_challenge_len: code_challenge.length,
+    code_challenge_method,
+    resource: url.searchParams.get("resource"),
+  });
+
   if (!redirect_uri)
     return new NextResponse("Missing redirect_uri", { status: 400 });
 

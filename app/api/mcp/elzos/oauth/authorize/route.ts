@@ -25,8 +25,14 @@ export async function GET(req: NextRequest) {
   const payload = `${code_challenge}.${code_challenge_method}.${now}`;
   const code = `${Buffer.from(payload).toString("base64url")}.${sign(payload)}`;
 
+  // RFC 9207 — include `iss` so the client can verify which authorization
+  // server issued the code. Required when the issuer is path-bearing (Claude
+  // cannot default to the origin like it does for the root Whatelz auth server).
+  const issuer = `${url.protocol}//${url.host}/api/mcp/elzos`;
+
   const redirect = new URL(redirect_uri);
   redirect.searchParams.set("code", code);
   if (state) redirect.searchParams.set("state", state);
+  redirect.searchParams.set("iss", issuer);
   return NextResponse.redirect(redirect.toString());
 }

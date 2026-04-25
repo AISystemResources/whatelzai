@@ -151,7 +151,7 @@ export async function appendSection(
 ) {
   const { data: existing } = await supabaseAdmin
     .from("docs_sections")
-    .select("id, content, version, position")
+    .select("id, doc_slug, heading, position, content, version")
     .eq("doc_slug", doc_slug)
     .eq("heading", heading)
     .eq("is_current", true)

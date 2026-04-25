@@ -9,7 +9,9 @@
     "lint": "eslint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "seed": "node --env-file=.env.local --import tsx scripts/seed-website-docs.ts"
+    "seed": "node --env-file=.env.local --import tsx scripts/seed-website-docs.ts",
+    "elzos:export-local": "node --import tsx scripts/elzos-export-local.ts",
+    "elzos:seed": "node --env-file=.env.local --import tsx scripts/seed-elzos-from-export.ts"
   },
   "dependencies": {
     "@ai-sdk/groq": "^3.0.35",
@@ -24,9 +26,11 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "better-sqlite3": "^12.9.0",
     "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",

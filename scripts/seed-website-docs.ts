@@ -53,6 +53,13 @@ const SEED: Record<DocSlug, Array<{ heading: string; content: string }>> = {
         "Raw notes about Edmund — background, values, experiences, inflection points. Draw from this to shape site copy and to compact into long-term memory over time.",
     },
   ],
+  INBOX: [
+    {
+      heading: "Preamble",
+      content:
+        "External-agent proposals land here. Promote to BUILD or IDEAS as appropriate.",
+    },
+  ],
 };
 
 async function seed() {

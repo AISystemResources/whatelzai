@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { ContactForm } from "@/components/sections/contact-form";
 
 export function Contact() {
   return (
@@ -11,27 +11,22 @@ export function Contact() {
           Hiring, collaborating, or just curious?
         </h2>
         <p className="mt-6 max-w-xl text-base text-zinc-700 dark:text-zinc-300">
-          Email is the fastest way. LinkedIn DMs work too.
+          Drop a message below. LinkedIn DMs work too.
         </p>
 
-        <div className="mt-10 flex flex-wrap gap-4">
-          <Link
-            href="mailto:elz.work22@gmail.com"
-            className="inline-flex items-center gap-2 border border-zinc-900 px-5 py-3 font-mono text-xs tracking-widest uppercase transition-colors hover:bg-[var(--accent)] hover:text-zinc-900 dark:border-zinc-100 dark:hover:text-zinc-900"
-          >
-            Email
-            <span aria-hidden="true">→</span>
-          </Link>
+        <ContactForm />
+
+        <p className="mt-8 font-mono text-xs text-zinc-500">
+          Prefer LinkedIn?{" "}
           <a
             href="https://www.linkedin.com/in/elz-fintech/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 border border-zinc-300 px-5 py-3 font-mono text-xs tracking-widest uppercase transition-colors hover:border-zinc-900 dark:border-zinc-700 dark:hover:border-zinc-100"
+            className="underline underline-offset-2 hover:text-zinc-900 dark:hover:text-zinc-100"
           >
-            LinkedIn DM
-            <span aria-hidden="true">↗</span>
+            Send a DM ↗
           </a>
-        </div>
+        </p>
       </div>
     </section>
   );

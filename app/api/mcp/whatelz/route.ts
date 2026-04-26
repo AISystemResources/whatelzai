@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
+  listDocs,
   listSections,
   readSection,
   readDoc,
@@ -16,6 +17,7 @@ import {
 type ToolArgs = Record<string, unknown>;
 
 const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
+  list_docs: async () => listDocs(),
   list_sections: (a) =>
     listSections(a.doc_slug as (typeof VALID_SLUGS)[number]),
   read_section: (a) =>
@@ -71,9 +73,16 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
       a.doc_slug as (typeof VALID_SLUGS)[number] | undefined,
       (a.limit as number | undefined) ?? 20,
     ),
+  describe_tools: async () => ({ tools: TOOL_SCHEMAS }),
 };
 
 const TOOL_SCHEMAS = [
+  {
+    name: "list_docs",
+    description:
+      "List the 6 Whatelz doc slugs with their current section count and most recent updated_at.",
+    inputSchema: { type: "object", properties: {} },
+  },
   {
     name: "list_sections",
     description:
@@ -202,6 +211,12 @@ const TOOL_SCHEMAS = [
         limit: { type: "integer", minimum: 1, maximum: 100, default: 20 },
       },
     },
+  },
+  {
+    name: "describe_tools",
+    description:
+      "Return the full tool catalogue (same shape as tools/list, plus descriptions) for callers without MCP introspection.",
+    inputSchema: { type: "object", properties: {} },
   },
 ];
 

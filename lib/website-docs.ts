@@ -336,6 +336,35 @@ export async function deleteSection(
   return { heading, deleted: true, version: newVersion };
 }
 
+// 11. list_docs
+export async function listDocs() {
+  const { data, error } = await supabaseAdmin
+    .from("docs_sections")
+    .select("doc_slug, updated_at")
+    .eq("is_current", true);
+  if (error) throw new Error(error.message);
+  const map = new Map<
+    string,
+    { doc_slug: string; section_count: number; last_updated: string | null }
+  >();
+  for (const slug of VALID_SLUGS) {
+    map.set(slug, { doc_slug: slug, section_count: 0, last_updated: null });
+  }
+  for (const row of data ?? []) {
+    const cur = map.get(row.doc_slug);
+    if (!cur) continue;
+    map.set(row.doc_slug, {
+      doc_slug: cur.doc_slug,
+      section_count: cur.section_count + 1,
+      last_updated:
+        !cur.last_updated || row.updated_at > cur.last_updated
+          ? row.updated_at
+          : cur.last_updated,
+    });
+  }
+  return Array.from(map.values());
+}
+
 // 10. list_recent_changes
 export async function listRecentChanges(doc_slug?: DocSlug, limit = 20) {
   let query = supabaseAdmin

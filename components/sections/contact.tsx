@@ -10,7 +10,7 @@ export function Contact() {
         <h2 className="mt-4 text-3xl leading-tight font-semibold tracking-tight sm:text-5xl">
           Hiring, collaborating, or just curious?
         </h2>
-        <p className="mt-6 max-w-xl text-base text-zinc-700 dark:text-zinc-300">
+        <p className="mt-6 max-w-xl text-base text-zinc-700">
           Drop a message below. LinkedIn DMs work too.
         </p>
 
@@ -22,7 +22,7 @@ export function Contact() {
             href="https://www.linkedin.com/in/elz-fintech/"
             target="_blank"
             rel="noopener noreferrer"
-            className="underline underline-offset-2 hover:text-zinc-900 dark:hover:text-zinc-100"
+            className="underline underline-offset-2 hover:text-zinc-900"
           >
             Send a DM ↗
           </a>

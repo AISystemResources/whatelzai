@@ -3,16 +3,17 @@
 import { useState, useTransition } from 'react';
 
 interface PATTokenCardProps {
+  token: string;
   masked: string;
   rotateAction: () => Promise<void>;
 }
 
-export function PATTokenCard({ masked, rotateAction }: PATTokenCardProps) {
-  const [copied, setCopied]     = useState(false);
+export function PATTokenCard({ token, masked, rotateAction }: PATTokenCardProps) {
+  const [copied, setCopied]        = useState(false);
   const [pending, startTransition] = useTransition();
 
   function handleCopy() {
-    navigator.clipboard.writeText(masked);
+    navigator.clipboard.writeText(token);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   }
@@ -25,7 +26,7 @@ export function PATTokenCard({ masked, rotateAction }: PATTokenCardProps) {
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2 rounded border border-zinc-200 bg-zinc-50 px-4 py-3">
-        <code className="flex-1 font-mono text-sm text-zinc-700 select-all">{masked}</code>
+        <code className="flex-1 font-mono text-sm text-zinc-700">{masked}</code>
         <button
           onClick={handleCopy}
           className="font-mono text-xs text-zinc-400 hover:text-zinc-900 transition-colors px-2"
@@ -42,7 +43,7 @@ export function PATTokenCard({ masked, rotateAction }: PATTokenCardProps) {
         </button>
       </div>
       <p className="font-mono text-xs text-zinc-400">
-        Enter this in the Claude.ai MCP connector when prompted. Rotate to invalidate the old token.
+        Copy and paste into the Claude.ai MCP connector when prompted. Rotate to invalidate the old token.
       </p>
     </div>
   );

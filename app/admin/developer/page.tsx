@@ -68,7 +68,7 @@ export default async function DeveloperPage() {
       <section className="space-y-3">
         <p className="font-mono text-xs uppercase tracking-widest text-zinc-400">MCP Auth</p>
         <h2 className="text-xl font-semibold tracking-tight text-zinc-900">PAT Token</h2>
-        <PATTokenCard masked={masked} rotateAction={rotateToken} />
+        <PATTokenCard token={token} masked={masked} rotateAction={rotateToken} />
       </section>
 
       {/* MCP Servers */}

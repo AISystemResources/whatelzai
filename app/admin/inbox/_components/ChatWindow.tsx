@@ -54,13 +54,10 @@ export function ChatWindow({ platform }: { platform: Platform }) {
   }
 
   return (
-    <div
-      className="flex border border-zinc-200 rounded-xl overflow-hidden bg-white shadow-sm"
-      style={{ height: '520px' }}
-    >
+    <div className="flex border border-zinc-200 rounded-xl overflow-hidden bg-white shadow-sm h-[520px]">
       {/* Left — contact list */}
-      <div className="w-64 shrink-0 border-r border-zinc-200 flex flex-col">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-100">
+      <div className="w-64 shrink-0 border-r border-zinc-200 flex flex-col min-h-0">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-100 shrink-0">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full" style={{ backgroundColor: platform.accent }} />
             <span className="text-sm font-medium text-zinc-800">{platform.name}</span>
@@ -69,7 +66,7 @@ export function ChatWindow({ platform }: { platform: Platform }) {
             DEMO
           </span>
         </div>
-        <ul className="flex-1 overflow-y-auto divide-y divide-zinc-100">
+        <ul className="flex-1 overflow-y-auto min-h-0 divide-y divide-zinc-100">
           {leads.map(lead => {
             const active = lead.id === selectedId;
             return (
@@ -113,9 +110,9 @@ export function ChatWindow({ platform }: { platform: Platform }) {
       </div>
 
       {/* Right — conversation */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 min-h-0">
         {/* Contact header */}
-        <div className="flex items-center gap-3 px-5 py-3 border-b border-zinc-100">
+        <div className="flex items-center gap-3 px-5 py-3 border-b border-zinc-100 shrink-0">
           <div
             className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold text-white"
             style={{ backgroundColor: platform.accent }}
@@ -129,7 +126,7 @@ export function ChatWindow({ platform }: { platform: Platform }) {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3 bg-zinc-50/30">
+        <div className="flex-1 overflow-y-auto min-h-0 px-5 py-4 space-y-3 bg-zinc-50/30">
           {selected.messages.map(msg => (
             <div key={msg.id} className={`flex ${msg.from === 'me' ? 'justify-end' : 'justify-start'}`}>
               <div
@@ -167,18 +164,21 @@ export function ChatWindow({ platform }: { platform: Platform }) {
         </div>
 
         {/* Reply input */}
-        <div className="px-4 py-3 border-t border-zinc-100 bg-white">
+        <form
+          onSubmit={e => { e.preventDefault(); handleSend(); }}
+          className="shrink-0 px-4 py-3 border-t border-zinc-100 bg-white"
+        >
           <div className="flex items-center gap-2 bg-zinc-50 border border-zinc-200 rounded-full px-4 py-2">
             <input
               type="text"
               value={replyText}
               onChange={e => setReplyText(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleSend()}
               placeholder="Reply... (demo workspace)"
-              className="flex-1 bg-transparent text-sm text-zinc-700 placeholder:text-zinc-400 outline-none"
+              autoComplete="off"
+              className="flex-1 bg-transparent text-sm text-zinc-700 placeholder:text-zinc-400 focus:outline-none"
             />
             <button
-              onClick={handleSend}
+              type="submit"
               className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-opacity hover:opacity-80"
               style={{ backgroundColor: platform.accent }}
             >
@@ -187,7 +187,7 @@ export function ChatWindow({ platform }: { platform: Platform }) {
               </svg>
             </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

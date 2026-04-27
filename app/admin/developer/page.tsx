@@ -11,7 +11,8 @@ const LINKS = [
 ];
 
 const MCP_SERVERS = [
-  { name: 'ADMIN_WHATELZ', path: '/api/mcp/whatelz', tools: '12 tools' },
+  { name: 'ADMIN_WHATELZ',    path: '/api/mcp/whatelz',  tools: '12 tools — doc CRUD'   },
+  { name: 'FUNCTION_WHATELZ', path: '/api/mcp/function',  tools: '5 tools — blog write'  },
 ];
 
 export default function DeveloperPage() {

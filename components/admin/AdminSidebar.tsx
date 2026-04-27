@@ -9,13 +9,14 @@ const NAV = [
   { href: '/admin/hunt',      label: 'Hunt'      },
   { href: '/admin/listen',    label: 'Listen'    },
   { href: '/admin/presence',  label: 'Presence'  },
+  { href: '/admin/blog',      label: 'Blog'      },
   { href: '/admin/developer', label: 'Developer' },
 ] as const;
 
 export function AdminSidebar() {
   const path = usePathname();
   return (
-    <nav className="w-48 shrink-0 border-r border-zinc-200 min-h-screen p-4">
+    <nav className="w-48 shrink-0 border-r border-zinc-200 h-screen overflow-y-auto p-4">
       <p className="text-xs font-mono text-zinc-400 uppercase tracking-widest mb-4">WHATELZ</p>
       <ul className="space-y-1">
         {NAV.map(({ href, label }) => {

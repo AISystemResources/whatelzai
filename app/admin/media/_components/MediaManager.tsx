@@ -140,6 +140,11 @@ export function MediaManager({ assets: initial, onSave, onDelete }: Props) {
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-2 py-2">
                   <p className="text-white text-xs font-medium truncate text-left">{asset.label}</p>
                 </div>
+                {asset.processed && (
+                  <div className="absolute top-1.5 left-1.5">
+                    <span className="bg-black/50 text-emerald-400 text-[9px] font-mono px-1 py-0.5 rounded">✓ ai</span>
+                  </div>
+                )}
                 {asset.destinations.length > 0 && (
                   <div className="absolute top-1.5 right-1.5 flex flex-col gap-0.5 items-end">
                     {asset.destinations.slice(0, 2).map(d => (
@@ -216,6 +221,19 @@ export function MediaManager({ assets: initial, onSave, onDelete }: Props) {
               ))}
             </div>
           </div>
+
+          {/* AI analysis */}
+          {selected.processed && (selected.focal_point || selected.crop_hint) && (
+            <div className="space-y-0.5 text-[11px] font-mono text-zinc-400 border-t border-zinc-100 pt-3">
+              <p className="text-emerald-500 font-semibold">✓ AI analysed</p>
+              {selected.focal_point && (
+                <p>focal: ({selected.focal_point.x.toFixed(2)}, {selected.focal_point.y.toFixed(2)})</p>
+              )}
+              {selected.crop_hint && (
+                <p>crop: {selected.crop_hint.x.toFixed(2)},{selected.crop_hint.y.toFixed(2)} {selected.crop_hint.width.toFixed(2)}×{selected.crop_hint.height.toFixed(2)}</p>
+              )}
+            </div>
+          )}
 
           {/* File info */}
           <div className="space-y-0.5 text-[11px] font-mono text-zinc-400">

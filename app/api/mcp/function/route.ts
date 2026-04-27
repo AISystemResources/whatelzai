@@ -6,11 +6,17 @@ import {
   updatePost,
   deletePost,
 } from "@/lib/blog";
+import {
+  getMediaAssets,
+  getMediaAsset,
+  updateMediaAsset,
+} from "@/lib/media";
 import { supabaseAdmin } from "@/lib/supabase-server";
 
 type ToolArgs = Record<string, unknown>;
 
 const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
+  // ── Blog ────────────────────────────────────────────────────────────────
   list_posts: (a) => getAllPosts((a.include_drafts as boolean | undefined) ?? false),
 
   get_post: (a) => getPost(a.slug as string),
@@ -22,7 +28,7 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
       content: a.content as string,
       summary: a.summary as string | undefined,
       tags:    a.tags    as string[] | undefined,
-      status:  a.status  as 'draft' | 'published' | undefined,
+      status:  a.status  as "draft" | "published" | undefined,
     }),
 
   update_post: (a) =>
@@ -31,44 +37,59 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
       summary: a.summary as string | undefined,
       content: a.content as string | undefined,
       tags:    a.tags    as string[] | undefined,
-      status:  a.status  as 'draft' | 'published' | undefined,
+      status:  a.status  as "draft" | "published" | undefined,
     }),
 
   delete_post: (a) => deletePost(a.slug as string),
+
+  // ── Media ────────────────────────────────────────────────────────────────
+  list_media: (a) =>
+    getMediaAssets({
+      destination: a.destination as string | undefined,
+      processed:   typeof a.processed === "boolean" ? a.processed : undefined,
+      limit:       (a.limit as number | undefined) ?? 50,
+    }),
+
+  get_media_asset: (a) => getMediaAsset(a.id as string),
+
+  update_media_asset: (a) =>
+    updateMediaAsset(a.id as string, {
+      label:        a.label        as string | undefined,
+      description:  a.description  as string | undefined,
+      destinations: a.destinations as string[] | undefined,
+      focal_point:  a.focal_point  as { x: number; y: number } | undefined,
+      crop_hint:    a.crop_hint    as { x: number; y: number; width: number; height: number } | undefined,
+      processed:    a.processed    as boolean | undefined,
+    }),
 };
 
 const TOOL_SCHEMAS = [
+  // ── Blog ─────────────────────────────────────────────────────────────────
   {
     name: "list_posts",
     description: "List blog posts. Returns slug, title, date, summary, tags, status. Published only by default.",
     inputSchema: {
       type: "object",
-      properties: {
-        include_drafts: { type: "boolean", default: false },
-      },
+      properties: { include_drafts: { type: "boolean", default: false } },
     },
   },
   {
     name: "get_post",
     description: "Get a single blog post by slug, including full content.",
     inputSchema: {
-      type: "object",
-      required: ["slug"],
-      properties: {
-        slug: { type: "string" },
-      },
+      type: "object", required: ["slug"],
+      properties: { slug: { type: "string" } },
     },
   },
   {
     name: "create_post",
-    description: "Create a new blog post. Status defaults to 'draft'. Set status='published' to make it live immediately.",
+    description: "Create a new blog post. Status defaults to 'draft'.",
     inputSchema: {
-      type: "object",
-      required: ["slug", "title", "content"],
+      type: "object", required: ["slug", "title", "content"],
       properties: {
         slug:    { type: "string", description: "URL-safe identifier, e.g. 'my-first-post'" },
         title:   { type: "string" },
-        content: { type: "string", description: "MDX/Markdown body content" },
+        content: { type: "string", description: "MDX/Markdown body" },
         summary: { type: "string" },
         tags:    { type: "array", items: { type: "string" } },
         status:  { type: "string", enum: ["draft", "published"] },
@@ -79,8 +100,7 @@ const TOOL_SCHEMAS = [
     name: "update_post",
     description: "Update an existing blog post by slug. Only provided fields are changed.",
     inputSchema: {
-      type: "object",
-      required: ["slug"],
+      type: "object", required: ["slug"],
       properties: {
         slug:    { type: "string" },
         title:   { type: "string" },
@@ -95,10 +115,65 @@ const TOOL_SCHEMAS = [
     name: "delete_post",
     description: "Permanently delete a blog post by slug.",
     inputSchema: {
+      type: "object", required: ["slug"],
+      properties: { slug: { type: "string" } },
+    },
+  },
+  // ── Media ─────────────────────────────────────────────────────────────────
+  {
+    name: "list_media",
+    description: "List media assets. Filter by destination or processed status. Returns id, url, label, description, destinations, focal_point, crop_hint, processed.",
+    inputSchema: {
       type: "object",
-      required: ["slug"],
       properties: {
-        slug: { type: "string" },
+        destination: { type: "string", enum: ["landing", "about", "blog", "hackathon", "projects", "other"] },
+        processed:   { type: "boolean", description: "Pass false to fetch only unanalysed images." },
+        limit:       { type: "integer", default: 50, minimum: 1, maximum: 200 },
+      },
+    },
+  },
+  {
+    name: "get_media_asset",
+    description: "Get a single media asset by ID. Returns the public URL — fetch it to analyse the image with vision.",
+    inputSchema: {
+      type: "object", required: ["id"],
+      properties: { id: { type: "string" } },
+    },
+  },
+  {
+    name: "update_media_asset",
+    description: "Write analysis results back to a media asset. Set processed=true once done so the asset is skipped on future runs.",
+    inputSchema: {
+      type: "object", required: ["id"],
+      properties: {
+        id:          { type: "string" },
+        label:       { type: "string" },
+        description: { type: "string", description: "Human-readable description / alt text." },
+        destinations: {
+          type: "array",
+          items: { type: "string", enum: ["landing", "about", "blog", "hackathon", "projects", "other"] },
+        },
+        focal_point: {
+          type: "object",
+          description: "Normalised 0–1 coordinates of the main subject centre.",
+          required: ["x", "y"],
+          properties: {
+            x: { type: "number", minimum: 0, maximum: 1 },
+            y: { type: "number", minimum: 0, maximum: 1 },
+          },
+        },
+        crop_hint: {
+          type: "object",
+          description: "Normalised 0–1 crop rectangle that keeps the most useful area.",
+          required: ["x", "y", "width", "height"],
+          properties: {
+            x:      { type: "number", minimum: 0, maximum: 1 },
+            y:      { type: "number", minimum: 0, maximum: 1 },
+            width:  { type: "number", minimum: 0, maximum: 1 },
+            height: { type: "number", minimum: 0, maximum: 1 },
+          },
+        },
+        processed: { type: "boolean", description: "Set true after analysis is complete." },
       },
     },
   },
@@ -145,8 +220,7 @@ export async function POST(req: NextRequest) {
   try {
     if (method === "initialize") {
       return NextResponse.json({
-        jsonrpc: "2.0",
-        id,
+        jsonrpc: "2.0", id,
         result: {
           protocolVersion: "2024-11-05",
           capabilities: { tools: {} },
@@ -189,7 +263,7 @@ export async function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
     headers: {
-      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Origin":  "*",
       "Access-Control-Allow-Methods": "POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type, Authorization, Mcp-Session-Id",
     },

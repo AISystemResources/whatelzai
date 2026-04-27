@@ -3,6 +3,7 @@ import { supabaseAdmin }         from '@/lib/supabase-server';
 import { listNewMessages }       from '@/lib/gmail';
 import { classifyEmail }         from '@/lib/email-classifier';
 import { matchEmailToApplication } from '@/lib/domain-matcher';
+import { createClerkClient }     from '@clerk/nextjs/server';
 
 export const emailSync = inngest.createFunction(
   { id: 'email-sync', name: 'Email Sync', triggers: [{ cron: 'TZ=Asia/Singapore */30 * * * *' }] },
@@ -11,7 +12,16 @@ export const emailSync = inngest.createFunction(
       .from('system_config').select('value').eq('key', 'email_last_sync_at').single();
     const sinceMs = cfg?.value ? new Date(cfg.value as string).getTime() : Date.now() - 24 * 3600 * 1000;
 
-    const messages = await step.run('fetch-gmail', () => listNewMessages(sinceMs));
+    const { data: userCfg } = await supabaseAdmin
+      .from('system_config').select('value').eq('key', 'clerk_admin_user_id').single();
+    if (!userCfg?.value) throw new Error('clerk_admin_user_id not set in system_config');
+
+    const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+    const oauthTokens = await clerk.users.getUserOauthAccessToken(userCfg.value as string, 'oauth_google');
+    const oauthToken = oauthTokens.data[0];
+    if (!oauthToken?.token) throw new Error('No Google OAuth token found for admin user — re-authenticate via Clerk');
+
+    const messages = await step.run('fetch-gmail', () => listNewMessages(sinceMs, oauthToken.token));
 
     let linked = 0;
 

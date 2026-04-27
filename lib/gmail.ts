@@ -1,11 +1,8 @@
 import { google } from 'googleapis';
 
-function getGmailClient() {
-  const oauth2 = new google.auth.OAuth2(
-    process.env.GOOGLE_CLIENT_ID,
-    process.env.GOOGLE_CLIENT_SECRET,
-  );
-  oauth2.setCredentials({ refresh_token: process.env.GOOGLE_REFRESH_TOKEN });
+function getGmailClient(accessToken: string) {
+  const oauth2 = new google.auth.OAuth2();
+  oauth2.setCredentials({ access_token: accessToken });
   return google.gmail({ version: 'v1', auth: oauth2 });
 }
 
@@ -36,8 +33,8 @@ function extractText(payload: { body?: { data?: string | null } | null; parts?: 
   return '';
 }
 
-export async function listNewMessages(sinceEpochMs: number): Promise<GmailMessage[]> {
-  const gmail  = getGmailClient();
+export async function listNewMessages(sinceEpochMs: number, accessToken: string): Promise<GmailMessage[]> {
+  const gmail  = getGmailClient(accessToken);
   const sinceS = Math.floor(sinceEpochMs / 1000);
   const results: GmailMessage[] = [];
 

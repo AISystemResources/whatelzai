@@ -61,6 +61,26 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
       crop_hint:    a.crop_hint    as { x: number; y: number; width: number; height: number } | undefined,
       processed:    a.processed    as boolean | undefined,
     }),
+
+  // ── Resume ───────────────────────────────────────────────────────────────
+  get_resume: async () => {
+    const { data } = await supabaseAdmin
+      .from("system_config")
+      .select("value, updated_at")
+      .eq("key", "resume")
+      .single();
+    if (!data?.value) return { content: null, message: "No resume yet — use update_resume to create one." };
+    return { content: data.value, updated_at: data.updated_at };
+  },
+
+  update_resume: async (a) => {
+    const content = a.content as string;
+    const { error } = await supabaseAdmin
+      .from("system_config")
+      .upsert({ key: "resume", value: content });
+    if (error) throw error;
+    return { ok: true };
+  },
 };
 
 const TOOL_SCHEMAS = [
@@ -174,6 +194,23 @@ const TOOL_SCHEMAS = [
           },
         },
         processed: { type: "boolean", description: "Set true after analysis is complete." },
+      },
+    },
+  },
+  // ── Resume ────────────────────────────────────────────────────────────────
+  {
+    name: "get_resume",
+    description: "Read the current resume. Returns the full markdown content and when it was last updated.",
+    inputSchema: { type: "object", properties: {} },
+  },
+  {
+    name: "update_resume",
+    description: "Write or fully replace the resume. Always call get_resume first, edit the content, then write back the complete updated markdown. Overwrites whatever is currently stored.",
+    inputSchema: {
+      type: "object",
+      required: ["content"],
+      properties: {
+        content: { type: "string", description: "Full resume in markdown format." },
       },
     },
   },

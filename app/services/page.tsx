@@ -10,9 +10,9 @@ export default function ServicesPage() {
   return (
     <main>
       {/* Hero */}
-      <section className="border-b border-zinc-200 px-6 py-24 sm:px-8 sm:py-32 dark:border-zinc-800">
+      <section className="border-b border-zinc-200 px-6 py-24 sm:px-8 sm:py-32">
         <div className="mx-auto max-w-4xl">
-          <p className="font-mono text-xs tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
+          <p className="font-mono text-xs tracking-wide text-zinc-500 uppercase">
             Freelance services · By inquiry
           </p>
 
@@ -23,7 +23,7 @@ export default function ServicesPage() {
             </span>
           </h1>
 
-          <div className="mt-8 max-w-2xl space-y-3 text-base text-zinc-700 sm:text-lg dark:text-zinc-300">
+          <div className="mt-8 max-w-2xl space-y-3 text-base text-zinc-700 sm:text-lg">
             <p>
               I take on a small number of client projects alongside my
               internship and studies. Work I&apos;m good at: AI systems that
@@ -34,9 +34,9 @@ export default function ServicesPage() {
       </section>
 
       {/* What I build */}
-      <section className="border-b border-zinc-200 px-6 py-24 sm:px-8 sm:py-32 dark:border-zinc-800">
+      <section className="border-b border-zinc-200 px-6 py-24 sm:px-8 sm:py-32">
         <div className="mx-auto max-w-4xl">
-          <p className="font-mono text-xs tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
+          <p className="font-mono text-xs tracking-wide text-zinc-500 uppercase">
             What I build
           </p>
 
@@ -47,13 +47,13 @@ export default function ServicesPage() {
           <div className="mt-12 grid gap-12 sm:grid-cols-2">
             {/* Service 1 — AI Systems */}
             <div>
-              <p className="font-mono text-xs tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
+              <p className="font-mono text-xs tracking-wide text-zinc-500 uppercase">
                 01
               </p>
               <h3 className="mt-3 text-xl font-semibold tracking-tight">
                 AI Systems
               </h3>
-              <ul className="mt-5 space-y-2 text-zinc-700 dark:text-zinc-300">
+              <ul className="mt-5 space-y-2 text-zinc-700">
                 <li className="flex gap-2">
                   <span
                     className="mt-1 shrink-0 text-xs"
@@ -95,7 +95,7 @@ export default function ServicesPage() {
                   MCP servers for Claude / AI agent workflows
                 </li>
               </ul>
-              <p className="mt-6 font-mono text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="mt-6 font-mono text-xs text-zinc-500">
                 I&apos;ve shipped two AI systems to 5,000+ Financial Advisors at
                 Prudential. I know what production AI looks like.
               </p>
@@ -103,13 +103,13 @@ export default function ServicesPage() {
 
             {/* Service 2 — Websites & Web Apps */}
             <div>
-              <p className="font-mono text-xs tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
+              <p className="font-mono text-xs tracking-wide text-zinc-500 uppercase">
                 02
               </p>
               <h3 className="mt-3 text-xl font-semibold tracking-tight">
                 Websites &amp; Web Apps
               </h3>
-              <ul className="mt-5 space-y-2 text-zinc-700 dark:text-zinc-300">
+              <ul className="mt-5 space-y-2 text-zinc-700">
                 <li className="flex gap-2">
                   <span
                     className="mt-1 shrink-0 text-xs"
@@ -142,7 +142,7 @@ export default function ServicesPage() {
                   Integrations (auth, payments, email, analytics)
                 </li>
               </ul>
-              <p className="mt-6 font-mono text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="mt-6 font-mono text-xs text-zinc-500">
                 This site was built in a single day using the same stack
                 I&apos;d use for your project.
               </p>
@@ -152,9 +152,9 @@ export default function ServicesPage() {
       </section>
 
       {/* How to engage */}
-      <section className="border-b border-zinc-200 px-6 py-24 sm:px-8 sm:py-32 dark:border-zinc-800">
+      <section className="border-b border-zinc-200 px-6 py-24 sm:px-8 sm:py-32">
         <div className="mx-auto max-w-4xl">
-          <p className="font-mono text-xs tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
+          <p className="font-mono text-xs tracking-wide text-zinc-500 uppercase">
             How to engage
           </p>
 
@@ -171,10 +171,10 @@ export default function ServicesPage() {
                 1
               </span>
               <div>
-                <p className="font-semibold text-zinc-900 dark:text-zinc-100">
+                <p className="font-semibold text-zinc-900">
                   Email with a one-paragraph brief
                 </p>
-                <p className="mt-1 text-zinc-700 dark:text-zinc-300">
+                <p className="mt-1 text-zinc-700">
                   What you&apos;re building, rough timeline, budget range.
                   That&apos;s all I need to start.
                 </p>
@@ -189,10 +189,10 @@ export default function ServicesPage() {
                 2
               </span>
               <div>
-                <p className="font-semibold text-zinc-900 dark:text-zinc-100">
+                <p className="font-semibold text-zinc-900">
                   20-min call to check fit
                 </p>
-                <p className="mt-1 text-zinc-700 dark:text-zinc-300">
+                <p className="mt-1 text-zinc-700">
                   No sales pitch. Just a quick conversation to see if this
                   makes sense for both of us.
                 </p>
@@ -207,10 +207,10 @@ export default function ServicesPage() {
                 3
               </span>
               <div>
-                <p className="font-semibold text-zinc-900 dark:text-zinc-100">
+                <p className="font-semibold text-zinc-900">
                   Proposal and timeline
                 </p>
-                <p className="mt-1 text-zinc-700 dark:text-zinc-300">
+                <p className="mt-1 text-zinc-700">
                   Scope, deliverables, and a realistic schedule — in writing.
                 </p>
               </div>
@@ -220,7 +220,7 @@ export default function ServicesPage() {
           <div className="mt-12 flex flex-wrap gap-4">
             <a
               href="mailto:elz.work22@gmail.com"
-              className="inline-flex items-center gap-2 border border-zinc-900 px-5 py-3 font-mono text-xs tracking-widest uppercase transition-colors hover:bg-[var(--accent)] hover:text-zinc-900 dark:border-zinc-100 dark:hover:text-zinc-900"
+              className="inline-flex items-center gap-2 border border-zinc-900 px-5 py-3 font-mono text-xs tracking-widest uppercase transition-colors hover:bg-[var(--accent)] hover:text-zinc-900"
             >
               Start with an email <span aria-hidden="true">→</span>
             </a>
@@ -229,7 +229,7 @@ export default function ServicesPage() {
               href="https://www.linkedin.com/in/edmund-lin-zhenming/"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 border border-zinc-300 px-5 py-3 font-mono text-xs tracking-widest uppercase text-zinc-700 transition-colors hover:border-zinc-900 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-300 dark:hover:border-zinc-100 dark:hover:text-zinc-100"
+              className="inline-flex items-center gap-2 border border-zinc-300 px-5 py-3 font-mono text-xs tracking-widest uppercase text-zinc-700 transition-colors hover:border-zinc-900 hover:text-zinc-900"
             >
               Or message on LinkedIn <span aria-hidden="true">↗</span>
             </a>
@@ -240,11 +240,11 @@ export default function ServicesPage() {
       {/* Honest note */}
       <section className="px-6 py-24 sm:px-8 sm:py-32">
         <div className="mx-auto max-w-4xl">
-          <p className="font-mono text-xs tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
+          <p className="font-mono text-xs tracking-wide text-zinc-500 uppercase">
             A note on selectivity
           </p>
 
-          <p className="mt-6 max-w-2xl text-base text-zinc-700 sm:text-lg dark:text-zinc-300">
+          <p className="mt-6 max-w-2xl text-base text-zinc-700 sm:text-lg">
             I&apos;m selective — I take projects where I can do my best work,
             not maximum volume. If it&apos;s not a fit, I&apos;ll say so early.
           </p>

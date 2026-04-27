@@ -73,7 +73,7 @@ function HackathonRow({ h }: { h: HackathonEntry }) {
         Team: {h.team}
       </span>
       {h.notes && (
-        <span className="col-span-12 text-xs text-zinc-400 sm:col-span-8 sm:col-start-4 dark:text-zinc-600">
+        <span className="col-span-12 text-xs text-zinc-400 sm:col-span-8 sm:col-start-4">
           {h.notes}
         </span>
       )}
@@ -85,26 +85,26 @@ export function AboutHackathons() {
   return (
     <section
       id="about-hackathons"
-      className="border-b border-zinc-200 px-6 py-24 sm:px-8 sm:py-32 dark:border-zinc-800"
+      className="border-b border-zinc-200 px-6 py-24 sm:px-8 sm:py-32"
     >
       <div className="mx-auto max-w-4xl">
-        <p className="font-mono text-xs tracking-widest text-zinc-500 uppercase dark:text-zinc-400">
+        <p className="font-mono text-xs tracking-widest text-zinc-500 uppercase">
           Hackathons & Wins
         </p>
         <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
           Competition record
         </h2>
-        <p className="mt-6 max-w-2xl text-sm text-zinc-700 dark:text-zinc-300">
+        <p className="mt-6 max-w-2xl text-sm text-zinc-700">
           A clean upward arc: ideathons → case studies → coding hackathons →
           coding-hackathon champion. Each step required more technical skin in
           the game.
         </p>
 
         <div className="mt-12">
-          <h3 className="font-mono text-xs tracking-widest text-zinc-500 uppercase dark:text-zinc-400">
+          <h3 className="font-mono text-xs tracking-widest text-zinc-500 uppercase">
             Tier 1 — Coding hackathons
           </h3>
-          <ul className="mt-4 divide-y divide-zinc-200 border-y border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+          <ul className="mt-4 divide-y divide-zinc-200 border-y border-zinc-200">
             {tier1.map((h) => (
               <HackathonRow key={h.event} h={h} />
             ))}
@@ -112,13 +112,13 @@ export function AboutHackathons() {
         </div>
 
         <div className="mt-12">
-          <h3 className="font-mono text-xs tracking-widest text-zinc-500 uppercase dark:text-zinc-400">
+          <h3 className="font-mono text-xs tracking-widest text-zinc-500 uppercase">
             Tier 2 — Case studies / ideathons / popularity votes
           </h3>
-          <p className="mt-2 font-mono text-[10px] tracking-wide text-zinc-400 uppercase dark:text-zinc-600">
+          <p className="mt-2 font-mono text-[10px] tracking-wide text-zinc-400 uppercase">
             Listed honestly — different format, different bar
           </p>
-          <ul className="mt-4 divide-y divide-zinc-200 border-y border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+          <ul className="mt-4 divide-y divide-zinc-200 border-y border-zinc-200">
             {tier2.map((h) => (
               <HackathonRow key={h.event} h={h} />
             ))}

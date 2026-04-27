@@ -5,7 +5,7 @@ export function Wins() {
   return (
     <section
       id="wins"
-      className="border-b border-zinc-200 px-6 py-20 sm:px-8 sm:py-24 dark:border-zinc-800"
+      className="border-b border-zinc-200 px-6 py-20 sm:px-8 sm:py-24"
     >
       <div className="mx-auto max-w-6xl">
         <header className="mb-12 flex items-baseline justify-between">
@@ -17,7 +17,7 @@ export function Wins() {
           </p>
         </header>
 
-        <ul className="divide-y divide-zinc-200 border-y border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+        <ul className="divide-y divide-zinc-200 border-y border-zinc-200">
           {tier1.map((h) => (
             <li
               key={h.event}

@@ -9,7 +9,7 @@ const footerNav = [
 
 export function Footer() {
   return (
-    <footer className="border-t border-zinc-200 px-6 py-10 sm:px-8 dark:border-zinc-800">
+    <footer className="border-t border-zinc-200 px-6 py-10 sm:px-8">
       <div className="mx-auto flex max-w-6xl flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
         <p className="font-mono text-[10px] tracking-widest text-zinc-500 uppercase">
           &copy; {new Date().getFullYear()} whatelz.ai
@@ -20,7 +20,7 @@ export function Footer() {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className="font-mono text-[10px] tracking-widest text-zinc-500 uppercase transition-colors hover:text-zinc-900 dark:hover:text-zinc-100"
+                  className="font-mono text-[10px] tracking-widest text-zinc-500 uppercase transition-colors hover:text-zinc-900"
                 >
                   {item.label}
                 </Link>

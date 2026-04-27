@@ -51,16 +51,16 @@ export function AboutArc() {
   return (
     <section
       id="about-arc"
-      className="border-b border-zinc-200 px-6 py-24 sm:px-8 sm:py-32 dark:border-zinc-800"
+      className="border-b border-zinc-200 px-6 py-24 sm:px-8 sm:py-32"
     >
       <div className="mx-auto max-w-4xl">
-        <p className="font-mono text-xs tracking-widest text-zinc-500 uppercase dark:text-zinc-400">
+        <p className="font-mono text-xs tracking-widest text-zinc-500 uppercase">
           Through-line
         </p>
         <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
           Career timeline
         </h2>
-        <p className="mt-6 max-w-2xl text-base text-zinc-700 dark:text-zinc-300">
+        <p className="mt-6 max-w-2xl text-base text-zinc-700">
           All past internship experiences — data science, product management, AI
           engineering — led to one identity: an individual capable of handling
           technical complexities while understanding the business considerations
@@ -72,7 +72,7 @@ export function AboutArc() {
             <li key={stop.period} className="relative">
               {i < roles.length - 1 && (
                 <span
-                  className="absolute top-[2.25rem] left-[0.3125rem] h-full w-px bg-zinc-200 dark:bg-zinc-800"
+                  className="absolute top-[2.25rem] left-[0.3125rem] h-full w-px bg-zinc-200"
                   aria-hidden="true"
                 />
               )}
@@ -80,7 +80,7 @@ export function AboutArc() {
               <div className="flex gap-6 pb-14">
                 <div className="relative mt-1 flex-shrink-0">
                   <span
-                    className="block h-2.5 w-2.5 rounded-full border-2 border-zinc-900 bg-white dark:border-zinc-100 dark:bg-zinc-950"
+                    className="block h-2.5 w-2.5 rounded-full border-2 border-zinc-900 bg-white"
                     aria-hidden="true"
                   />
                 </div>
@@ -106,9 +106,9 @@ export function AboutArc() {
                     {stop.highlights.map((line) => (
                       <li
                         key={line}
-                        className="flex gap-2 text-sm text-zinc-700 dark:text-zinc-300"
+                        className="flex gap-2 text-sm text-zinc-700"
                       >
-                        <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-zinc-400 dark:bg-zinc-600" />
+                        <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-zinc-400" />
                         {line}
                       </li>
                     ))}
@@ -118,7 +118,7 @@ export function AboutArc() {
                     {stop.skills.map((skill) => (
                       <span
                         key={skill}
-                        className="border border-zinc-200 px-2 py-0.5 font-mono text-[10px] tracking-wide text-zinc-500 uppercase dark:border-zinc-800 dark:text-zinc-400"
+                        className="border border-zinc-200 px-2 py-0.5 font-mono text-[10px] tracking-wide text-zinc-500 uppercase"
                       >
                         {skill}
                       </span>

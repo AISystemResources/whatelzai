@@ -1,18 +1,10 @@
 @import "tailwindcss";
-@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
   --accent: #facc15;
   --accent-text: #f59e0b;
-}
-
-.dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  --accent: #facc15;
-  --accent-text: #facc15;
 }
 
 @theme inline {

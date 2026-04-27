@@ -10,7 +10,7 @@ function StatusBadge({ status }: { status: Project["status"] }) {
       <span style={{ color: "var(--accent-text)" }} aria-hidden="true">
         {dot}
       </span>
-      <span className="text-zinc-600 dark:text-zinc-400">{label}</span>
+      <span className="text-zinc-600">{label}</span>
     </span>
   );
 }
@@ -29,14 +29,14 @@ function ProjectCard({ project }: { project: Project }) {
   return (
     <Wrapper
       {...wrapperProps}
-      className="group block border border-zinc-200 p-8 transition-colors hover:border-zinc-900 dark:border-zinc-800 dark:hover:border-zinc-100"
+      className="group block border border-zinc-200 p-8 transition-colors hover:border-zinc-900"
     >
       <div className="flex items-center justify-between">
         <StatusBadge status={project.status} />
         {project.url && (
           <span
             aria-hidden="true"
-            className="font-mono text-xs text-zinc-400 transition-transform group-hover:translate-x-0.5 group-hover:translate-y-[-2px] dark:text-zinc-600"
+            className="font-mono text-xs text-zinc-400 transition-transform group-hover:translate-x-0.5 group-hover:translate-y-[-2px]"
           >
             ↗
           </span>
@@ -50,11 +50,11 @@ function ProjectCard({ project }: { project: Project }) {
         {project.tagline}
       </p>
 
-      <p className="mt-5 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
+      <p className="mt-5 text-sm leading-relaxed text-zinc-700">
         {project.description}
       </p>
 
-      <dl className="mt-6 grid grid-cols-2 gap-4 border-t border-zinc-200 pt-6 dark:border-zinc-800">
+      <dl className="mt-6 grid grid-cols-2 gap-4 border-t border-zinc-200 pt-6">
         {project.metrics.map((m) => (
           <div key={m.label}>
             <dt className="font-mono text-[10px] tracking-widest text-zinc-500 uppercase">
@@ -69,7 +69,7 @@ function ProjectCard({ project }: { project: Project }) {
         {project.stack.map((tech) => (
           <li
             key={tech}
-            className="border border-zinc-200 px-2 py-1 font-mono text-[10px] tracking-wide text-zinc-600 dark:border-zinc-800 dark:text-zinc-400"
+            className="border border-zinc-200 px-2 py-1 font-mono text-[10px] tracking-wide text-zinc-600"
           >
             {tech}
           </li>
@@ -84,7 +84,7 @@ export function Projects() {
   return (
     <section
       id="projects"
-      className="border-b border-zinc-200 px-6 py-20 sm:px-8 sm:py-24 dark:border-zinc-800"
+      className="border-b border-zinc-200 px-6 py-20 sm:px-8 sm:py-24"
     >
       <div className="mx-auto max-w-6xl">
         <header className="mb-12 flex items-baseline justify-between">

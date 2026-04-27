@@ -179,8 +179,7 @@ export function ChatWindow({ platform }: { platform: Platform }) {
             />
             <button
               onClick={handleSend}
-              disabled={!replyText.trim()}
-              className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-opacity disabled:opacity-30"
+              className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-opacity hover:opacity-80"
               style={{ backgroundColor: platform.accent }}
             >
               <svg viewBox="0 0 24 24" fill="none" className="w-3.5 h-3.5 text-white" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">

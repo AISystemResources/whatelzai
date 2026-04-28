@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { supabaseAdmin } from '@/lib/supabase-server';
-import { listResumes } from '@/lib/supabase-jobs';
+import { listResumeVersions } from '@/lib/resume-versions';
 import { ResumeEditor } from './_components/ResumeEditor';
 
 export const metadata: Metadata = { title: 'Resume — whatelz.ai admin' };
@@ -23,9 +23,9 @@ async function saveResume(content: string) {
 }
 
 export default async function AdminResumePage() {
-  const [{ content, updatedAt }, resumes] = await Promise.all([
+  const [{ content, updatedAt }, versions] = await Promise.all([
     getCanonicalResume(),
-    listResumes(),
+    listResumeVersions(),
   ]);
 
   return (
@@ -35,14 +35,13 @@ export default async function AdminResumePage() {
           <p className="font-mono text-xs uppercase tracking-widest text-zinc-400">Admin</p>
           <h1 className="mt-2 text-2xl font-semibold tracking-tight text-zinc-900">Resume</h1>
         </div>
-        <p className="font-mono text-xs text-zinc-400 pt-1">Markdown · MCP-synced</p>
       </div>
 
       <ResumeEditor
-        initialContent={content}
-        updatedAt={updatedAt}
-        initialResumes={resumes}
-        onSave={saveResume}
+        initialVersions={versions}
+        canonicalContent={content}
+        canonicalUpdatedAt={updatedAt}
+        onSaveCanonical={saveResume}
       />
     </div>
   );

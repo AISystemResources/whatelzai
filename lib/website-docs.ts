@@ -9,7 +9,8 @@ export type DocSlug =
   | "INBOX"
   | "BRAND"
   | "LOGS"
-  | "LEARNINGS";
+  | "LEARNINGS"
+  | "ELZOS";
 export const VALID_SLUGS: DocSlug[] = [
   "IDEAS",
   "BUILD",
@@ -20,6 +21,7 @@ export const VALID_SLUGS: DocSlug[] = [
   "BRAND",
   "LOGS",
   "LEARNINGS",
+  "ELZOS",
 ];
 
 type SectionRow = {

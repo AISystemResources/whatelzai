@@ -10,8 +10,6 @@ export type ResumeVersion = {
   updated_at: string;
 };
 
-export const RESUME_VARIANTS = ['AI Engineer', 'Blockchain Engineer', 'Software Engineer'] as const;
-export type ResumeVariant = (typeof RESUME_VARIANTS)[number];
 
 export async function listResumeVersions(): Promise<ResumeVersion[]> {
   const { data, error } = await supabaseAdmin

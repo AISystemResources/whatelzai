@@ -231,30 +231,23 @@ const TOOL_SCHEMAS = [
   },
   {
     name: "get_resume_version",
-    description: "Read the markdown content for a specific resume variant.",
+    description: "Read the markdown content for a specific resume variant. Call list_resume_versions first to see available variant names.",
     inputSchema: {
       type: "object",
       required: ["variant"],
       properties: {
-        variant: {
-          type: "string",
-          enum: ["AI Engineer", "Blockchain Engineer", "Software Engineer"],
-          description: "The named resume variant to read.",
-        },
+        variant: { type: "string", description: "Exact variant name as stored in the database, e.g. 'AI Engineer'." },
       },
     },
   },
   {
     name: "update_resume_version",
-    description: "Write or replace the markdown content for a specific resume variant. Call get_resume_version first, edit, then write back the full content.",
+    description: "Write or replace the markdown content for a resume variant. If the variant does not exist yet it will be created. Call get_resume_version first, edit, then write back the full content.",
     inputSchema: {
       type: "object",
       required: ["variant", "content"],
       properties: {
-        variant: {
-          type: "string",
-          enum: ["AI Engineer", "Blockchain Engineer", "Software Engineer"],
-        },
+        variant: { type: "string", description: "Variant name. Can be an existing one or a new name to create a new entry." },
         content: { type: "string", description: "Full resume variant in markdown format." },
       },
     },

@@ -136,10 +136,14 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
     });
   },
 
-  update_hackathon: (a) =>
-    upsertHackathon({
+  update_hackathon: async (a) => {
+    const id = a.id as string;
+    const existing = await getHackathon(id);
+    if (!existing) return { error: 'not_found', id };
+    return upsertHackathon({
       name:          a.name          as string,
       date:          a.date          as string,
+      slug:          (a.slug as string | undefined) ?? existing.slug,
       organizer:     a.organizer     as string | undefined,
       location:      a.location      as string | undefined,
       awards:        (a.awards       as HackathonAward[]) ?? [],
@@ -151,7 +155,8 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
       team:          (a.team         as string[]) ?? [],
       tier:          (a.tier         as 'coding' | 'non-coding') ?? 'coding',
       project_name:  a.project_name  as string | undefined,
-    }, a.id as string),
+    }, id);
+  },
 
   delete_hackathon: (a) => deleteHackathon(a.id as string),
 
@@ -470,7 +475,7 @@ const TOOL_SCHEMAS = [
   },
   {
     name: "update_hackathon",
-    description: "Update an existing hackathon entry. All fields are replaced — call get_hackathon first and carry over unchanged fields.",
+    description: "Update an existing hackathon entry. All fields are replaced — call get_hackathon first and carry over unchanged fields. Slug is preserved from the existing record if not provided.",
     inputSchema: {
       type: "object",
       required: ["id", "name", "date"],
@@ -478,6 +483,7 @@ const TOOL_SCHEMAS = [
         id:            { type: "string", description: "UUID of the hackathon to update." },
         name:          { type: "string" },
         date:          { type: "string" },
+        slug:          { type: "string", description: "Optional. Only provide to rename the slug — existing slug is preserved otherwise." },
         organizer:     { type: "string" },
         location:      { type: "string" },
         awards: {

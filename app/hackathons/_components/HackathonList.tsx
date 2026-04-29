@@ -1,9 +1,22 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Hackathon } from '@/lib/hackathons';
 import { awardRankScore } from '@/lib/hackathons';
+
+function blinkRow(el: HTMLElement, onDone: () => void) {
+  const flash = 'rgba(250,204,21,0.35)';
+  el.style.transition = 'background-color 200ms ease';
+  el.style.backgroundColor = flash;
+  setTimeout(() => { el.style.backgroundColor = ''; }, 300);
+  setTimeout(() => { el.style.backgroundColor = flash; }, 600);
+  setTimeout(() => {
+    el.style.backgroundColor = '';
+    el.style.transition = '';
+    onDone();
+  }, 1000);
+}
 
 type DateSort = 'desc' | 'asc' | 'none';
 
@@ -35,10 +48,21 @@ function AwardBadge({ award }: { award: { title: string; track?: string } }) {
   );
 }
 
-export function HackathonList({ hackathons }: { hackathons: Hackathon[] }) {
+export function HackathonList({ hackathons, highlight }: { hackathons: Hackathon[]; highlight?: string }) {
   const router = useRouter();
   const [view, setView] = useState<'table' | 'card'>('table');
   const [dateSort, setDateSort] = useState<DateSort>('none');
+
+  useEffect(() => {
+    if (!highlight) return;
+    const t = setTimeout(() => {
+      const el = document.querySelector<HTMLElement>(`[data-hackathon-id="${highlight}"]`);
+      if (!el) return;
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => blinkRow(el, () => router.push(`/hackathons/${highlight}`)), 400);
+    }, 350);
+    return () => clearTimeout(t);
+  }, [highlight, router]);
 
   function cycleDate() {
     setDateSort(d => d === 'none' ? 'desc' : d === 'desc' ? 'asc' : 'none');
@@ -111,6 +135,7 @@ export function HackathonList({ hackathons }: { hackathons: Hackathon[] }) {
               {sorted.map(h => (
                 <tr
                   key={h.id}
+                  data-hackathon-id={h.id}
                   onClick={() => router.push(`/hackathons/${h.id}`)}
                   className="cursor-pointer hover:bg-zinc-50 transition-colors"
                 >
@@ -144,6 +169,7 @@ export function HackathonList({ hackathons }: { hackathons: Hackathon[] }) {
           {sorted.map(h => (
             <button
               key={h.id}
+              data-hackathon-id={h.id}
               onClick={() => router.push(`/hackathons/${h.id}`)}
               className="text-left border border-zinc-200 rounded p-5 hover:border-zinc-400 transition-colors space-y-3"
             >

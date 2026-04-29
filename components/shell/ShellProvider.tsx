@@ -114,28 +114,52 @@ function NavHandler() {
     };
 
     (async () => {
-      // 1. Explicit navigate_to tool result (may include id for deep link)
+      // Helper: scroll to section on homepage then push to page after delay
+      const scrollThenPush = (scrollId: string, route: string) => {
+        if (isMobile) { dispatch({ type: 'CLOSE_RIGHT' }); }
+        const el = document.getElementById(scrollId);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          setTimeout(() => pulseElement(el), 400);
+        }
+        setTimeout(() => router.push(route), 1200);
+      };
+
+      // 1. Explicit navigate_to tool result (may include id for hackathon deep link)
       for (const part of latest.parts) {
         if (part.type !== 'dynamic-tool') continue;
         const p = part as { toolName: string; state: string; output?: unknown };
         if (p.toolName !== 'navigate_to' || p.state !== 'output-available') continue;
         const result = p.output as { action: string; target: string; id?: string } | undefined;
         if (result?.action !== 'navigate') continue;
-        const route = result.id ? `/hackathons/${result.id}` : navigationMap[result.target]?.route;
-        if (route) { doNavigate(route); return; }
+        if (result.id) { doNavigate(`/hackathons?highlight=${result.id}`); return; }
+        const dest = navigationMap[result.target];
+        if (dest) { scrollThenPush(dest.scrollId, dest.route); return; }
       }
 
       const text = latest.parts
         .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
         .map(p => p.text).join(' ');
 
-      // 2. Specific hackathon deep link
+      // 2. Specific hackathon → list page with highlight param
       const specificRoute = await lookupHackathonRoute(text);
-      if (specificRoute) { doNavigate(specificRoute); return; }
+      if (specificRoute) {
+        // lookupHackathonRoute returns /hackathons/[id], convert to highlight param
+        const id = specificRoute.split('/').pop();
+        doNavigate(`/hackathons?highlight=${id}`);
+        return;
+      }
 
-      // 3. General topic → page route
+      // 3. General topic → scroll to section on homepage, then push to page
       const topic = detectTopic(text);
-      if (topic) doNavigate(navigationMap[topic].route);
+      if (topic) {
+        const dest = navigationMap[topic];
+        if (typeof window !== 'undefined' && window.location.pathname === '/') {
+          scrollThenPush(dest.scrollId, dest.route);
+        } else {
+          doNavigate(dest.route);
+        }
+      }
     })();
   }, [status, messages, dispatch, router]);
 

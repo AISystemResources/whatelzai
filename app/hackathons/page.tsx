@@ -9,7 +9,12 @@ export const metadata: Metadata = {
   title: 'Hackathons — Edmund Lin Zhenming',
 };
 
-export default async function HackathonsPage() {
+export default async function HackathonsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ highlight?: string }>;
+}) {
+  const { highlight } = await searchParams;
   const hackathons = await listHackathons(true);
 
   return (
@@ -21,7 +26,7 @@ export default async function HackathonsPage() {
       {hackathons.length === 0 ? (
         <p className="text-zinc-400 font-mono text-sm">No hackathons published yet.</p>
       ) : (
-        <HackathonList hackathons={hackathons} />
+        <HackathonList hackathons={hackathons} highlight={highlight} />
       )}
     </PageShell>
   );

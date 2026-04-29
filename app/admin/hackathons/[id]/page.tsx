@@ -13,6 +13,10 @@ async function save(id: string | null, fd: FormData) {
   let awards = [];
   try { awards = JSON.parse(awardsRaw); } catch { awards = []; }
 
+  const teamRaw = fd.get('team') as string;
+  let team: string[] = [];
+  try { team = JSON.parse(teamRaw); } catch { team = []; }
+
   const tagsRaw = (fd.get('tags') as string).split(',').map(t => t.trim()).filter(Boolean);
 
   await upsertHackathon(
@@ -27,6 +31,9 @@ async function save(id: string | null, fd: FormData) {
       tags:          tagsRaw,
       thumbnail_url: (fd.get('thumbnail_url') as string) || undefined,
       published:     fd.get('published') === 'true',
+      team,
+      tier:          (fd.get('tier') as 'coding' | 'non-coding') ?? 'coding',
+      project_name:  (fd.get('project_name') as string) || undefined,
     },
     id ?? undefined,
   );

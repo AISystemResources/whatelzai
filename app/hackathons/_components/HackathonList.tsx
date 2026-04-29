@@ -116,6 +116,7 @@ export function HackathonList({ hackathons }: { hackathons: Hackathon[] }) {
                 >
                   <td className="py-4 pr-6">
                     <p className="font-medium text-zinc-900">{h.name}</p>
+                    {h.project_name && <p className="text-xs text-zinc-500 mt-0.5">{h.project_name}</p>}
                     {h.organizer && <p className="text-xs text-zinc-400 mt-0.5">{h.organizer}</p>}
                   </td>
                   <td className="py-4 pr-6">
@@ -152,6 +153,7 @@ export function HackathonList({ hackathons }: { hackathons: Hackathon[] }) {
                   {h.location ? ` · ${h.location}` : ''}
                 </p>
                 <p className="mt-1 font-medium text-zinc-900 leading-snug">{h.name}</p>
+                {h.project_name && <p className="text-xs text-zinc-500 mt-0.5">{h.project_name}</p>}
                 {h.organizer && <p className="text-xs text-zinc-400 mt-0.5">{h.organizer}</p>}
               </div>
               {h.awards.length > 0 && (

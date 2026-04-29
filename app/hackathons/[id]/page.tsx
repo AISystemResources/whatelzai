@@ -49,10 +49,25 @@ export default async function HackathonDetailPage({ params }: Props) {
           <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
             {h.name}
           </h1>
+          {h.project_name && (
+            <p className="text-lg text-zinc-600 font-medium">{h.project_name}</p>
+          )}
           {h.organizer && (
             <p className="text-zinc-500">{h.organizer}</p>
           )}
         </div>
+
+        {/* Team */}
+        {h.team.length > 0 && (
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">Team</span>
+            {h.team.map(member => (
+              <span key={member} className="font-mono text-xs text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded">
+                {member}
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* Awards */}
         {h.awards.length > 0 && (

@@ -16,11 +16,13 @@ export function HackathonForm({ hackathon, onSave, onDelete }: Props) {
   const [pending, startTransition] = useTransition();
   const [deleting, startDelete]    = useTransition();
 
-  const [awards,  setAwards]  = useState<HackathonAward[]>(hackathon?.awards ?? []);
+  const [awards,   setAwards]   = useState<HackathonAward[]>(hackathon?.awards ?? []);
   const [newTitle, setNewTitle] = useState('');
   const [newTrack, setNewTrack] = useState('');
-  const [writeup, setWriteup] = useState(hackathon?.writeup ?? '');
-  const [preview, setPreview] = useState(false);
+  const [team,     setTeam]     = useState<string[]>(hackathon?.team ?? []);
+  const [newMember, setNewMember] = useState('');
+  const [writeup,  setWriteup]  = useState(hackathon?.writeup ?? '');
+  const [preview,  setPreview]  = useState(false);
 
   function addAward() {
     if (!newTitle.trim()) return;
@@ -32,10 +34,21 @@ export function HackathonForm({ hackathon, onSave, onDelete }: Props) {
     setAwards(prev => prev.filter((_, idx) => idx !== i));
   }
 
+  function addMember() {
+    if (!newMember.trim()) return;
+    setTeam(prev => [...prev, newMember.trim()]);
+    setNewMember('');
+  }
+
+  function removeMember(i: number) {
+    setTeam(prev => prev.filter((_, idx) => idx !== i));
+  }
+
   function handleSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     fd.set('awards', JSON.stringify(awards));
+    fd.set('team', JSON.stringify(team));
     fd.set('writeup', writeup);
     startTransition(async () => {
       await onSave(fd);
@@ -90,6 +103,18 @@ export function HackathonForm({ hackathon, onSave, onDelete }: Props) {
           <label className={labelCls}>Thumbnail URL</label>
           <input name="thumbnail_url" defaultValue={hackathon?.thumbnail_url ?? ''} className={inputCls} />
         </div>
+        <div className="space-y-1.5">
+          <label className={labelCls}>Tier</label>
+          <select name="tier" defaultValue={hackathon?.tier ?? 'coding'}
+            className="w-full border border-zinc-200 rounded px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:border-zinc-400">
+            <option value="coding">Coding</option>
+            <option value="non-coding">Non-coding</option>
+          </select>
+        </div>
+        <div className="space-y-1.5">
+          <label className={labelCls}>Project Name</label>
+          <input name="project_name" defaultValue={hackathon?.project_name ?? ''} placeholder="e.g. EZBIZ" className={inputCls} />
+        </div>
       </div>
 
       {/* Awards */}
@@ -125,6 +150,37 @@ export function HackathonForm({ hackathon, onSave, onDelete }: Props) {
           <button
             type="button"
             onClick={addAward}
+            className="border border-zinc-900 px-4 py-2 font-mono text-xs uppercase tracking-widest text-zinc-900 hover:bg-zinc-900 hover:text-white transition-colors"
+          >
+            Add
+          </button>
+        </div>
+      </div>
+
+      {/* Team */}
+      <div className="space-y-2">
+        <p className={labelCls}>Team</p>
+        <div className="space-y-1">
+          {team.map((member, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <span className="flex-1 text-sm text-zinc-900 border border-zinc-100 rounded px-3 py-1.5">{member}</span>
+              <button type="button" onClick={() => removeMember(i)} className="font-mono text-xs text-zinc-400 hover:text-red-500 transition-colors">
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
+        <div className="flex gap-2">
+          <input
+            value={newMember}
+            onChange={e => setNewMember(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addMember(); } }}
+            placeholder="Team member name"
+            className="flex-1 border border-zinc-200 rounded px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:border-zinc-400"
+          />
+          <button
+            type="button"
+            onClick={addMember}
             className="border border-zinc-900 px-4 py-2 font-mono text-xs uppercase tracking-widest text-zinc-900 hover:bg-zinc-900 hover:text-white transition-colors"
           >
             Add

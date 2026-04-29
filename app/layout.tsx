@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { auth } from "@clerk/nextjs/server";
 import "./globals.css";
-import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
+import { ShellProvider } from "@/components/shell/ShellProvider";
+import { supabaseAdmin } from "@/lib/supabase-server";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,20 +48,35 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+async function getIsAdmin(): Promise<boolean> {
+  try {
+    const { userId } = await auth();
+    if (!userId) return false;
+    const { data } = await supabaseAdmin
+      .from("system_config")
+      .select("value")
+      .eq("key", "clerk_admin_user_id")
+      .single();
+    return !!data?.value && userId === data.value;
+  } catch {
+    return false;
+  }
+}
+
+export default async function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
+  const isAdmin = await getIsAdmin();
+
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">
-          <Header />
-          <div className="flex flex-1 flex-col">{children}</div>
-          <Footer />
+      <body className="min-h-full bg-[var(--background)] text-[var(--foreground)]">
+        <ShellProvider isAdmin={isAdmin}>
+          {children}
+        </ShellProvider>
       </body>
     </html>
   );

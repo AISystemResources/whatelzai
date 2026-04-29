@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { useDrawerStore } from '@/lib/shell/drawer-store';
 import { useChatContext } from './ShellProvider';
+import { useIsDesktop } from '@/lib/shell/use-is-desktop';
 import { MAX_INPUT_CHARS } from '@/lib/chat-client';
 
 export function BottomInput() {
@@ -37,12 +38,13 @@ export function BottomInput() {
     dispatch({ type: 'OPEN_RIGHT' });
   }
 
-  const ml = state.left ? 256 : 0;
-  const mr = state.right ? 360 : 0;
+  const isDesktop = useIsDesktop();
+  const ml = isDesktop && state.left ? 256 : 0;
+  const mr = isDesktop && state.right ? 360 : 0;
 
   return (
     <div
-      className="fixed bottom-0 z-30"
+      className="fixed bottom-0 z-50"
       style={{
         left: ml,
         right: mr,

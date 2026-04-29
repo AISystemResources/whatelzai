@@ -5,7 +5,7 @@ import { useDrawerStore } from '@/lib/shell/drawer-store';
 import { useChatContext } from './ShellProvider';
 
 export function RightDrawer() {
-  const { state } = useDrawerStore();
+  const { state, dispatch } = useDrawerStore();
   const { messages, status } = useChatContext();
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -14,6 +14,14 @@ export function RightDrawer() {
   }, [messages]);
 
   return (
+    <>
+      {state.right && (
+        <div
+          className="fixed inset-0 z-[29] bg-black/40 md:hidden"
+          onClick={() => dispatch({ type: 'CLOSE_RIGHT' })}
+          aria-hidden
+        />
+      )}
     <aside
       className={`fixed top-0 right-0 z-30 flex h-screen w-[360px] flex-col border-l border-zinc-200 bg-[var(--background)] transition-transform duration-200 ${
         state.right ? 'translate-x-0' : 'translate-x-full'
@@ -59,5 +67,6 @@ export function RightDrawer() {
         <div ref={bottomRef} />
       </div>
     </aside>
+    </>
   );
 }

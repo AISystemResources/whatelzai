@@ -88,6 +88,14 @@ export function LeftDrawer({ isAdmin }: { isAdmin: boolean }) {
   }
 
   return (
+    <>
+      {state.left && (
+        <div
+          className="fixed inset-0 z-[29] bg-black/40 md:hidden"
+          onClick={() => dispatch({ type: 'CLOSE_LEFT' })}
+          aria-hidden
+        />
+      )}
     <aside
       className={`fixed top-0 left-0 z-30 flex h-screen w-64 flex-col border-r border-zinc-200 bg-[var(--background)] transition-transform duration-200 ${
         state.left ? 'translate-x-0' : '-translate-x-full'
@@ -174,5 +182,6 @@ export function LeftDrawer({ isAdmin }: { isAdmin: boolean }) {
         </div>
       )}
     </aside>
+    </>
   );
 }

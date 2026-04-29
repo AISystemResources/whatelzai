@@ -6,6 +6,7 @@ import { DefaultChatTransport, type UIMessage } from 'ai';
 import { useRouter, usePathname } from 'next/navigation';
 import { DrawerStoreProvider, useDrawerStore } from '@/lib/shell/drawer-store';
 import { NavRegistryProvider } from '@/lib/shell/nav-registry';
+import { useIsDesktop } from '@/lib/shell/use-is-desktop';
 import { navigationMap } from '@/lib/navigation-map';
 import { supabase } from '@/lib/supabase-client';
 import { AppHeader } from './AppHeader';
@@ -170,8 +171,9 @@ function NavHandler() {
 
 function ShellCanvas({ isAdmin, children }: { isAdmin: boolean; children: ReactNode }) {
   const { state } = useDrawerStore();
-  const ml = state.left ? 256 : 0;
-  const mr = state.right ? 360 : 0;
+  const isDesktop = useIsDesktop();
+  const ml = isDesktop && state.left ? 256 : 0;
+  const mr = isDesktop && state.right ? 360 : 0;
 
   return (
     <>

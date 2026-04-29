@@ -7,6 +7,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { DrawerStoreProvider, useDrawerStore } from '@/lib/shell/drawer-store';
 import { NavRegistryProvider } from '@/lib/shell/nav-registry';
 import { navigationMap } from '@/lib/navigation-map';
+import { supabase } from '@/lib/supabase-client';
 import { AppHeader } from './AppHeader';
 import { LeftDrawer } from './LeftDrawer';
 import { RightDrawer } from './RightDrawer';
@@ -46,9 +47,34 @@ function pulseElement(el: HTMLElement) {
   }, 900);
 }
 
-// ── Keyword → navigation target ───────────────────────────────────────────────
+// ── Specific hackathon name patterns → search query ───────────────────────────
 
-function detectTarget(text: string): string | null {
+const HACKATHON_PATTERNS: Array<{ re: RegExp; q: string }> = [
+  { re: /hackomania/i,         q: 'hackomania'    },
+  { re: /pan.?sea/i,           q: 'pan-sea'       },
+  { re: /singhacks|sing hacks/i, q: 'singhacks'  },
+  { re: /youth.?finance/i,     q: 'youth finance' },
+  { re: /asmi/i,               q: 'asmi'          },
+];
+
+async function lookupHackathonRoute(text: string): Promise<string | null> {
+  for (const { re, q } of HACKATHON_PATTERNS) {
+    if (!re.test(text)) continue;
+    const { data } = await supabase
+      .from('hackathons')
+      .select('id')
+      .ilike('name', `%${q}%`)
+      .eq('published', true)
+      .limit(1)
+      .single();
+    if (data?.id) return `/hackathons/${data.id}`;
+  }
+  return null;
+}
+
+// ── General topic detection ───────────────────────────────────────────────────
+
+function detectTopic(text: string): string | null {
   const t = text.toLowerCase();
   if (/hackathon|hackomania|pan.?sea|singhack|coding.{0,20}win|win.{0,20}hack/.test(t)) return 'hackathons';
   if (/internship|career|prudential|setel|asiaverify|work.{0,15}experience|experience.{0,15}work/.test(t)) return 'career';
@@ -64,65 +90,54 @@ function NavHandler() {
   const { messages, status } = useChatContext();
   const { dispatch } = useDrawerStore();
   const router = useRouter();
-  const pathname = usePathname();
   const firedRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     if (status !== 'ready') return;
 
-    // Only process the latest assistant message
     const assistantMsgs = messages.filter(m => m.role === 'assistant');
     if (assistantMsgs.length === 0) return;
     const latest = assistantMsgs[assistantMsgs.length - 1];
     if (firedRef.current.has(latest.id)) return;
-
-    let target: string | null = null;
-
-    // 1. Prefer explicit navigate_to tool result
-    for (const part of latest.parts) {
-      if (part.type !== 'dynamic-tool') continue;
-      const p = part as { toolName: string; toolCallId: string; state: string; output?: unknown };
-      if (p.toolName !== 'navigate_to' || p.state !== 'output-available') continue;
-      const result = p.output as { action: string; target: string } | undefined;
-      if (result?.action === 'navigate' && navigationMap[result.target]) {
-        target = result.target;
-        break;
-      }
-    }
-
-    // 2. Fallback: keyword detection on the response text
-    if (!target) {
-      const text = latest.parts
-        .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
-        .map(p => p.text)
-        .join(' ');
-      target = detectTarget(text);
-    }
-
-    if (!target) return;
-
     firedRef.current.add(latest.id);
 
-    const dest = navigationMap[target];
-    const doNavigate = () => {
-      if (pathname === '/') {
-        const el = document.getElementById(dest.scrollId);
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          setTimeout(() => pulseElement(el), 400);
-        }
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+    const doNavigate = (route: string) => {
+      const go = () => router.push(route);
+      if (isMobile) {
+        dispatch({ type: 'CLOSE_RIGHT' });
+        setTimeout(go, 220);
       } else {
-        router.push(dest.route);
+        go();
       }
     };
 
-    if (typeof window !== 'undefined' && window.innerWidth < 768) {
-      dispatch({ type: 'CLOSE_RIGHT' });
-      setTimeout(doNavigate, 220);
-    } else {
-      doNavigate();
-    }
-  }, [status, messages, dispatch, router, pathname]);
+    (async () => {
+      // 1. Explicit navigate_to tool result (may include id for deep link)
+      for (const part of latest.parts) {
+        if (part.type !== 'dynamic-tool') continue;
+        const p = part as { toolName: string; state: string; output?: unknown };
+        if (p.toolName !== 'navigate_to' || p.state !== 'output-available') continue;
+        const result = p.output as { action: string; target: string; id?: string } | undefined;
+        if (result?.action !== 'navigate') continue;
+        const route = result.id ? `/hackathons/${result.id}` : navigationMap[result.target]?.route;
+        if (route) { doNavigate(route); return; }
+      }
+
+      const text = latest.parts
+        .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
+        .map(p => p.text).join(' ');
+
+      // 2. Specific hackathon deep link
+      const specificRoute = await lookupHackathonRoute(text);
+      if (specificRoute) { doNavigate(specificRoute); return; }
+
+      // 3. General topic → page route
+      const topic = detectTopic(text);
+      if (topic) doNavigate(navigationMap[topic].route);
+    })();
+  }, [status, messages, dispatch, router]);
 
   return null;
 }

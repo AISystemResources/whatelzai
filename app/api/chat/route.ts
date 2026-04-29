@@ -67,13 +67,14 @@ const chatTools: Record<string, Tool<any, any>> = {
   },
   navigate_to: {
     description:
-      "Navigate the visitor to the relevant section. Call this PROACTIVELY whenever answering about hackathons, career/experience/internship, projects, contact, or channels — even for informational questions. target must be one of: hackathons, career, projects, contact, channels.",
+      "Navigate the visitor to the relevant section. Call this PROACTIVELY whenever answering about hackathons, career/experience/internship, projects, contact, or channels. For a specific hackathon (e.g. Hackomania 2026), also pass its id from get_hackathons results.",
     inputSchema: zodSchema(z.object({
       target: z
         .enum(["hackathons", "career", "projects", "contact", "channels"])
         .describe("The destination section or page"),
+      id: z.string().optional().describe("Hackathon UUID for direct deep-link to /hackathons/[id]"),
     })),
-    execute: async ({ target }: { target: string }) => ({ action: "navigate", target }),
+    execute: async ({ target, id }: { target: string; id?: string }) => ({ action: "navigate", target, id: id ?? null }),
   },
 };
 

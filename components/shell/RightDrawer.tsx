@@ -20,7 +20,7 @@ export function RightDrawer() {
       }`}
       aria-label="Chat"
     >
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4" aria-live="polite">
+      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-3" aria-live="polite">
         {messages.length === 0 && status !== 'submitted' && status !== 'streaming' ? (
           <p className="text-sm text-zinc-400 mt-8 text-center">Ask me anything about Edmund.</p>
         ) : (
@@ -31,19 +31,30 @@ export function RightDrawer() {
               .join('');
             const isUser = m.role === 'user';
             return (
-              <div key={m.id} className="space-y-1">
-                <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
-                  {isUser ? 'You' : 'Site'}
-                </span>
-                <p className={`text-sm leading-relaxed whitespace-pre-wrap ${isUser ? 'text-zinc-900' : 'text-zinc-700'}`}>
-                  {text || <span className="text-zinc-400">…</span>}
-                </p>
+              <div key={m.id} className={`flex ${isUser ? 'justify-start' : 'justify-end'}`}>
+                <div
+                  className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                    isUser
+                      ? 'bg-[var(--accent)] text-zinc-900'
+                      : 'bg-zinc-100 text-zinc-700'
+                  }`}
+                >
+                  {text || <span className="opacity-40">…</span>}
+                </div>
               </div>
             );
           })
         )}
         {status === 'submitted' && (
-          <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">Thinking…</p>
+          <div className="flex justify-end">
+            <div className="rounded-2xl bg-zinc-100 px-4 py-2.5 text-sm text-zinc-400">
+              <span className="inline-flex gap-1">
+                <span className="animate-bounce" style={{ animationDelay: '0ms' }}>·</span>
+                <span className="animate-bounce" style={{ animationDelay: '150ms' }}>·</span>
+                <span className="animate-bounce" style={{ animationDelay: '300ms' }}>·</span>
+              </span>
+            </div>
+          </div>
         )}
         <div ref={bottomRef} />
       </div>

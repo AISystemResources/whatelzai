@@ -245,7 +245,7 @@ function NavHandler({ startNav }: { startNav: (steps: NavStep[]) => void }) {
   const firedRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    if (status !== 'ready') return;
+    if (status !== 'ready' && status !== 'error') return;
 
     const assistantMsgs = messages.filter(m => m.role === 'assistant');
     if (assistantMsgs.length === 0) return;
@@ -280,9 +280,17 @@ function NavHandler({ startNav }: { startNav: (steps: NavStep[]) => void }) {
         return;
       }
 
-      const text = latest.parts
+      // Use assistant text + latest user message for fallback detection
+      const assistantText = latest.parts
         .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
         .map(p => p.text).join(' ');
+      const userMsgs = messages.filter(m => m.role === 'user');
+      const latestUserText = userMsgs.length
+        ? userMsgs[userMsgs.length - 1].parts
+            .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
+            .map(p => p.text).join(' ')
+        : '';
+      const text = assistantText || latestUserText;
 
       // 2. Fallback: specific hackathon name lookup
       const hackathonSlug = await lookupHackathonRoute(text);
@@ -298,14 +306,14 @@ function NavHandler({ startNav }: { startNav: (steps: NavStep[]) => void }) {
         return;
       }
 
-      // 3. Fallback: general topic detection
+      // 3. Fallback: general topic detection — use list mode so it pushes to the list page
       const topic = detectTopic(text);
       if (topic) {
         const dest = navigationMap[topic];
         if (!dest) return;
         if (isMobile) dispatch({ type: 'CLOSE_RIGHT' });
         const steps = buildSteps(
-          { target: topic, mode: 'section', slug: undefined },
+          { target: topic, mode: 'list', slug: undefined },
           pathname,
           dest,
         );

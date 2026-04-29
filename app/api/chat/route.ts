@@ -1,4 +1,4 @@
-import { convertToModelMessages, streamText, zodSchema, type UIMessage, type Tool } from "ai";
+import { convertToModelMessages, streamText, stepCountIs, zodSchema, type UIMessage, type Tool } from "ai";
 import { createGroq } from "@ai-sdk/groq";
 import { z } from "zod";
 import {
@@ -164,6 +164,7 @@ export async function POST(req: Request): Promise<Response> {
       temperature: 0.4,
       maxOutputTokens: 800,
       tools: chatTools,
+      stopWhen: stepCountIs(3),
     });
 
     return result.toUIMessageStreamResponse();

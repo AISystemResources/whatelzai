@@ -4,6 +4,7 @@ import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import { getCareerBySlug } from '@/lib/career';
 import { supabaseAdmin } from '@/lib/supabase-server';
+import { ContentRenderer } from '@/components/shell/ContentRenderer';
 
 export const dynamic = 'force-dynamic';
 
@@ -76,6 +77,12 @@ export default async function CareerDetailPage({ params }: Props) {
               {entry.description && entry.description.trim() && (
                 <div className="prose prose-zinc prose-sm max-w-none">
                   <ReactMarkdown>{entry.description}</ReactMarkdown>
+                </div>
+              )}
+
+              {entry.content && (
+                <div className="mt-6 pt-6 border-t border-zinc-100">
+                  <ContentRenderer content={entry.content} />
                 </div>
               )}
             </div>

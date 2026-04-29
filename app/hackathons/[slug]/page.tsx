@@ -4,6 +4,7 @@ import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import { getHackathonBySlug } from '@/lib/hackathons';
 import { supabaseAdmin } from '@/lib/supabase-server';
+import { ContentRenderer } from '@/components/shell/ContentRenderer';
 
 export const dynamic = 'force-dynamic';
 
@@ -133,6 +134,13 @@ export default async function HackathonDetailPage({ params }: Props) {
         {h.writeup.trim() && (
           <div className="mt-12 prose prose-zinc prose-sm max-w-none">
             <ReactMarkdown>{h.writeup}</ReactMarkdown>
+          </div>
+        )}
+
+        {/* Long-form content */}
+        {h.content && (
+          <div className="mt-10 pt-8 border-t border-zinc-100">
+            <ContentRenderer content={h.content} />
           </div>
         )}
 

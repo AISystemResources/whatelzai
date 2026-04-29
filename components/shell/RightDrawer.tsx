@@ -6,7 +6,7 @@ import { useChatContext } from './ShellProvider';
 
 export function RightDrawer() {
   const { state, dispatch } = useDrawerStore();
-  const { messages, status } = useChatContext();
+  const { messages, status, isNavigating } = useChatContext();
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -62,6 +62,12 @@ export function RightDrawer() {
                 <span className="animate-bounce" style={{ animationDelay: '300ms' }}>·</span>
               </span>
             </div>
+          </div>
+        )}
+        {isNavigating && (
+          <div className="px-4 py-2 text-xs text-zinc-400 font-mono flex items-center gap-2">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-zinc-400 animate-pulse" />
+            Navigating…
           </div>
         )}
         <div ref={bottomRef} />

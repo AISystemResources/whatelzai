@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 import { useRouter, usePathname } from 'next/navigation';
@@ -15,6 +15,15 @@ import { RightDrawer } from './RightDrawer';
 import { BottomInput } from './BottomInput';
 import { DeviceTracker } from './DeviceTracker';
 
+// ── Nav queue types ───────────────────────────────────────────────────────────
+
+type NavStep =
+  | { type: 'push'; route: string }
+  | { type: 'scroll'; id: string }
+  | { type: 'blink-heading'; id: string }
+  | { type: 'blink-row'; dataAttr: string; dataValue: string; destRoute: string }
+  | { type: 'delay'; ms: number };
+
 // ── Chat context ──────────────────────────────────────────────────────────────
 
 type ChatCtx = {
@@ -24,6 +33,8 @@ type ChatCtx = {
   sendMessage: (opts: { text: string }) => void;
   input: string;
   setInput: (v: string) => void;
+  isNavigating: boolean;
+  startNav: (steps: NavStep[]) => void;
 };
 
 const ChatCtxRef = createContext<ChatCtx | null>(null);
@@ -63,12 +74,12 @@ async function lookupHackathonRoute(text: string): Promise<string | null> {
     if (!re.test(text)) continue;
     const { data } = await supabase
       .from('hackathons')
-      .select('id')
+      .select('slug')
       .ilike('name', `%${q}%`)
       .eq('published', true)
       .limit(1)
       .single();
-    if (data?.id) return `/hackathons/${data.id}`;
+    if (data?.slug) return data.slug;
   }
   return null;
 }
@@ -85,12 +96,175 @@ function detectTopic(text: string): string | null {
   return null;
 }
 
-// ── NavHandler — fires after stream finishes ──────────────────────────────────
+// ── buildSteps — constructs the nav queue ─────────────────────────────────────
 
-function NavHandler() {
+function buildSteps(
+  nav: { target: string; mode: string; slug?: string },
+  currentPath: string,
+  dest: { scrollId: string; route: string },
+): NavStep[] {
+  const isHome = currentPath === '/';
+  const isListPage = currentPath === dest.route;
+  const steps: NavStep[] = [];
+
+  if (nav.mode === 'section') {
+    if (isHome) {
+      steps.push({ type: 'scroll', id: dest.scrollId });
+      steps.push({ type: 'blink-heading', id: `${dest.scrollId}-heading` });
+    } else {
+      steps.push({ type: 'push', route: '/' });
+      steps.push({ type: 'delay', ms: 400 });
+      steps.push({ type: 'scroll', id: dest.scrollId });
+      steps.push({ type: 'blink-heading', id: `${dest.scrollId}-heading` });
+    }
+  } else if (nav.mode === 'list') {
+    if (isHome) {
+      steps.push({ type: 'scroll', id: dest.scrollId });
+      steps.push({ type: 'blink-heading', id: `${dest.scrollId}-heading` });
+      steps.push({ type: 'delay', ms: 1200 });
+      steps.push({ type: 'push', route: dest.route });
+    } else if (isListPage) {
+      // Already on list page — nothing to do
+    } else {
+      steps.push({ type: 'push', route: '/' });
+      steps.push({ type: 'delay', ms: 400 });
+      steps.push({ type: 'scroll', id: dest.scrollId });
+      steps.push({ type: 'blink-heading', id: `${dest.scrollId}-heading` });
+      steps.push({ type: 'delay', ms: 1200 });
+      steps.push({ type: 'push', route: dest.route });
+    }
+  } else if (nav.mode === 'item' && nav.slug) {
+    const detailRoute = `${dest.route}/${nav.slug}`;
+    const dataAttr = nav.target === 'hackathons' ? 'data-hackathon-slug' : 'data-career-slug';
+
+    if (isListPage) {
+      steps.push({ type: 'blink-row', dataAttr, dataValue: nav.slug, destRoute: detailRoute });
+    } else if (isHome) {
+      steps.push({ type: 'scroll', id: dest.scrollId });
+      steps.push({ type: 'blink-heading', id: `${dest.scrollId}-heading` });
+      steps.push({ type: 'delay', ms: 1200 });
+      steps.push({ type: 'push', route: dest.route });
+      steps.push({ type: 'delay', ms: 400 });
+      steps.push({ type: 'blink-row', dataAttr, dataValue: nav.slug, destRoute: detailRoute });
+    } else {
+      steps.push({ type: 'push', route: '/' });
+      steps.push({ type: 'delay', ms: 400 });
+      steps.push({ type: 'scroll', id: dest.scrollId });
+      steps.push({ type: 'blink-heading', id: `${dest.scrollId}-heading` });
+      steps.push({ type: 'delay', ms: 1200 });
+      steps.push({ type: 'push', route: dest.route });
+      steps.push({ type: 'delay', ms: 400 });
+      steps.push({ type: 'blink-row', dataAttr, dataValue: nav.slug, destRoute: detailRoute });
+    }
+  }
+
+  return steps;
+}
+
+// ── blinkRow ──────────────────────────────────────────────────────────────────
+
+function blinkRowEl(el: HTMLElement, onDone: () => void) {
+  const flash = 'rgba(250,204,21,0.35)';
+  el.style.transition = 'background-color 200ms ease';
+  el.style.backgroundColor = flash;
+  setTimeout(() => { el.style.backgroundColor = ''; }, 300);
+  setTimeout(() => { el.style.backgroundColor = flash; }, 600);
+  setTimeout(() => {
+    el.style.backgroundColor = '';
+    el.style.transition = '';
+    onDone();
+  }, 1000);
+}
+
+// ── useNavQueue ───────────────────────────────────────────────────────────────
+
+function useNavQueue() {
+  const [steps, setSteps] = useState<NavStep[]>([]);
+  const router = useRouter();
+  const pathname = usePathname();
+  const waitRef = useRef<string | null>(null);
+  const processingRef = useRef(false);
+
+  const startNav = useCallback((s: NavStep[]) => {
+    waitRef.current = null;
+    processingRef.current = false;
+    setSteps(s);
+  }, []);
+
+  // When pathname changes and we were waiting for a route, advance past the push step
+  useEffect(() => {
+    if (!waitRef.current) return;
+    if (pathname === waitRef.current) {
+      waitRef.current = null;
+      setSteps(prev => prev.slice(1));
+    }
+  }, [pathname]);
+
+  // Process the head step whenever steps change
+  useEffect(() => {
+    if (steps.length === 0) {
+      processingRef.current = false;
+      return;
+    }
+
+    // If waiting for a pathname change, don't process yet
+    if (waitRef.current) return;
+
+    // Prevent double-processing in strict mode
+    if (processingRef.current) return;
+    processingRef.current = true;
+
+    const [head, ...tail] = steps;
+    const advance = () => {
+      processingRef.current = false;
+      setSteps(tail);
+    };
+
+    if (head.type === 'push') {
+      waitRef.current = head.route;
+      processingRef.current = false;
+      router.push(head.route);
+      // Don't advance — wait for pathname effect
+    } else if (head.type === 'scroll') {
+      const el = document.getElementById(head.id);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(advance, 800);
+    } else if (head.type === 'blink-heading') {
+      const el = document.getElementById(head.id);
+      if (el) pulseElement(el);
+      setTimeout(advance, 1000);
+    } else if (head.type === 'blink-row') {
+      const el = document.querySelector<HTMLElement>(`[${head.dataAttr}="${head.dataValue}"]`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => {
+          blinkRowEl(el, () => {
+            router.push(head.destRoute);
+            processingRef.current = false;
+            setSteps([]);
+          });
+        }, 400);
+      } else {
+        // Element not found — navigate directly
+        router.push(head.destRoute);
+        processingRef.current = false;
+        setSteps([]);
+      }
+    } else if (head.type === 'delay') {
+      setTimeout(advance, head.ms);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [steps]);
+
+  return { isNavigating: steps.length > 0, startNav };
+}
+
+// ── NavHandler — detects tool results and kicks off nav queue ─────────────────
+
+function NavHandler({ startNav }: { startNav: (steps: NavStep[]) => void }) {
   const { messages, status } = useChatContext();
   const { dispatch } = useDrawerStore();
-  const router = useRouter();
+  const pathname = usePathname();
   const firedRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
@@ -104,72 +278,71 @@ function NavHandler() {
 
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
-    const doNavigate = (route: string) => {
-      const go = () => router.push(route);
-      if (isMobile) {
-        dispatch({ type: 'CLOSE_RIGHT' });
-        setTimeout(go, 220);
-      } else {
-        go();
-      }
-    };
-
     (async () => {
-      // Helper: scroll to section on homepage then push to page after delay
-      const scrollThenPush = (scrollId: string, route: string) => {
-        if (isMobile) { dispatch({ type: 'CLOSE_RIGHT' }); }
-        const el = document.getElementById(scrollId);
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          setTimeout(() => pulseElement(el), 400);
-        }
-        setTimeout(() => router.push(route), 1200);
-      };
-
-      // 1. Explicit navigate_to tool result (may include id for hackathon deep link)
+      // 1. Explicit navigate_to tool result
+      type NavToolOutput = { action: string; target: string; mode?: string; slug?: string };
+      let toolResult: NavToolOutput | null = null;
       for (const part of latest.parts) {
         if (part.type !== 'dynamic-tool') continue;
         const p = part as { toolName: string; state: string; output?: unknown };
         if (p.toolName !== 'navigate_to' || p.state !== 'output-available') continue;
-        const result = p.output as { action: string; target: string; id?: string } | undefined;
-        if (result?.action !== 'navigate') continue;
-        if (result.id) { doNavigate(`/hackathons?highlight=${result.id}`); return; }
-        const dest = navigationMap[result.target];
-        if (dest) { scrollThenPush(dest.scrollId, dest.route); return; }
+        toolResult = p.output as NavToolOutput;
+        break;
+      }
+
+      if (toolResult && toolResult.action === 'navigate') {
+        const dest = navigationMap[toolResult.target];
+        if (!dest) return;
+        if (isMobile) dispatch({ type: 'CLOSE_RIGHT' });
+        const steps = buildSteps(
+          { target: toolResult.target, mode: toolResult.mode ?? 'section', slug: toolResult.slug },
+          pathname,
+          dest,
+        );
+        if (steps.length) startNav(steps);
+        return;
       }
 
       const text = latest.parts
         .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
         .map(p => p.text).join(' ');
 
-      // 2. Specific hackathon → list page with highlight param
-      const specificRoute = await lookupHackathonRoute(text);
-      if (specificRoute) {
-        // lookupHackathonRoute returns /hackathons/[id], convert to highlight param
-        const id = specificRoute.split('/').pop();
-        doNavigate(`/hackathons?highlight=${id}`);
+      // 2. Fallback: specific hackathon name lookup
+      const hackathonSlug = await lookupHackathonRoute(text);
+      if (hackathonSlug) {
+        const dest = navigationMap['hackathons'];
+        if (isMobile) dispatch({ type: 'CLOSE_RIGHT' });
+        const steps = buildSteps(
+          { target: 'hackathons', mode: 'item', slug: hackathonSlug },
+          pathname,
+          dest,
+        );
+        if (steps.length) startNav(steps);
         return;
       }
 
-      // 3. General topic → scroll to section on homepage, then push to page
+      // 3. Fallback: general topic detection
       const topic = detectTopic(text);
       if (topic) {
         const dest = navigationMap[topic];
-        if (typeof window !== 'undefined' && window.location.pathname === '/') {
-          scrollThenPush(dest.scrollId, dest.route);
-        } else {
-          doNavigate(dest.route);
-        }
+        if (!dest) return;
+        if (isMobile) dispatch({ type: 'CLOSE_RIGHT' });
+        const steps = buildSteps(
+          { target: topic, mode: 'section', slug: undefined },
+          pathname,
+          dest,
+        );
+        if (steps.length) startNav(steps);
       }
     })();
-  }, [status, messages, dispatch, router]);
+  }, [status, messages, pathname, dispatch, startNav]);
 
   return null;
 }
 
 // ── ShellCanvas — reads drawer state and shifts the content area ──────────────
 
-function ShellCanvas({ isAdmin, children }: { isAdmin: boolean; children: ReactNode }) {
+function ShellCanvas({ isAdmin, startNav, children }: { isAdmin: boolean; startNav: (steps: NavStep[]) => void; children: ReactNode }) {
   const { state } = useDrawerStore();
   const isDesktop = useIsDesktop();
   const ml = isDesktop && state.left ? 256 : 0;
@@ -189,7 +362,7 @@ function ShellCanvas({ isAdmin, children }: { isAdmin: boolean; children: ReactN
 
       <BottomInput />
       {!isAdmin && <DeviceTracker />}
-      <NavHandler />
+      <NavHandler startNav={startNav} />
     </>
   );
 }
@@ -205,14 +378,15 @@ export function ShellProvider({ isAdmin, children }: Props) {
   const transport = useMemo(() => new DefaultChatTransport({ api: '/api/chat' }), []);
   const { messages, sendMessage, status, stop } = useChat({ transport });
   const [input, setInput] = useState('');
+  const { isNavigating, startNav } = useNavQueue();
 
   return (
-    <ChatCtxRef.Provider value={{ messages, sendMessage, status, stop, input, setInput }}>
+    <ChatCtxRef.Provider value={{ messages, sendMessage, status, stop, input, setInput, isNavigating, startNav }}>
       <NavRegistryProvider>
         <DrawerStoreProvider>
           <LeftDrawer isAdmin={isAdmin} />
           <RightDrawer />
-          <ShellCanvas isAdmin={isAdmin}>{children}</ShellCanvas>
+          <ShellCanvas isAdmin={isAdmin} startNav={startNav}>{children}</ShellCanvas>
         </DrawerStoreProvider>
       </NavRegistryProvider>
     </ChatCtxRef.Provider>

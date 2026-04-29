@@ -4,7 +4,7 @@ import { createContext, useContext, useReducer, type ReactNode } from 'react';
 
 type State = { left: boolean; right: boolean };
 
-type Action =
+export type Action =
   | { type: 'TOGGLE_LEFT';  mobile?: boolean }
   | { type: 'TOGGLE_RIGHT'; mobile?: boolean }
   | { type: 'OPEN_RIGHT' }

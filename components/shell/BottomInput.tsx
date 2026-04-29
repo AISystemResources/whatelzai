@@ -8,13 +8,13 @@ import { MAX_INPUT_CHARS } from '@/lib/chat-client';
 
 export function BottomInput() {
   const { state, dispatch } = useDrawerStore();
-  const { input, setInput, sendMessage, status, stop } = useChatContext();
+  const { input, setInput, sendMessage, status, stop, isNavigating } = useChatContext();
   const inputRef = useRef<HTMLInputElement>(null);
 
   const busy = status === 'submitted' || status === 'streaming';
   const trimmed = input.trim();
   const overLimit = trimmed.length > MAX_INPUT_CHARS;
-  const canSend = !busy && trimmed.length > 0 && !overLimit;
+  const canSend = !busy && !isNavigating && trimmed.length > 0 && !overLimit;
 
   // `/` keybinding — focus input unless already in a text field
   useEffect(() => {
@@ -62,9 +62,9 @@ export function BottomInput() {
             ref={inputRef}
             value={input}
             onChange={e => setInput(e.target.value.slice(0, MAX_INPUT_CHARS))}
-            placeholder="Ask about Edmund… (press / to focus)"
+            placeholder={isNavigating ? 'Navigating…' : 'Ask about Edmund… (press / to focus)'}
             aria-label="Ask about Edmund"
-            disabled={busy}
+            disabled={busy || isNavigating}
             className="min-w-0 flex-1 bg-transparent text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none"
           />
           {busy ? (

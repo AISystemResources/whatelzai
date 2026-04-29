@@ -62,15 +62,14 @@ export function HackathonList({ hackathons, highlight }: { hackathons: Hackathon
   useEffect(() => {
     if (!highlight) return;
     const t = setTimeout(() => {
-      const el = document.querySelector<HTMLElement>(`[data-hackathon-id="${highlight}"]`);
+      const el = document.querySelector<HTMLElement>(`[data-hackathon-slug="${highlight}"]`);
       if (!el) return;
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      const target = hackathons.find(h => h.id === highlight);
-      const dest = target?.slug ? `/hackathons/${target.slug}` : `/hackathons`;
+      const dest = `/hackathons/${highlight}`;
       setTimeout(() => blinkRow(el, () => router.push(dest)), 400);
     }, 350);
     return () => clearTimeout(t);
-  }, [highlight, router, hackathons]);
+  }, [highlight, router]);
 
   function cycleDate() {
     setDateSort(d => d === 'none' ? 'desc' : d === 'desc' ? 'asc' : 'none');
@@ -143,7 +142,7 @@ export function HackathonList({ hackathons, highlight }: { hackathons: Hackathon
               {sorted.map(h => (
                 <tr
                   key={h.id}
-                  data-hackathon-id={h.id}
+                  data-hackathon-slug={h.slug}
                   onClick={() => router.push(`/hackathons/${h.slug}`)}
                   className="cursor-pointer hover:bg-zinc-50 transition-colors"
                 >
@@ -177,7 +176,7 @@ export function HackathonList({ hackathons, highlight }: { hackathons: Hackathon
           {sorted.map(h => (
             <button
               key={h.id}
-              data-hackathon-id={h.id}
+              data-hackathon-slug={h.slug}
               onClick={() => router.push(`/hackathons/${h.slug}`)}
               className="text-left border border-zinc-200 rounded p-5 hover:border-zinc-400 transition-colors space-y-3"
             >

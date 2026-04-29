@@ -1,15 +1,20 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import { useDrawerStore } from '@/lib/shell/drawer-store';
 import { useChatContext } from './ShellProvider';
 import { useIsDesktop } from '@/lib/shell/use-is-desktop';
 import { MAX_INPUT_CHARS } from '@/lib/chat-client';
+import { navigationMap } from '@/lib/navigation-map';
+import { detectTopic, lookupHackathonRoute, buildSteps } from '@/lib/shell/nav-intent';
 
 export function BottomInput() {
   const { state, dispatch } = useDrawerStore();
-  const { input, setInput, sendMessage, status, stop, isNavigating } = useChatContext();
+  const { input, setInput, sendMessage, status, stop, isNavigating, startNav } = useChatContext();
   const inputRef = useRef<HTMLInputElement>(null);
+  const pathname = usePathname();
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
   const busy = status === 'submitted' || status === 'streaming';
   const trimmed = input.trim();
@@ -36,6 +41,26 @@ export function BottomInput() {
     sendMessage({ text: trimmed });
     setInput('');
     dispatch({ type: 'OPEN_RIGHT' });
+
+    // Trigger navigation from user message immediately — no AI tool needed
+    (async () => {
+      const hackathonSlug = await lookupHackathonRoute(trimmed);
+      if (hackathonSlug) {
+        const dest = navigationMap['hackathons'];
+        if (isMobile) dispatch({ type: 'CLOSE_RIGHT' });
+        const steps = buildSteps({ target: 'hackathons', mode: 'item', slug: hackathonSlug }, pathname, dest);
+        if (steps.length) startNav(steps);
+        return;
+      }
+      const topic = detectTopic(trimmed);
+      if (topic) {
+        const dest = navigationMap[topic];
+        if (!dest) return;
+        if (isMobile) dispatch({ type: 'CLOSE_RIGHT' });
+        const steps = buildSteps({ target: topic, mode: 'list', slug: undefined }, pathname, dest);
+        if (steps.length) startNav(steps);
+      }
+    })();
   }
 
   const isDesktop = useIsDesktop();

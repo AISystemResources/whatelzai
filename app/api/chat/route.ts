@@ -65,16 +65,6 @@ const chatTools: Record<string, Tool<any, any>> = {
     inputSchema: zodSchema(z.object({})),
     execute: async () => (elzOs ? [...projects, elzOs] : projects),
   },
-  navigate_to: {
-    description:
-      "Navigate the user to a section or page. Use mode=section to scroll to a homepage section, mode=list to navigate to the full list page, mode=item to navigate directly to a specific item detail page.",
-    inputSchema: zodSchema(z.object({
-      target: z.enum(["hackathons", "career", "projects", "contact", "channels"]),
-      mode: z.enum(["section", "list", "item"]).default("section"),
-      slug: z.string().optional().describe('Required when mode=item. The slug of the specific hackathon or career entry, e.g. "hackomania-2026" or "prudential".'),
-    })),
-    execute: async ({ target, mode, slug }: { target: string; mode: string; slug?: string }) => ({ action: "navigate", target, mode, slug }),
-  },
 };
 
 export async function POST(req: Request): Promise<Response> {

@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Hackathon } from '@/lib/hackathons';
 import { awardRankScore } from '@/lib/hackathons';
+import { useIsDesktop } from '@/lib/shell/use-is-desktop';
 
 function blinkRow(el: HTMLElement, onDone: () => void) {
   const flash = 'rgba(250,204,21,0.35)';
@@ -50,8 +51,13 @@ function AwardBadge({ award }: { award: { title: string; track?: string } }) {
 
 export function HackathonList({ hackathons, highlight }: { hackathons: Hackathon[]; highlight?: string }) {
   const router = useRouter();
-  const [view, setView] = useState<'table' | 'card'>('table');
+  const isDesktop = useIsDesktop();
+  const [view, setView] = useState<'table' | 'card'>('card');
   const [dateSort, setDateSort] = useState<DateSort>('none');
+
+  useEffect(() => {
+    setView(isDesktop ? 'table' : 'card');
+  }, [isDesktop]);
 
   useEffect(() => {
     if (!highlight) return;

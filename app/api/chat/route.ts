@@ -67,7 +67,7 @@ const chatTools: Record<string, Tool<any, any>> = {
   },
   navigate_to: {
     description:
-      "Navigate the visitor to a section or page. Use when the user asks to see or go to a specific section. target must be one of: hackathons, career, projects, contact, channels.",
+      "Navigate the visitor to the relevant section. Call this PROACTIVELY whenever answering about hackathons, career/experience/internship, projects, contact, or channels — even for informational questions. target must be one of: hackathons, career, projects, contact, channels.",
     inputSchema: zodSchema(z.object({
       target: z
         .enum(["hackathons", "career", "projects", "contact", "channels"])

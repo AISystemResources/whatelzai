@@ -1,21 +1,15 @@
-/**
- * v1 in-memory rate limiter. Best-effort only.
- *
- * TODO(launch-blocker): swap to Vercel KV / Upstash before public launch.
- * Edge runtime instances are short-lived and per-region, so this map can
- * be reset arbitrarily and does not coordinate across regions. Acceptable
- * for sprint 005 (single-instance UAT, low traffic) — not for production.
- */
-
 type Bucket = {
   count: number;
   windowStartMs: number;
 };
 
-const WINDOW_MS = 60 * 60 * 1000; // 1 hour
-const MAX_PER_WINDOW = 20;
+const MINUTE_MS = 60 * 1000;
+const HOUR_MS = 60 * 60 * 1000;
+const MAX_PER_MINUTE = 5;
+const MAX_PER_HOUR = 20;
 
-const buckets = new Map<string, Bucket>();
+const minuteBuckets = new Map<string, Bucket>();
+const hourBuckets = new Map<string, Bucket>();
 
 export type RateLimitResult = {
   allowed: boolean;
@@ -23,38 +17,35 @@ export type RateLimitResult = {
   resetMs: number;
 };
 
-export function checkRateLimit(ip: string): RateLimitResult {
+function checkBucket(
+  map: Map<string, Bucket>,
+  key: string,
+  windowMs: number,
+  max: number,
+): RateLimitResult {
   const now = Date.now();
-  const existing = buckets.get(ip);
+  const existing = map.get(key);
 
-  if (!existing || now - existing.windowStartMs >= WINDOW_MS) {
-    const fresh: Bucket = { count: 1, windowStartMs: now };
-    buckets.set(ip, fresh);
-    return {
-      allowed: true,
-      remaining: MAX_PER_WINDOW - 1,
-      resetMs: now + WINDOW_MS,
-    };
+  if (!existing || now - existing.windowStartMs >= windowMs) {
+    map.set(key, { count: 1, windowStartMs: now });
+    return { allowed: true, remaining: max - 1, resetMs: now + windowMs };
   }
 
-  if (existing.count >= MAX_PER_WINDOW) {
-    return {
-      allowed: false,
-      remaining: 0,
-      resetMs: existing.windowStartMs + WINDOW_MS,
-    };
+  if (existing.count >= max) {
+    return { allowed: false, remaining: 0, resetMs: existing.windowStartMs + windowMs };
   }
 
-  const updated: Bucket = {
-    count: existing.count + 1,
-    windowStartMs: existing.windowStartMs,
-  };
-  buckets.set(ip, updated);
-  return {
-    allowed: true,
-    remaining: MAX_PER_WINDOW - updated.count,
-    resetMs: updated.windowStartMs + WINDOW_MS,
-  };
+  const updated = { count: existing.count + 1, windowStartMs: existing.windowStartMs };
+  map.set(key, updated);
+  return { allowed: true, remaining: max - updated.count, resetMs: updated.windowStartMs + windowMs };
+}
+
+export function checkRateLimit(ip: string): RateLimitResult {
+  const minute = checkBucket(minuteBuckets, ip, MINUTE_MS, MAX_PER_MINUTE);
+  if (!minute.allowed) return minute;
+
+  const hour = checkBucket(hourBuckets, ip, HOUR_MS, MAX_PER_HOUR);
+  return hour;
 }
 
 export function getClientIp(req: Request): string {

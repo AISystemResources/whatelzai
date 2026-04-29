@@ -17,13 +17,13 @@ export function RightDrawer() {
     <>
       {state.right && (
         <div
-          className="fixed inset-0 z-[29] bg-black/40 md:hidden"
+          className="fixed inset-0 z-[45] bg-black/40 md:hidden"
           onClick={() => dispatch({ type: 'CLOSE_RIGHT' })}
           aria-hidden
         />
       )}
     <aside
-      className={`fixed top-0 right-0 z-30 flex h-screen w-[360px] flex-col border-l border-zinc-200 bg-[var(--background)] transition-transform duration-200 ${
+      className={`fixed top-0 right-0 z-50 flex h-screen w-[360px] flex-col border-l border-zinc-200 bg-[var(--background)] transition-transform duration-200 ${
         state.right ? 'translate-x-0' : 'translate-x-full'
       }`}
       aria-label="Chat"

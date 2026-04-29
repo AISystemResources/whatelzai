@@ -44,7 +44,7 @@ export function BottomInput() {
 
   return (
     <div
-      className="fixed bottom-0 z-50"
+      className="fixed bottom-0 z-[60]"
       style={{
         left: ml,
         right: mr,

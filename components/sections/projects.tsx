@@ -90,7 +90,7 @@ export function Projects() {
     >
       <div className="mx-auto max-w-6xl">
         <header className="mb-12 flex items-baseline justify-between">
-          <h2 className="font-mono text-xs tracking-widest text-zinc-500 uppercase">
+          <h2 id="projects-heading" className="text-2xl font-semibold text-zinc-900">
             Projects
           </h2>
           <p className="hidden font-mono text-[10px] tracking-widest text-zinc-400 uppercase sm:block">

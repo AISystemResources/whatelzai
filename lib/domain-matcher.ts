@@ -36,10 +36,13 @@ export async function matchEmailToApplication(
     .order('created_at', { ascending: false })
     .limit(20);
 
-  type AppRow = { id: string; job_listings: { company_id: string }[] };
-  const linked = (apps ?? [] as AppRow[]).find((a: AppRow) =>
-    a.job_listings?.some(jl => jl.company_id === company.id)
-  );
+  type AppRow = { id: string; job_listings: { company_id: string } | { company_id: string }[] | null };
+  const linked = (apps ?? [] as AppRow[]).find((a: AppRow) => {
+    const listings = Array.isArray(a.job_listings)
+      ? a.job_listings
+      : a.job_listings ? [a.job_listings] : [];
+    return listings.some(jl => jl.company_id === company.id);
+  });
 
   return {
     companyId:     company.id,

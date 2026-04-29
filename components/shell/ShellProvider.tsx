@@ -65,6 +65,22 @@ function blinkRowEl(el: HTMLElement, onDone: () => void) {
   }, 1000);
 }
 
+// ── waitForElement — polls DOM until the element appears or timeout ───────────
+
+function waitForElement(selector: string, timeout = 4000): Promise<HTMLElement | null> {
+  return new Promise(resolve => {
+    const existing = document.querySelector<HTMLElement>(selector);
+    if (existing) { resolve(existing); return; }
+
+    const observer = new MutationObserver(() => {
+      const el = document.querySelector<HTMLElement>(selector);
+      if (el) { observer.disconnect(); resolve(el); }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    setTimeout(() => { observer.disconnect(); resolve(null); }, timeout);
+  });
+}
+
 // ── processSteps — recursive timer chain, no React state needed ──────────────
 
 function processSteps(
@@ -94,14 +110,15 @@ function processSteps(
       break;
     }
     case 'blink-row': {
-      const el = document.querySelector<HTMLElement>(`[${head.dataAttr}="${head.dataValue}"]`);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        setTimeout(() => blinkRowEl(el, () => { router.push(head.destRoute); onDone(); }), 400);
-      } else {
-        router.push(head.destRoute);
-        onDone();
-      }
+      waitForElement(`[${head.dataAttr}="${head.dataValue}"]`).then(el => {
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          setTimeout(() => blinkRowEl(el, () => { router.push(head.destRoute); onDone(); }), 400);
+        } else {
+          router.push(head.destRoute);
+          onDone();
+        }
+      });
       return; // terminal — don't call next
     }
     case 'delay':

@@ -147,7 +147,7 @@ export function buildSteps(
       steps.push({ type: 'blink-heading', id: `${dest.scrollId}-heading` });
       steps.push({ type: 'delay', ms: 1200 });
       steps.push({ type: 'push', route: dest.route });
-      steps.push({ type: 'delay', ms: 400 });
+      steps.push({ type: 'delay', ms: 600 });
       steps.push({ type: 'blink-row', dataAttr, dataValue: nav.slug, destRoute: detailRoute });
     } else {
       steps.push({ type: 'push', route: '/' });
@@ -156,7 +156,7 @@ export function buildSteps(
       steps.push({ type: 'blink-heading', id: `${dest.scrollId}-heading` });
       steps.push({ type: 'delay', ms: 1200 });
       steps.push({ type: 'push', route: dest.route });
-      steps.push({ type: 'delay', ms: 400 });
+      steps.push({ type: 'delay', ms: 600 });
       steps.push({ type: 'blink-row', dataAttr, dataValue: nav.slug, destRoute: detailRoute });
     }
   }

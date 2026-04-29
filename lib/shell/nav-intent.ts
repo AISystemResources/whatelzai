@@ -20,6 +20,20 @@ const HACKATHON_PATTERNS: Array<{ re: RegExp; q: string }> = [
 ];
 
 export async function lookupHackathonRoute(text: string): Promise<string | null> {
+  const t = text.toLowerCase();
+
+  // "most recent win / latest win / recent hackathon win" → query by date
+  if (/most.{0,10}recent|latest.{0,10}win|recent.{0,10}win|newest.{0,10}win/.test(t)) {
+    const { data } = await supabase
+      .from('hackathons')
+      .select('slug, awards')
+      .eq('published', true)
+      .order('date', { ascending: false })
+      .limit(10);
+    const winner = (data ?? []).find(h => Array.isArray(h.awards) && h.awards.length > 0);
+    if (winner?.slug) return winner.slug;
+  }
+
   for (const { re, q } of HACKATHON_PATTERNS) {
     if (!re.test(text)) continue;
     const { data } = await supabase

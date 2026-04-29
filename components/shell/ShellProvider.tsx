@@ -1,13 +1,14 @@
 'use client';
 
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { DrawerStoreProvider, useDrawerStore } from '@/lib/shell/drawer-store';
 import { NavRegistryProvider } from '@/lib/shell/nav-registry';
 import { useIsDesktop } from '@/lib/shell/use-is-desktop';
-import { type NavStep } from '@/lib/shell/nav-intent';
+import { type NavStep, buildSteps, detectTopic, lookupHackathonRoute } from '@/lib/shell/nav-intent';
+import { navigationMap } from '@/lib/navigation-map';
 import { AppHeader } from './AppHeader';
 import { LeftDrawer } from './LeftDrawer';
 import { RightDrawer } from './RightDrawer';
@@ -124,9 +125,58 @@ function useNavQueue() {
   return { isNavigating, startNav };
 }
 
+// ── NavHandler — fires after AI response, reads user message for intent ────────
+
+function NavHandler({ startNav }: { startNav: (steps: NavStep[]) => void }) {
+  const { messages, status } = useChatContext();
+  const { dispatch } = useDrawerStore();
+  const pathname = usePathname();
+  const firedRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (status !== 'ready') return;
+
+    const assistantMsgs = messages.filter(m => m.role === 'assistant');
+    if (assistantMsgs.length === 0) return;
+    const latestAssistant = assistantMsgs[assistantMsgs.length - 1];
+    if (firedRef.current.has(latestAssistant.id)) return;
+    firedRef.current.add(latestAssistant.id);
+
+    const userMsgs = messages.filter(m => m.role === 'user');
+    if (userMsgs.length === 0) return;
+    const latestUser = userMsgs[userMsgs.length - 1];
+    const text = latestUser.parts
+      .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
+      .map(p => p.text).join(' ');
+
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+    (async () => {
+      const hackathonSlug = await lookupHackathonRoute(text);
+      if (hackathonSlug) {
+        const dest = navigationMap['hackathons'];
+        if (isMobile) dispatch({ type: 'CLOSE_RIGHT' });
+        const steps = buildSteps({ target: 'hackathons', mode: 'item', slug: hackathonSlug }, pathname, dest);
+        if (steps.length) startNav(steps);
+        return;
+      }
+      const topic = detectTopic(text);
+      if (topic) {
+        const dest = navigationMap[topic];
+        if (!dest) return;
+        if (isMobile) dispatch({ type: 'CLOSE_RIGHT' });
+        const steps = buildSteps({ target: topic, mode: 'list', slug: undefined }, pathname, dest);
+        if (steps.length) startNav(steps);
+      }
+    })();
+  }, [status, messages, pathname, dispatch, startNav]);
+
+  return null;
+}
+
 // ── ShellCanvas — reads drawer state and shifts the content area ──────────────
 
-function ShellCanvas({ isAdmin, children }: { isAdmin: boolean; children: ReactNode }) {
+function ShellCanvas({ isAdmin, startNav, children }: { isAdmin: boolean; startNav: (steps: NavStep[]) => void; children: ReactNode }) {
   const { state } = useDrawerStore();
   const isDesktop = useIsDesktop();
   const ml = isDesktop && state.left ? 256 : 0;
@@ -146,6 +196,7 @@ function ShellCanvas({ isAdmin, children }: { isAdmin: boolean; children: ReactN
 
       <BottomInput />
       {!isAdmin && <DeviceTracker />}
+      <NavHandler startNav={startNav} />
     </>
   );
 }
@@ -169,7 +220,7 @@ export function ShellProvider({ isAdmin, children }: Props) {
         <DrawerStoreProvider>
           <LeftDrawer isAdmin={isAdmin} />
           <RightDrawer />
-          <ShellCanvas isAdmin={isAdmin}>{children}</ShellCanvas>
+          <ShellCanvas isAdmin={isAdmin} startNav={startNav}>{children}</ShellCanvas>
         </DrawerStoreProvider>
       </NavRegistryProvider>
     </ChatCtxRef.Provider>

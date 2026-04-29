@@ -2,16 +2,17 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useDrawerStore } from '@/lib/shell/drawer-store';
 import { useNavRegistry } from '@/lib/shell/nav-registry';
 
-type Section = { id: string; label: string };
+type Section = { id: string; label: string; href?: string };
 
 export function LeftDrawer() {
   const { state, dispatch } = useDrawerStore();
   const { navItems } = useNavRegistry();
   const pathname = usePathname();
+  const router = useRouter();
   const [sections, setSections] = useState<Section[]>([]);
   const [activeId, setActiveId] = useState<string>('');
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -31,7 +32,11 @@ export function LeftDrawer() {
       setSections(
         els
           .filter(el => el.id && el.dataset.section)
-          .map(el => ({ id: el.id, label: el.dataset.section! }))
+          .map(el => ({
+            id: el.id,
+            label: el.dataset.section!,
+            href: el.dataset.sectionHref,
+          }))
       );
     }, 100);
     return () => clearTimeout(timer);
@@ -71,8 +76,14 @@ export function LeftDrawer() {
     return () => observerRef.current?.disconnect();
   }, [sections, hasRegisteredNav]);
 
-  function scrollTo(id: string) {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  function handleSectionClick(s: Section) {
+    if (activeId === s.id && s.href) {
+      // Second click on active section with a page → navigate there
+      router.push(s.href);
+      dispatch({ type: 'CLOSE_LEFT' });
+    } else {
+      document.getElementById(s.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   return (
@@ -114,12 +125,16 @@ export function LeftDrawer() {
             {sections.map(s => (
               <li key={s.id}>
                 <button
-                  onClick={() => scrollTo(s.id)}
+                  onClick={() => handleSectionClick(s)}
+                  title={activeId === s.id && s.href ? `Go to ${s.label} page →` : undefined}
                   className={`w-full text-left rounded px-3 py-2 text-sm transition-colors hover:bg-zinc-100 hover:text-zinc-900 ${
                     activeId === s.id ? 'bg-zinc-100 font-semibold text-zinc-900' : 'text-zinc-600'
                   }`}
                 >
                   {s.label}
+                  {activeId === s.id && s.href && (
+                    <span className="ml-1.5 font-mono text-[10px] text-zinc-400">→</span>
+                  )}
                 </button>
               </li>
             ))}

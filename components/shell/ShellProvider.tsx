@@ -9,6 +9,7 @@ import { AppHeader } from './AppHeader';
 import { LeftDrawer } from './LeftDrawer';
 import { RightDrawer } from './RightDrawer';
 import { BottomInput } from './BottomInput';
+import { DeviceTracker } from './DeviceTracker';
 
 // ── Chat context ──────────────────────────────────────────────────────────────
 
@@ -49,6 +50,7 @@ function ShellCanvas({ isAdmin, children }: { isAdmin: boolean; children: ReactN
       </div>
 
       <BottomInput />
+      {!isAdmin && <DeviceTracker />}
     </>
   );
 }

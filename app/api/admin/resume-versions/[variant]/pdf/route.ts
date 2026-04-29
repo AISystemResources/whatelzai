@@ -130,14 +130,32 @@ function renderSection(sec: Section): React.ReactElement {
     };
 
     for (const line of sec.lines) {
-      if (line.startsWith('### ')) {
+      // Role/project title: ### heading OR **bold** line
+      const boldTitleMatch = line.match(/^\*\*(.+?)\*\*(.*)/);
+      if (line.startsWith('### ') || boldTitleMatch) {
         flush();
         inBlock = true;
-        blockChildren.push(React.createElement(Text, { key: nextKey(), style: S.roleTitle }, line.slice(4).trim()));
+        if (line.startsWith('### ')) {
+          blockChildren.push(React.createElement(Text, { key: nextKey(), style: S.roleTitle }, line.slice(4).trim()));
+        } else if (boldTitleMatch) {
+          blockChildren.push(React.createElement(Text, { key: nextKey(), style: S.roleTitle }, boldTitleMatch[1].trim()));
+          // Handle inline metadata: **Title** | *period* | extra
+          const afterTitle = boldTitleMatch[2].replace(/^\s*\|\s*/, '').trim();
+          if (afterTitle) {
+            const italicMatch = afterTitle.match(/^\*([^*]+)\*(.*)/);
+            if (italicMatch) {
+              blockChildren.push(React.createElement(Text, { key: nextKey(), style: S.rolePeriod }, italicMatch[1]));
+              const rest = italicMatch[2].replace(/^\s*\|\s*/, '').trim();
+              if (rest) blockChildren.push(React.createElement(Text, { key: nextKey(), style: S.p }, ...parseInline(rest)));
+            } else {
+              blockChildren.push(React.createElement(Text, { key: nextKey(), style: S.p }, ...parseInline(afterTitle)));
+            }
+          }
+        }
       } else if (line.trim() === '') {
         // skip blank lines inside blocks
-      } else if (/^\*[^*].*[^*]\*$/.test(line.trim())) {
-        // Italic period line: *Jan 2024 – Mar 2024*
+      } else if (/^\*[^*]/.test(line.trim()) && line.trim().endsWith('*')) {
+        // Standalone italic period line: *Jan 2024 – Mar 2024*
         const inner = line.trim().slice(1, -1);
         blockChildren.push(React.createElement(Text, { key: nextKey(), style: S.rolePeriod }, inner));
       } else if (line.startsWith('- ') || line.startsWith('* ')) {

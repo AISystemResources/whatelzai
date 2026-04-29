@@ -186,6 +186,50 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
     } as Omit<CareerEntry, 'created_at' | 'updated_at'>),
 
   delete_career: (a) => deleteCareer(a.id as string),
+
+  // ── Hackathon content ─────────────────────────────────────────────────────
+  get_hackathon_content: async (a) => {
+    const { data, error } = await supabaseAdmin
+      .from('hackathons')
+      .select('id, slug, name, content')
+      .eq('id', a.id as string)
+      .maybeSingle();
+    if (error) throw new Error(`get_hackathon_content: ${error.message}`);
+    return data;
+  },
+
+  patch_hackathon_content: async (a) => {
+    const { data, error } = await supabaseAdmin
+      .from('hackathons')
+      .update({ content: a.content as string })
+      .eq('id', a.id as string)
+      .select('id, slug')
+      .single();
+    if (error) throw new Error(`patch_hackathon_content: ${error.message}`);
+    return { ...data, updated: true };
+  },
+
+  // ── Career content ────────────────────────────────────────────────────────
+  get_career_content: async (a) => {
+    const { data, error } = await supabaseAdmin
+      .from('career')
+      .select('id, slug, role, content')
+      .eq('id', a.id as string)
+      .maybeSingle();
+    if (error) throw new Error(`get_career_content: ${error.message}`);
+    return data;
+  },
+
+  patch_career_content: async (a) => {
+    const { data, error } = await supabaseAdmin
+      .from('career')
+      .update({ content: a.content as string, updated_at: new Date().toISOString() })
+      .eq('id', a.id as string)
+      .select('id, slug')
+      .single();
+    if (error) throw new Error(`patch_career_content: ${error.message}`);
+    return { ...data, updated: true };
+  },
 };
 
 const TOOL_SCHEMAS = [
@@ -523,6 +567,46 @@ const TOOL_SCHEMAS = [
     inputSchema: {
       type: "object", required: ["id"],
       properties: { id: { type: "string" } },
+    },
+  },
+  // ── Hackathon content ──────────────────────────────────────────────────────
+  {
+    name: "get_hackathon_content",
+    description: "Get the long-form content field for a hackathon by id. Returns id, slug, name, content.",
+    inputSchema: {
+      type: "object", required: ["id"],
+      properties: { id: { type: "string", description: "UUID of the hackathon." } },
+    },
+  },
+  {
+    name: "patch_hackathon_content",
+    description: "Set or replace the content field of a hackathon. Returns id, slug, updated: true.",
+    inputSchema: {
+      type: "object", required: ["id", "content"],
+      properties: {
+        id:      { type: "string", description: "UUID of the hackathon." },
+        content: { type: "string", description: "Markdown/MDX content for the hackathon detail page." },
+      },
+    },
+  },
+  // ── Career content ─────────────────────────────────────────────────────────
+  {
+    name: "get_career_content",
+    description: "Get the long-form content field for a career entry by id. Returns id, slug, role, content.",
+    inputSchema: {
+      type: "object", required: ["id"],
+      properties: { id: { type: "string", description: "UUID of the career entry." } },
+    },
+  },
+  {
+    name: "patch_career_content",
+    description: "Set or replace the content field of a career entry. Also bumps updated_at. Returns id, slug, updated: true.",
+    inputSchema: {
+      type: "object", required: ["id", "content"],
+      properties: {
+        id:      { type: "string", description: "UUID of the career entry." },
+        content: { type: "string", description: "Markdown/MDX content for the career detail page." },
+      },
     },
   },
 ];

@@ -21,6 +21,7 @@ export type Hackathon = {
   team: string[];
   tier: 'coding' | 'non-coding';
   project_name: string | null;
+  content?: string | null;
   created_at: string;
   updated_at: string;
 };

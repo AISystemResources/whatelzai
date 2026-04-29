@@ -1,0 +1,1 @@
+ALTER TABLE career ADD COLUMN IF NOT EXISTS content text;

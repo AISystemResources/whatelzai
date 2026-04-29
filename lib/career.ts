@@ -10,6 +10,7 @@ export type CareerEntry = {
   description: string | null;
   tags: string[];
   published: boolean;
+  content?: string | null;
   created_at: string;
   updated_at: string;
 };

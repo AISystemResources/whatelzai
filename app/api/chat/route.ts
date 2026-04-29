@@ -154,7 +154,7 @@ export async function POST(req: Request): Promise<Response> {
       temperature: 0.4,
       maxOutputTokens: 800,
       tools: chatTools,
-      stopWhen: stepCountIs(3),
+      stopWhen: stepCountIs(2),
     });
 
     return result.toUIMessageStreamResponse();

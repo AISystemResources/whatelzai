@@ -59,17 +59,16 @@ const CAREER_PATTERNS: Array<{ re: RegExp; q: string }> = [
 export async function lookupCareerRoute(text: string): Promise<string | null> {
   const t = text.toLowerCase();
 
-  // "current internship / current role / current job" → most recent active entry
+  // "current internship / current role" → most recent entry whose end_date is still in the future
   if (/current.{0,20}(intern|job|role|position|work)|his.{0,10}current/.test(t)) {
     const today = new Date().toISOString().split('T')[0];
     const { data } = await supabase
       .from('career')
       .select('slug, end_date')
-      .or(`end_date.is.null,end_date.gte.${today}`)
       .order('start_date', { ascending: false })
-      .limit(1)
-      .single();
-    if (data?.slug) return data.slug;
+      .limit(10);
+    const current = (data ?? []).find(e => !e.end_date || e.end_date >= today);
+    if (current?.slug) return current.slug;
   }
 
   // Specific company name
@@ -81,7 +80,7 @@ export async function lookupCareerRoute(text: string): Promise<string | null> {
       .ilike('company', `%${q}%`)
       .order('start_date', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
     if (data?.slug) return data.slug;
   }
 

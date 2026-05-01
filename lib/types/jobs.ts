@@ -35,6 +35,7 @@ export type Application = {
   readonly response_status: string | null;
   readonly follow_up_at: string | null;
   readonly follow_up_count: number;
+  readonly cover_letter_pdf_url: string | null;
   readonly created_at: string;
   readonly updated_at: string;
   readonly job_listings?: Pick<JobListing, 'company' | 'role' | 'external_url'> | null;

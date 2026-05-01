@@ -28,6 +28,7 @@ import {
 import type { ApplicationStatus } from "@/lib/types/jobs";
 import { scoreListings } from "@/lib/job-scorer";
 import { generateCoverLetter, selectResumeVariant } from "@/lib/cover-letter";
+import { renderCoverLetterPdf } from "@/lib/cover-letter-pdf";
 
 type ToolArgs = Record<string, unknown>;
 
@@ -408,6 +409,31 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
       word_count:     coverLetter.split(/\s+/).filter(Boolean).length,
       saved:          a.save !== false,
     };
+  },
+
+  render_cover_letter_pdf: async (a) => {
+    const app = await getApplication(a.application_id as string);
+    if (!app) throw new Error('render_cover_letter_pdf: application not found');
+    if (!app.cover_letter?.trim()) throw new Error('render_cover_letter_pdf: no cover letter — call draft_cover_letter first');
+
+    const companyName = (app.job_listings as { company?: string } | null)?.company;
+    const buffer = await renderCoverLetterPdf(app.cover_letter, companyName);
+
+    const path = `cover-letters/${app.id}/cover-letter-${Date.now()}.pdf`;
+    const { error: uploadError } = await supabaseAdmin.storage
+      .from('resumes')
+      .upload(path, buffer, { contentType: 'application/pdf', upsert: true });
+    if (uploadError) throw new Error(`render_cover_letter_pdf: upload failed — ${uploadError.message}`);
+
+    const { data: urlData } = supabaseAdmin.storage.from('resumes').getPublicUrl(path);
+    const pdf_url = urlData.publicUrl;
+
+    await supabaseAdmin
+      .from('applications')
+      .update({ cover_letter_pdf_url: pdf_url, updated_at: new Date().toISOString() })
+      .eq('id', app.id);
+
+    return { application_id: app.id, pdf_url };
   },
 
   // ── Company / ATS ─────────────────────────────────────────────────────────
@@ -975,6 +1001,16 @@ const TOOL_SCHEMAS = [
         application_id: { type: "string", description: "UUID of the application." },
         resume_variant: { type: "string", description: "Override the auto-selected resume variant. One of: 'AI Engineer', 'Blockchain Engineer', 'Software Engineer'. Omit to auto-select." },
         save: { type: "boolean", default: true, description: "Set false to preview without saving to the application record." },
+      },
+    },
+  },
+  {
+    name: "render_cover_letter_pdf",
+    description: "Render the saved cover letter for an application to a PDF. Uploads to Supabase storage and saves the URL to applications.cover_letter_pdf_url. Call draft_cover_letter first.",
+    inputSchema: {
+      type: "object", required: ["application_id"],
+      properties: {
+        application_id: { type: "string", description: "UUID of the application." },
       },
     },
   },

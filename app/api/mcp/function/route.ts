@@ -17,6 +17,16 @@ import { listHackathons, getHackathon, upsertHackathon, deleteHackathon } from "
 import type { HackathonAward } from "@/lib/hackathons";
 import { listCareer, getCareerBySlug, upsertCareer, deleteCareer } from "@/lib/career";
 import type { CareerEntry } from "@/lib/career";
+import {
+  listApplications,
+  getApplication,
+  updateApplicationStatus,
+  updateApplicationDraft,
+  listResumes,
+  listUserProfile,
+} from "@/lib/supabase-jobs";
+import type { ApplicationStatus } from "@/lib/types/jobs";
+import { scoreListings } from "@/lib/job-scorer";
 
 type ToolArgs = Record<string, unknown>;
 
@@ -235,6 +245,113 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
     if (error) throw new Error(`patch_career_content: ${error.message}`);
     return { ...data, updated: true };
   },
+
+  // ── Job listings ──────────────────────────────────────────────────────────
+  list_jobs: async (a) => {
+    let q = supabaseAdmin
+      .from('job_listings')
+      .select('id, company, role, location, remote_type, salary_min, salary_max, salary_currency, match_score, score_reasoning, status, discovered_at, external_url')
+      .order('match_score', { ascending: false, nullsFirst: false });
+    if (a.status) q = q.eq('status', a.status as string);
+    const limit = (a.limit as number | undefined) ?? 50;
+    q = q.limit(limit);
+    const { data, error } = await q;
+    if (error) throw new Error(`list_jobs: ${error.message}`);
+    return data ?? [];
+  },
+
+  get_job: async (a) => {
+    const { data, error } = await supabaseAdmin
+      .from('job_listings')
+      .select('*')
+      .eq('id', a.id as string)
+      .single();
+    if (error) throw new Error(`get_job: ${error.message}`);
+    return data;
+  },
+
+  score_job: async (a) => {
+    const { data, error } = await supabaseAdmin
+      .from('job_listings')
+      .select('id, role, company, description')
+      .eq('id', a.id as string)
+      .single();
+    if (error || !data) throw new Error(`score_job: job not found`);
+    const scores = await scoreListings([{ id: data.id, role: data.role, company: data.company, description: data.description }]);
+    const score = scores.get(data.id);
+    if (!score) throw new Error('score_job: scorer returned no result');
+    await supabaseAdmin.from('job_listings').update({
+      match_score:     score.match_score,
+      score_breakdown: score.score_breakdown,
+      score_reasoning: score.score_reasoning,
+      status: score.match_score >= 0.75 ? 'shortlisted' : 'new',
+    }).eq('id', data.id);
+    return { id: data.id, ...score };
+  },
+
+  // ── Applications ──────────────────────────────────────────────────────────
+  list_applications: () => listApplications(),
+
+  get_application: (a) => getApplication(a.id as string),
+
+  update_application_status: (a) =>
+    updateApplicationStatus(a.id as string, a.status as ApplicationStatus),
+
+  update_application_draft: (a) =>
+    updateApplicationDraft(a.id as string, {
+      cover_letter:   a.cover_letter   as string | undefined,
+      resume_bullets: a.resume_bullets as Record<string, string>[] | undefined,
+    }),
+
+  mark_followup_sent: async (a) => {
+    const nextDate = new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString().split('T')[0];
+    const { data: current } = await supabaseAdmin
+      .from('applications')
+      .select('follow_up_count')
+      .eq('id', a.id as string)
+      .single();
+    const { error } = await supabaseAdmin
+      .from('applications')
+      .update({
+        follow_up_count: ((current?.follow_up_count ?? 0) as number) + 1,
+        follow_up_at:    nextDate,
+        updated_at:      new Date().toISOString(),
+      })
+      .eq('id', a.id as string);
+    if (error) throw new Error(`mark_followup_sent: ${error.message}`);
+    return { ok: true, next_follow_up_at: nextDate };
+  },
+
+  get_followups_due: async () => {
+    const today = new Date().toISOString().split('T')[0];
+    const { data, error } = await supabaseAdmin
+      .from('applications')
+      .select('id, status, follow_up_at, follow_up_count, applied_at, job_listings(company, role, external_url)')
+      .eq('status', 'submitted')
+      .is('response_status', null)
+      .lte('follow_up_at', today)
+      .order('follow_up_at', { ascending: true });
+    if (error) throw new Error(`get_followups_due: ${error.message}`);
+    return data ?? [];
+  },
+
+  detect_ghosted: async () => {
+    const cutoff = new Date(Date.now() - 14 * 24 * 3600 * 1000).toISOString();
+    const { data, error } = await supabaseAdmin
+      .from('applications')
+      .select('id, status, applied_at, follow_up_count, job_listings(company, role, external_url)')
+      .eq('status', 'submitted')
+      .is('response_status', null)
+      .lt('applied_at', cutoff)
+      .order('applied_at', { ascending: true });
+    if (error) throw new Error(`detect_ghosted: ${error.message}`);
+    return data ?? [];
+  },
+
+  // ── Memory / profile ──────────────────────────────────────────────────────
+  get_memory_context: () => listUserProfile(),
+
+  list_resumes: () => listResumes(),
 };
 
 const TOOL_SCHEMAS = [
@@ -614,6 +731,100 @@ const TOOL_SCHEMAS = [
         content: { type: "string", description: "Markdown/MDX content for the career detail page." },
       },
     },
+  },
+  // ── Job listings ───────────────────────────────────────────────────────────
+  {
+    name: "list_jobs",
+    description: "Browse job listings. Returns id, company, role, location, remote_type, salary, match_score, score_reasoning, status, discovered_at, external_url. Sorted by match_score descending.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        status: { type: "string", enum: ["new", "shortlisted", "applying", "applied", "rejected_by_user", "expired"], description: "Filter by listing status. Omit to return all." },
+        limit:  { type: "integer", default: 50, minimum: 1, maximum: 200 },
+      },
+    },
+  },
+  {
+    name: "get_job",
+    description: "Read the full job listing by id, including full description, salary, apply URL, and all scoring fields.",
+    inputSchema: {
+      type: "object", required: ["id"],
+      properties: { id: { type: "string", description: "UUID of the job listing." } },
+    },
+  },
+  {
+    name: "score_job",
+    description: "AI-score a job listing against Edmund's profile. Writes match_score, score_breakdown, score_reasoning back to the listing and auto-shortlists if score >= 0.75. Returns the score object.",
+    inputSchema: {
+      type: "object", required: ["id"],
+      properties: { id: { type: "string", description: "UUID of the job listing to score." } },
+    },
+  },
+  // ── Applications ───────────────────────────────────────────────────────────
+  {
+    name: "list_applications",
+    description: "List all job applications with linked listing info (company, role, external_url). Sorted by most recently updated.",
+    inputSchema: { type: "object", properties: {} },
+  },
+  {
+    name: "get_application",
+    description: "Get a single application by id, including cover letter, resume bullets, status, and linked job listing.",
+    inputSchema: {
+      type: "object", required: ["id"],
+      properties: { id: { type: "string", description: "UUID of the application." } },
+    },
+  },
+  {
+    name: "update_application_status",
+    description: "Move an application through the pipeline. Logs a status_change event. Valid statuses: draft, ready, submitted, acknowledged, interviewing, offered, accepted, rejected, withdrawn, ghosted.",
+    inputSchema: {
+      type: "object", required: ["id", "status"],
+      properties: {
+        id:     { type: "string", description: "UUID of the application." },
+        status: { type: "string", enum: ["draft", "ready", "submitted", "acknowledged", "interviewing", "offered", "accepted", "rejected", "withdrawn", "ghosted"] },
+      },
+    },
+  },
+  {
+    name: "update_application_draft",
+    description: "Update the cover letter or resume bullets for an application draft.",
+    inputSchema: {
+      type: "object", required: ["id"],
+      properties: {
+        id:             { type: "string", description: "UUID of the application." },
+        cover_letter:   { type: "string", description: "Cover letter text." },
+        resume_bullets: { type: "array", items: { type: "object" }, description: "Array of tailored bullet objects." },
+      },
+    },
+  },
+  {
+    name: "mark_followup_sent",
+    description: "Record that a follow-up was sent for a submitted application. Increments follow_up_count and sets next follow_up_at to 7 days from now.",
+    inputSchema: {
+      type: "object", required: ["id"],
+      properties: { id: { type: "string", description: "UUID of the application." } },
+    },
+  },
+  {
+    name: "get_followups_due",
+    description: "List submitted applications whose follow_up_at date has passed and have received no response. Use to identify who to chase today.",
+    inputSchema: { type: "object", properties: {} },
+  },
+  {
+    name: "detect_ghosted",
+    description: "List submitted applications older than 14 days with no response. Use to identify dead applications that should be marked ghosted.",
+    inputSchema: { type: "object", properties: {} },
+  },
+  // ── Memory / profile ───────────────────────────────────────────────────────
+  {
+    name: "get_memory_context",
+    description: "Read Edmund's user profile entries used for personalisation — skills, preferences, targets, constraints. Returns all rows from the user_profile table grouped by category.",
+    inputSchema: { type: "object", properties: {} },
+  },
+  {
+    name: "list_resumes",
+    description: "List all resume records (structured + raw text) stored in the resumes table. Returns id, label, is_active, created_at.",
+    inputSchema: { type: "object", properties: {} },
   },
 ];
 

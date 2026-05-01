@@ -10,8 +10,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "seed": "node --env-file=.env.local --import tsx scripts/seed-website-docs.ts",
-    "migrate:sqlite": "node --env-file=.env.local --import tsx scripts/migrate-sqlite-to-supabase.ts",
-    "merge:elzos-docs": "node --env-file=.env.local --import tsx scripts/merge-elzos-docs.ts"
+    "migrate:sqlite": "node --env-file=.env.local --import tsx scripts/migrate-sqlite-to-supabase.ts"
   },
   "dependencies": {
     "@ai-sdk/groq": "^3.0.35",

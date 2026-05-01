@@ -27,7 +27,7 @@ export const projects: Project[] = [
     url: "https://atlas-broker-uat.vercel.app",
   },
   {
-    slug: "double-lead",
+    slug: "doublelead",
     name: "Double Lead",
     tagline: "Operator workflow platform",
     status: "shipped",
@@ -50,6 +50,30 @@ export const projects: Project[] = [
       "Meta Cloud API",
     ],
     url: "https://doublelead.vercel.app",
+  },
+  {
+    slug: "whatelz",
+    name: "whatelz.ai",
+    tagline: "Personal OS and AI-native portfolio",
+    status: "active",
+    description:
+      "The site you're on. A shell-first portfolio built as a working system: MCP servers, Inngest background jobs, Supabase data layer, and a Groq-powered AI assistant baked into the layout. Every section is a live product decision.",
+    metrics: [
+      { label: "MCP servers",       value: "2" },
+      { label: "Inngest functions",  value: "4+" },
+      { label: "API routes",         value: "20+" },
+      { label: "Shell components",   value: "5" },
+    ],
+    stack: [
+      "Next.js 16",
+      "Supabase",
+      "Inngest",
+      "Groq",
+      "Tailwind CSS",
+      "MCP",
+      "Vercel",
+    ],
+    url: "https://whatelz.ai",
   },
 ];
 

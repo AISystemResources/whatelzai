@@ -18,13 +18,19 @@ export const jobDiscovery = inngest.createFunction(
       return (data ?? []) as Pick<Company, 'id' | 'name' | 'ats_type' | 'ats_slug'>[];
     });
 
-    let newListings = 0;
+    let totalScraped     = 0;
+    let totalNew         = 0;
+    let totalRejected    = 0;
+    let totalDuplicates  = 0;
+    let totalScoreErrors = 0;
 
     for (const company of companies) {
       const raw = await step.run(`scrape-${company.id}`, () =>
         scrapeCompany(company.ats_type, company.ats_slug, company.name)
       );
       if (raw.length === 0) continue;
+
+      totalScraped += raw.length;
 
       const { data: sourceRow } = await supabaseAdmin
         .from('job_sources')
@@ -48,28 +54,39 @@ export const jobDiscovery = inngest.createFunction(
         source:       'derived',
       }));
 
+      const rejectedCount = toInsert.filter(r => r.status === 'rejected_by_user').length;
+      totalRejected += rejectedCount;
+
       const { data: inserted } = await supabaseAdmin
         .from('job_listings')
         .upsert(toInsert, { onConflict: 'source_id,external_id', ignoreDuplicates: true })
         .select('id, role, company, description, status');
 
-      newListings += (inserted ?? []).filter((r: { status: string }) => r.status === 'new').length;
+      const insertedRows = inserted ?? [];
+      // ignoreDuplicates: rows already in DB are not returned — count them as duplicates
+      totalDuplicates += raw.length - rejectedCount - insertedRows.filter(r => r.status === 'new').length;
 
-      const unscored = (inserted ?? []).filter((r: { id: string; status: string }) => r.status === 'new') as Array<{ id: string; role: string; company: string; description: string | null }>;
-      if (unscored.length > 0) {
-        const scores = await scoreListings(
-          unscored.map(r => ({ id: r.id, role: r.role, company: r.company, description: r.description }))
-        );
-        for (const [id, score] of scores) {
-          await supabaseAdmin
-            .from('job_listings')
-            .update({
-              match_score:     score.match_score,
-              score_breakdown: score.score_breakdown,
-              score_reasoning: score.score_reasoning,
-              status: score.match_score >= 0.75 ? 'shortlisted' : 'new',
-            })
-            .eq('id', id);
+      const newRows = insertedRows.filter((r: { status: string }) => r.status === 'new') as Array<{ id: string; role: string; company: string; description: string | null }>;
+      totalNew += newRows.length;
+
+      if (newRows.length > 0) {
+        try {
+          const scores = await scoreListings(
+            newRows.map(r => ({ id: r.id, role: r.role, company: r.company, description: r.description }))
+          );
+          for (const [id, score] of scores) {
+            await supabaseAdmin
+              .from('job_listings')
+              .update({
+                match_score:     score.match_score,
+                score_breakdown: score.score_breakdown,
+                score_reasoning: score.score_reasoning,
+                status: score.match_score >= 0.75 ? 'shortlisted' : 'new',
+              })
+              .eq('id', id);
+          }
+        } catch {
+          totalScoreErrors += newRows.length;
         }
       }
 
@@ -79,13 +96,23 @@ export const jobDiscovery = inngest.createFunction(
         .eq('id', company.id);
     }
 
+    const metadata = {
+      companiesChecked: companies.length,
+      scraped:          totalScraped,
+      new:              totalNew,
+      rejected:         totalRejected,
+      duplicates:       totalDuplicates,
+      scoreErrors:      totalScoreErrors,
+    };
+
     await supabaseAdmin.from('agent_runs').insert({
       agent:       'job-discovery',
       status:      'completed',
       finished_at: new Date().toISOString(),
-      items_found: newListings,
+      items_found: totalNew,
+      metadata,
     });
 
-    return { companiesChecked: companies.length, newListings };
+    return metadata;
   },
 );

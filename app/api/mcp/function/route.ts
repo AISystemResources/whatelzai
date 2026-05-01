@@ -352,6 +352,43 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
   get_memory_context: () => listUserProfile(),
 
   list_resumes: () => listResumes(),
+
+  // ── Company / ATS ─────────────────────────────────────────────────────────
+  list_companies: async (a) => {
+    let q = supabaseAdmin
+      .from('companies')
+      .select('id, name, ats_type, ats_slug, status, last_checked_at, last_fetch_count')
+      .order('name');
+    if (a.status) q = q.eq('status', a.status as string);
+    const { data, error } = await q;
+    if (error) throw new Error(`list_companies: ${error.message}`);
+    return data ?? [];
+  },
+
+  update_company_ats: async (a) => {
+    const { data, error } = await supabaseAdmin
+      .from('companies')
+      .update({ ats_type: a.ats_type as string, ats_slug: a.ats_slug as string })
+      .eq('id', a.id as string)
+      .select('id, name, ats_type, ats_slug')
+      .single();
+    if (error) throw new Error(`update_company_ats: ${error.message}`);
+    return { ...data, updated: true };
+  },
+
+  test_company_ats: async (a) => {
+    const { scrapeCompany } = await import('@/lib/ats-scraper');
+    const { shouldReject } = await import('@/lib/job-filter');
+    const raw = await scrapeCompany(a.ats_type as string, a.ats_slug as string, (a.company_name as string) ?? 'Test');
+    const sample = raw.slice(0, 5).map(r => ({ role: r.role, location: r.location, rejected: shouldReject(r.role) }));
+    const rejectedCount = raw.filter(r => shouldReject(r.role)).length;
+    return {
+      total: raw.length,
+      rejected: rejectedCount,
+      active: raw.length - rejectedCount,
+      sample,
+    };
+  },
 };
 
 const TOOL_SCHEMAS = [
@@ -814,6 +851,41 @@ const TOOL_SCHEMAS = [
     name: "detect_ghosted",
     description: "List submitted applications older than 14 days with no response. Use to identify dead applications that should be marked ghosted.",
     inputSchema: { type: "object", properties: {} },
+  },
+  // ── Company / ATS ──────────────────────────────────────────────────────────
+  {
+    name: "list_companies",
+    description: "List all target companies with their ATS config and last scrape stats. Filter by status to find companies missing ATS slugs.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        status: { type: "string", enum: ["active", "paused", "archived"], description: "Filter by status. Omit to return all." },
+      },
+    },
+  },
+  {
+    name: "update_company_ats",
+    description: "Set or update the ATS type and slug for a company. Use test_company_ats first to verify the slug returns results before committing.",
+    inputSchema: {
+      type: "object", required: ["id", "ats_type", "ats_slug"],
+      properties: {
+        id:       { type: "string", description: "UUID of the company." },
+        ats_type: { type: "string", enum: ["greenhouse", "lever", "ashby"], description: "ATS platform." },
+        ats_slug: { type: "string", description: "The slug used by the ATS, e.g. 'grab', 'revolut', 'wise'." },
+      },
+    },
+  },
+  {
+    name: "test_company_ats",
+    description: "Test an ATS type+slug combo by scraping it live and returning the count + 5-role sample. Use before calling update_company_ats to confirm the slug is correct.",
+    inputSchema: {
+      type: "object", required: ["ats_type", "ats_slug"],
+      properties: {
+        ats_type:     { type: "string", enum: ["greenhouse", "lever", "ashby"] },
+        ats_slug:     { type: "string", description: "Slug to test, e.g. 'grab', 'revolut'." },
+        company_name: { type: "string", description: "Optional label for the sample output." },
+      },
+    },
   },
   // ── Memory / profile ───────────────────────────────────────────────────────
   {

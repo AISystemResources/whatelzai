@@ -9,14 +9,14 @@ export function Wins({ hackathons }: Props) {
 
   return (
     <section
-      id="wins"
+      id="hackathons"
       data-section="Hackathons"
       data-section-href="/hackathons"
       className="border-b border-zinc-200 px-6 py-20 sm:px-8 sm:py-24"
     >
       <div className="mx-auto max-w-6xl">
         <header className="mb-12 flex items-baseline justify-between">
-          <h2 id="wins-heading" className="text-2xl font-semibold text-zinc-900">
+          <h2 id="hackathons-heading" className="text-2xl font-semibold text-zinc-900">
             Hackathons
           </h2>
           <p className="hidden font-mono text-[10px] tracking-widest text-zinc-400 uppercase sm:block">

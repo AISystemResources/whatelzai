@@ -22,14 +22,14 @@ export function Arc({ entries }: Props) {
 
   return (
     <section
-      id="arc"
+      id="career"
       data-section="Career"
       data-section-href="/career"
       className="border-b border-zinc-200 px-6 py-20 sm:px-8 sm:py-24"
     >
       <div className="mx-auto max-w-6xl">
         <header className="mb-12 flex items-baseline justify-between">
-          <h2 id="arc-heading" className="text-2xl font-semibold text-zinc-900">
+          <h2 id="career-heading" className="text-2xl font-semibold text-zinc-900">
             Career
           </h2>
           <p className="hidden font-mono text-[10px] tracking-widest text-zinc-400 uppercase sm:block">

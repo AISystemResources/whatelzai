@@ -1,6 +1,6 @@
 export const navigationMap: Record<string, { scrollId: string; route: string }> = {
-  hackathons: { scrollId: 'wins',       route: '/hackathons' },
-  career:     { scrollId: 'arc',        route: '/career'     },
+  hackathons: { scrollId: 'hackathons', route: '/hackathons' },
+  career:     { scrollId: 'career',    route: '/career'     },
   projects:   { scrollId: 'projects',   route: '/projects'   },
   leadership: { scrollId: 'leadership', route: '/leadership' },
   mentorship: { scrollId: 'mentorship', route: '/mentorship' },

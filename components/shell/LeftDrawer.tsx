@@ -14,6 +14,8 @@ const SITE_NAV = [
   { href: '/career',      label: 'Career'     },
   { href: '/projects',    label: 'Projects'   },
   { href: '/hackathons',  label: 'Hackathons' },
+  { href: '/leadership',  label: 'Leadership' },
+  { href: '/mentorship',  label: 'Mentorship' },
   { href: '/channels',    label: 'Channels'   },
   { href: '/contact',     label: 'Contact'    },
 ];

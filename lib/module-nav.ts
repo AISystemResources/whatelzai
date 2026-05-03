@@ -10,6 +10,8 @@ export const MODULE_NAV: Record<PillKey, NavItem[]> = {
     { label: 'Career',     href: '/#arc-heading' },
     { label: 'Projects',   href: '/#projects-heading' },
     { label: 'Hackathons', href: '/#wins-heading' },
+    { label: 'Leadership', href: '/#leadership-heading' },
+    { label: 'Mentorship', href: '/#mentorship-heading' },
     { label: 'Channels',   href: '/#channels' },
     { label: 'Contact',    href: '/#contact' },
   ],

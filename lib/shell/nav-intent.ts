@@ -94,6 +94,8 @@ export function detectTopic(text: string): string | null {
   if (/hackathon|hackomania|pan.?sea|singhack|coding.{0,20}win|win.{0,20}hack/.test(t)) return 'hackathons';
   if (/internship|career|prudential|setel|asiaverify|work.{0,15}experience|experience.{0,15}work/.test(t)) return 'career';
   if (/\batlas\b|doublelead|double.?lead|\bproject/.test(t)) return 'projects';
+  if (/leadership|student.{0,10}council|club.{0,10}(president|vice|secretary|chair)|organisation.{0,10}role/.test(t)) return 'leadership';
+  if (/mentorship|mentor|mentee|programme|gftn|paypal.{0,10}mentor/.test(t)) return 'mentorship';
   if (/contact|email.{0,15}edmund|reach.{0,15}edmund|get.{0,15}touch/.test(t)) return 'contact';
   if (/youtube|instagram|\bmedium\b|linkedin|channel/.test(t)) return 'channels';
   return null;

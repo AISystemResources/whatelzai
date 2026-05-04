@@ -24,8 +24,8 @@ const S = StyleSheet.create({
   divider:      { borderBottomWidth: 1, borderBottomColor: '#d4d4d8', marginBottom: 10 },
   // Body columns
   body:         { flexDirection: 'row' },
-  leftCol:      { width: '36%', paddingRight: 16 },
-  rightCol:     { width: '64%' },
+  leftCol:      { width: '50%', paddingRight: 16 },
+  rightCol:     { width: '50%' },
   // Section
   section:      { marginBottom: 10 },
   sectionHead:  { fontSize: 8, fontFamily: 'Helvetica-Bold', color: '#3f3f46', textTransform: 'uppercase', letterSpacing: 0.5, borderBottomWidth: 0.5, borderBottomColor: '#d4d4d8', paddingBottom: 2, marginBottom: 4 },

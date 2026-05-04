@@ -21,8 +21,8 @@ const S = StyleSheet.create({
   divider:      { borderBottomWidth: 1, borderBottomColor: '#d4d4d8', marginBottom: 10 },
   // Body columns
   body:         { flexDirection: 'row' },
-  leftCol:      { width: '32%', paddingRight: 12 },
-  rightCol:     { width: '68%' },
+  leftCol:      { width: '36%', paddingRight: 16 },
+  rightCol:     { width: '64%' },
   // Section
   section:      { marginBottom: 10 },
   sectionHead:  { fontSize: 8, fontFamily: 'Helvetica-Bold', color: '#3f3f46', textTransform: 'uppercase', letterSpacing: 0.5, borderBottomWidth: 0.5, borderBottomColor: '#d4d4d8', paddingBottom: 2, marginBottom: 4 },
@@ -202,7 +202,7 @@ function markdownToPdf(markdown: string, variantName: string): React.ReactElemen
 
   return React.createElement(
     Document,
-    null,
+    { hyphenationCallback: (word: string) => [word] },
     React.createElement(Page, { size: 'A4', style: S.page },
       // Header
       React.createElement(View, { style: S.headerRow },

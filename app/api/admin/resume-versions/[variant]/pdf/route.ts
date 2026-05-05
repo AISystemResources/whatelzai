@@ -88,7 +88,7 @@ function parseSections(markdown: string): { name: string; sections: Section[] } 
 }
 
 // ── Column assignment ─────────────────────────────────────────────────────────
-const LEFT_KEYWORDS = ['skill', 'education', 'certif', 'achievement', 'award', 'language', 'tool', 'tech stack'];
+const LEFT_KEYWORDS = ['skill', 'education', 'certif', 'achievement', 'award', 'language', 'tool', 'tech stack', 'project', 'leadership', 'mentorship', 'referee', 'programme'];
 
 function isLeftColumn(heading: string) {
   const h = heading.toLowerCase();

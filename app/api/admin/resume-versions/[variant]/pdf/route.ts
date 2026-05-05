@@ -43,6 +43,121 @@ const S = StyleSheet.create({
   skillLine:    { fontSize: 8.5, marginBottom: 2 },
 });
 
+// ── Height estimation constants (A4 @ fontSize 9, lineHeight 1.45) ────────────
+const A4_H          = 841.89;
+const PAGE_PAD      = 36;
+const HEADER_H      = 26 + 6 + 1 + 10; // name row + marginBottom + divider + divider marginBottom ≈ 43
+const BODY_FIRST    = A4_H - PAGE_PAD * 2 - HEADER_H; // ~720
+const BODY_OTHER    = A4_H - PAGE_PAD * 2;             // ~770
+// Col width: (595.28 - 72) * 0.5 - 16 paddingRight ≈ 245pt; avg Helvetica char ~4.8pt at size 9
+const CHARS_COL     = 51;
+const LINE_H        = 9 * 1.45 + 1;   // ~14pt
+const BULLET_H      = LINE_H + 1.5;   // marginBottom 1.5
+const HEADING_H     = 8 * 1.45 + 2 + 4 + 0.5 + 2; // font + paddingBottom + marginBottom + border
+const SEC_MARGIN    = 10;
+const ROLE_TITLE_H  = 10 * 1.45 + 1;  // fontSize 10 + marginBottom
+const ROLE_PERIOD_H = 8.5 * 1.45 + 3; // fontSize 8.5 + marginBottom
+const ROLE_BLOCK_M  = 5;
+const P_MARGIN      = 3;
+
+function textLines(raw: string): number {
+  const stripped = raw.replace(/\*\*/g, '').replace(/\*/g, '').trim();
+  return Math.max(1, Math.ceil(stripped.length / CHARS_COL));
+}
+
+function estimateSectionHeight(sec: Section): number {
+  const h = sec.heading.toLowerCase();
+  const isSkillsSec = h.includes('skill') || h.includes('tool') || h.includes('tech');
+  const isExpSec    = h.includes('experience') || h.includes('project');
+
+  let height = HEADING_H + SEC_MARGIN;
+
+  if (isSkillsSec) {
+    const bullets = sec.lines.filter(l => l.startsWith('- ') || l.startsWith('* ')).map(l => l.slice(2));
+    if (bullets.length > 0) height += textLines(bullets.join(', ')) * (8.5 * 1.45 + P_MARGIN);
+    sec.lines.filter(l => !l.startsWith('- ') && !l.startsWith('* ') && l.trim())
+      .forEach(l => { height += textLines(l) * (LINE_H + P_MARGIN); });
+  } else if (isExpSec) {
+    let inBlock = false;
+    for (const line of sec.lines) {
+      if (!line.trim()) continue;
+      const boldMatch = line.match(/^\*\*(.+?)\*\*(.*)/);
+      if (line.startsWith('### ') || boldMatch) {
+        if (inBlock) height += ROLE_BLOCK_M;
+        height += ROLE_TITLE_H;
+        inBlock = true;
+        if (boldMatch) {
+          const after = boldMatch[2].replace(/^\s*\|\s*/, '').trim();
+          const italicMatch = after.match(/^\*([^*]+)\*(.*)/);
+          if (italicMatch) {
+            height += ROLE_PERIOD_H;
+            const rest = italicMatch[2].replace(/^\s*\|\s*/, '').trim();
+            if (rest) height += textLines(rest) * (LINE_H + P_MARGIN);
+          } else if (after) {
+            height += textLines(after) * (LINE_H + P_MARGIN);
+          }
+        }
+      } else if (/^\*[^*]/.test(line.trim()) && line.trim().endsWith('*')) {
+        height += ROLE_PERIOD_H;
+      } else if (line.startsWith('- ') || line.startsWith('* ')) {
+        height += textLines(line.slice(2)) * BULLET_H;
+      } else {
+        height += textLines(line) * (LINE_H + P_MARGIN);
+      }
+    }
+    if (inBlock) height += ROLE_BLOCK_M;
+  } else {
+    for (const line of sec.lines) {
+      if (!line.trim()) continue;
+      if (line.startsWith('- ') || line.startsWith('* ')) {
+        height += textLines(line.slice(2)) * BULLET_H;
+      } else {
+        height += textLines(line) * (LINE_H + P_MARGIN);
+      }
+    }
+  }
+
+  return height;
+}
+
+// ── Paginator — distributes left/right sections into pages ────────────────────
+function paginateSections(
+  leftSections: Section[],
+  rightSections: Section[],
+): Array<{ left: Section[]; right: Section[] }> {
+  const pages: Array<{ left: Section[]; right: Section[] }> = [];
+  let li = 0, ri = 0;
+  let firstPage = true;
+
+  while (li < leftSections.length || ri < rightSections.length) {
+    const bodyH = firstPage ? BODY_FIRST : BODY_OTHER;
+    const pageLeft: Section[] = [];
+    const pageRight: Section[] = [];
+    let leftUsed = 0, rightUsed = 0;
+
+    // Greedily fill left column for this page
+    while (li < leftSections.length) {
+      const h = estimateSectionHeight(leftSections[li]);
+      if (leftUsed + h > bodyH && pageLeft.length > 0) break;
+      pageLeft.push(leftSections[li++]);
+      leftUsed += h;
+    }
+
+    // Greedily fill right column for this page
+    while (ri < rightSections.length) {
+      const h = estimateSectionHeight(rightSections[ri]);
+      if (rightUsed + h > bodyH && pageRight.length > 0) break;
+      pageRight.push(rightSections[ri++]);
+      rightUsed += h;
+    }
+
+    pages.push({ left: pageLeft, right: pageRight });
+    firstPage = false;
+  }
+
+  return pages;
+}
+
 // ── Inline parser (bold / italic) ─────────────────────────────────────────────
 let _key = 0;
 function nextKey() { return _key++; }
@@ -74,15 +189,13 @@ function parseSections(markdown: string): { name: string; sections: Section[] } 
   for (const raw of rawLines) {
     const line = raw.trimEnd();
     if (line.startsWith('# ')) { name = line.slice(2).trim(); continue; }
-    if (line.startsWith('---')) continue; // strip dividers
+    if (line.startsWith('---')) continue;
     if (line.startsWith('## ')) {
       if (current) sections.push(current);
       current = { heading: line.slice(3).trim(), lines: [] };
       continue;
     }
-    if (current) {
-      current.lines.push(line);
-    }
+    if (current) current.lines.push(line);
   }
   if (current) sections.push(current);
   return { name, sections };
@@ -106,21 +219,18 @@ function renderSection(sec: Section): React.ReactElement {
   ];
 
   if (isSkills) {
-    // Collect bullet items and render as comma-separated line
     const items = sec.lines
       .filter(l => l.startsWith('- ') || l.startsWith('* '))
       .map(l => l.slice(2).trim());
     if (items.length > 0) {
       children.push(React.createElement(Text, { key: nextKey(), style: S.skillLine }, items.join(', ')));
     }
-    // Any non-bullet lines as paragraphs
     sec.lines
       .filter(l => !l.startsWith('- ') && !l.startsWith('* ') && l.trim())
       .forEach(l => {
         children.push(React.createElement(Text, { key: nextKey(), style: S.p }, ...parseInline(l)));
       });
   } else if (isExperience) {
-    // Group lines into role blocks: ### title → italic period → bullets
     const blocks: React.ReactElement[] = [];
     let blockChildren: React.ReactNode[] = [];
     let inBlock = false;
@@ -133,7 +243,6 @@ function renderSection(sec: Section): React.ReactElement {
     };
 
     for (const line of sec.lines) {
-      // Role/project title: ### heading OR **bold** line
       const boldTitleMatch = line.match(/^\*\*(.+?)\*\*(.*)/);
       if (line.startsWith('### ') || boldTitleMatch) {
         flush();
@@ -142,7 +251,6 @@ function renderSection(sec: Section): React.ReactElement {
           blockChildren.push(React.createElement(Text, { key: nextKey(), style: S.roleTitle }, line.slice(4).trim()));
         } else if (boldTitleMatch) {
           blockChildren.push(React.createElement(Text, { key: nextKey(), style: S.roleTitle }, boldTitleMatch[1].trim()));
-          // Handle inline metadata: **Title** | *period* | extra
           const afterTitle = boldTitleMatch[2].replace(/^\s*\|\s*/, '').trim();
           if (afterTitle) {
             const italicMatch = afterTitle.match(/^\*([^*]+)\*(.*)/);
@@ -156,9 +264,8 @@ function renderSection(sec: Section): React.ReactElement {
           }
         }
       } else if (line.trim() === '') {
-        // skip blank lines inside blocks
+        // skip blank lines
       } else if (/^\*[^*]/.test(line.trim()) && line.trim().endsWith('*')) {
-        // Standalone italic period line: *Jan 2024 – Mar 2024*
         const inner = line.trim().slice(1, -1);
         blockChildren.push(React.createElement(Text, { key: nextKey(), style: S.rolePeriod }, inner));
       } else if (line.startsWith('- ') || line.startsWith('* ')) {
@@ -175,7 +282,6 @@ function renderSection(sec: Section): React.ReactElement {
     flush();
     children.push(...blocks);
   } else {
-    // Generic: bullets + paragraphs
     for (const line of sec.lines) {
       if (!line.trim()) continue;
       if (line.startsWith('- ') || line.startsWith('* ')) {
@@ -200,26 +306,34 @@ function markdownToPdf(markdown: string, variantName: string): React.ReactElemen
   _key = 0;
   const { name, sections } = parseSections(markdown);
 
-  const left  = sections.filter(s => isLeftColumn(s.heading)).map(renderSection);
-  const right = sections.filter(s => !isLeftColumn(s.heading)).map(renderSection);
+  const leftSections  = sections.filter(s => isLeftColumn(s.heading));
+  const rightSections = sections.filter(s => !isLeftColumn(s.heading));
 
-  return React.createElement(
-    Document,
-    null,
-    React.createElement(Page, { size: 'A4', style: S.page },
-      // Header
-      React.createElement(View, { style: S.headerRow },
-        React.createElement(Text, { style: S.name }, name || variantName),
-        React.createElement(Text, { style: S.variantLabel }, variantName.toUpperCase()),
-      ),
-      React.createElement(View, { style: S.divider }),
-      // Two-column body
-      React.createElement(View, { style: S.body },
-        React.createElement(View, { style: S.leftCol }, ...left),
-        React.createElement(View, { style: S.rightCol }, ...right),
-      ),
-    ),
-  );
+  const pages = paginateSections(leftSections, rightSections);
+
+  const pageElements = pages.map((page, pageIndex) => {
+    const isFirst = pageIndex === 0;
+    const bodyChildren: React.ReactNode[] = [
+      React.createElement(View, { key: nextKey(), style: S.leftCol },  ...page.left.map(renderSection)),
+      React.createElement(View, { key: nextKey(), style: S.rightCol }, ...page.right.map(renderSection)),
+    ];
+
+    const pageChildren: React.ReactNode[] = [];
+    if (isFirst) {
+      pageChildren.push(
+        React.createElement(View, { key: nextKey(), style: S.headerRow },
+          React.createElement(Text, { key: nextKey(), style: S.name }, name || variantName),
+          React.createElement(Text, { key: nextKey(), style: S.variantLabel }, variantName.toUpperCase()),
+        ),
+        React.createElement(View, { key: nextKey(), style: S.divider }),
+      );
+    }
+    pageChildren.push(React.createElement(View, { key: nextKey(), style: S.body }, ...bodyChildren));
+
+    return React.createElement(Page, { key: nextKey(), size: 'A4', style: S.page }, ...pageChildren);
+  });
+
+  return React.createElement(Document, null, ...pageElements);
 }
 
 // ── Route handler ─────────────────────────────────────────────────────────────

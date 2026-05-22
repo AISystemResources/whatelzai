@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const SITE_URL = "https://whatelz-uat.vercel.app";
+const SITE_URL = "https://whatelz.vercel.app";
 const SITE_TITLE = "whatelz.ai — Edmund Lin Zhenming";
 const SITE_DESCRIPTION =
   "AI Engineer. 4 years across data science, product, and AI engineering. Currently shipping AI to 5,000+ Financial Advisors at Prudential.";

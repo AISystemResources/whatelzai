@@ -23,8 +23,7 @@ npm run lint
 
 ## Branches
 
-- **uat** → [whatelz-uat.vercel.app](https://whatelz-uat.vercel.app) (preview)
-- **main** → production [whatelz.ai](https://whatelz.ai)
+- **main** → [whatelz.vercel.app](https://whatelz.vercel.app)
 
 ## Environment
 

@@ -95,7 +95,7 @@ export function Projects({ projects }: { projects: Project[] }) {
             Projects
           </h2>
           <p className="hidden font-mono text-[10px] tracking-widest text-zinc-400 uppercase sm:block">
-            What is being built
+            AI System Resources portfolio
           </p>
         </header>
 

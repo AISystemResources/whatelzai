@@ -1,33 +1,128 @@
+'use client';
+
 import Link from "next/link";
+import { useMotionValue, useTransform, useSpring, motion, useReducedMotion } from "framer-motion";
+
+const TITLE_WORDS = ["what", "else", "can", "you", "build", "with"] as const;
+
+const wordVariants = {
+  hidden: { opacity: 0, y: 22 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay: i * 0.07,
+      duration: 0.55,
+      ease: [0.16, 1, 0.3, 1] as const,
+    },
+  }),
+};
+
+function fadeUp(delay: number) {
+  return {
+    initial: { opacity: 0, y: 14 },
+    animate: { opacity: 1, y: 0 },
+    transition: { delay, duration: 0.5, ease: [0.16, 1, 0.3, 1] as const },
+  };
+}
 
 export function Hero() {
+  const reduced = useReducedMotion();
+
+  const mouseX = useMotionValue(0.5);
+  const mouseY = useMotionValue(0.5);
+
+  const rawRotateY = useTransform(mouseX, [0, 1], [-7, 7]);
+  const rawRotateX = useTransform(mouseY, [0, 1], [5, -5]);
+  const rotateY = useSpring(rawRotateY, { stiffness: 70, damping: 18 });
+  const rotateX = useSpring(rawRotateX, { stiffness: 70, damping: 18 });
+
+  function handleMouseMove(e: React.MouseEvent<HTMLElement>) {
+    if (reduced) return;
+    const r = e.currentTarget.getBoundingClientRect();
+    mouseX.set((e.clientX - r.left) / r.width);
+    mouseY.set((e.clientY - r.top) / r.height);
+  }
+
+  function handleMouseLeave() {
+    mouseX.set(0.5);
+    mouseY.set(0.5);
+  }
+
   return (
     <section
       id="top"
       data-section="Hero"
-      className="border-b border-zinc-200 px-6 py-24 sm:px-8 sm:py-32"
+      className="relative overflow-hidden border-b border-zinc-200 px-6 py-24 sm:px-8 sm:py-32"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
     >
+      {/* Animated gradient blobs */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
+        <div className="hero-blob hero-blob-1" />
+        <div className="hero-blob hero-blob-2" />
+      </div>
+
       <div className="mx-auto max-w-6xl">
         <div className="flex flex-col gap-16 lg:flex-row lg:items-center lg:gap-20">
+
           {/* Text column */}
-          <div className="flex-1 min-w-0">
-            <h1 className="text-4xl leading-[1.05] font-semibold tracking-tight sm:text-6xl">
-              what else can you build with{" "}
-              <span style={{ color: "var(--accent-text)" }}>AI</span>?
+          <div className="min-w-0 flex-1">
+            <h1 className="flex flex-wrap gap-x-[0.27em] gap-y-1 text-4xl font-semibold leading-[1.1] tracking-tight sm:text-6xl">
+              {TITLE_WORDS.map((word, i) => (
+                <motion.span
+                  key={word}
+                  custom={i}
+                  initial={reduced ? "visible" : "hidden"}
+                  animate="visible"
+                  variants={wordVariants}
+                  className="inline-block"
+                >
+                  {word}
+                </motion.span>
+              ))}
+              <motion.span
+                custom={TITLE_WORDS.length}
+                initial={reduced ? "visible" : "hidden"}
+                animate="visible"
+                variants={wordVariants}
+                className="inline-block"
+                style={{ color: "var(--accent-text)" }}
+              >
+                AI
+              </motion.span>
+              <motion.span
+                custom={TITLE_WORDS.length + 1}
+                initial={reduced ? "visible" : "hidden"}
+                animate="visible"
+                variants={wordVariants}
+                className="inline-block"
+              >
+                ?
+              </motion.span>
             </h1>
 
-            <p className="mt-8 font-mono text-xs tracking-wide text-zinc-600 sm:text-sm">
+            <motion.p
+              {...(reduced ? {} : fadeUp(0.65))}
+              className="mt-8 font-mono text-xs tracking-wide text-zinc-600 sm:text-sm"
+            >
               Edmund Lin Zhenming
               <span className="mx-2 text-zinc-400">·</span>
               Co-founder, AI System Resources
-            </p>
+            </motion.p>
 
-            <div className="mt-8 max-w-lg space-y-3 text-base text-zinc-700 sm:text-lg">
+            <motion.div
+              {...(reduced ? {} : fadeUp(0.82))}
+              className="mt-8 max-w-lg space-y-3 text-base text-zinc-700 sm:text-lg"
+            >
               <p>ATLAS. DoubleLead. EMDEE. Three AI systems — one company forming.</p>
               <p>I explore the question. The work is the answer.</p>
-            </div>
+            </motion.div>
 
-            <div className="mt-10">
+            <motion.div
+              {...(reduced ? {} : fadeUp(0.98))}
+              className="mt-10"
+            >
               <Link
                 href="mailto:elz.work22@gmail.com"
                 className="inline-flex items-center gap-2 border border-zinc-900 px-5 py-3 font-mono text-xs tracking-widest uppercase transition-colors hover:bg-[var(--accent)] hover:text-zinc-900"
@@ -35,17 +130,23 @@ export function Hero() {
                 Get in touch
                 <span aria-hidden="true">→</span>
               </Link>
+            </motion.div>
+          </div>
+
+          {/* Photo — cursor-parallax tilt. Replace inner div with <Image> when photo arrives. */}
+          <div className="w-full shrink-0 sm:w-72 lg:w-80">
+            <div style={{ perspective: "1000px" }}>
+              <motion.div
+                style={reduced ? {} : { rotateX, rotateY }}
+                className="aspect-[3/4] border border-zinc-200 bg-zinc-50 flex items-end p-6"
+              >
+                <p className="font-mono text-[10px] tracking-widest text-zinc-400 uppercase">
+                  Edmund Lin Zhenming
+                </p>
+              </motion.div>
             </div>
           </div>
 
-          {/* Photo — replace div with <Image> once Edmund supplies the file */}
-          <div className="shrink-0 w-full sm:w-72 lg:w-80">
-            <div className="aspect-[3/4] border border-zinc-200 bg-zinc-50 flex items-end p-6">
-              <p className="font-mono text-[10px] tracking-widest text-zinc-400 uppercase">
-                Edmund Lin Zhenming
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     </section>

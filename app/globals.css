@@ -22,3 +22,37 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
+
+/* ── Hero gradient blobs ──────────────────────────────────────────── */
+.hero-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.13;
+  will-change: transform;
+  animation: hero-blob-drift linear infinite alternate;
+}
+.hero-blob-1 {
+  width: 640px;
+  height: 640px;
+  background: #facc15;
+  top: -280px;
+  right: -160px;
+  animation-duration: 18s;
+}
+.hero-blob-2 {
+  width: 480px;
+  height: 480px;
+  background: #fde68a;
+  bottom: -220px;
+  left: -120px;
+  animation-duration: 24s;
+  animation-delay: -10s;
+}
+@keyframes hero-blob-drift {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(50px, -35px) scale(1.1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-blob { animation: none; }
+}

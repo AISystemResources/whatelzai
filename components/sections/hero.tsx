@@ -1,7 +1,10 @@
 'use client';
 
 import Link from "next/link";
+import Image from "next/image";
 import { useMotionValue, useTransform, useSpring, motion, useReducedMotion } from "framer-motion";
+
+const PORTRAIT_URL = "https://lzibjuqtfptogzwmxbcu.supabase.co/storage/v1/object/public/vault-images/user_3DbybqEDdQdhvmvBFTmpZEAcQLS/2026-06-09T12-36-27.jpg";
 
 const TITLE_WORDS = ["what", "else", "can", "you", "build", "with"] as const;
 
@@ -132,16 +135,20 @@ export function Hero() {
             </motion.div>
           </div>
 
-          {/* Photo — cursor-parallax tilt. Replace inner div with <Image> when photo arrives. */}
+          {/* Portrait — cursor-parallax tilt */}
           <div className="w-full shrink-0 sm:w-72 lg:w-80">
             <div style={{ perspective: "1000px" }}>
               <motion.div
                 style={reduced ? {} : { rotateX, rotateY }}
-                className="aspect-[3/4] border border-zinc-200 bg-zinc-50 flex items-end p-6"
+                className="relative aspect-[3/4] overflow-hidden border border-zinc-200"
               >
-                <p className="font-mono text-[10px] tracking-widest text-zinc-400 uppercase">
-                  Edmund Lin Zhenming
-                </p>
+                <Image
+                  src={PORTRAIT_URL}
+                  alt="Edmund Lin Zhenming"
+                  fill
+                  className="object-cover"
+                  priority
+                />
               </motion.div>
             </div>
           </div>

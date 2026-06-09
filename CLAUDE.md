@@ -36,7 +36,7 @@ Instructions for any AI coding agent (Claude Code, Cursor, Aider, ...) working o
 - **Email:** Resend
 - **Package manager:** npm (lockfile: `package-lock.json`)
 
-Dev port is **3100**, not 3000 (`npm run dev` → `next dev -p 3100`). Single Vercel project, single production branch (`main` → `whatelz.vercel.app`).
+Dev port is **3100**, not 3000 (`npm run dev` → `next dev -p 3100`). Single Vercel project, single production branch (`main` → `whatelz.ai`).
 
 ## Commands
 
@@ -62,14 +62,14 @@ Guardrails an autonomous agent must never break. Each is grounded in repo state 
 
 The standardized model (identical across all four EMDEE-tracked repos):
 
-- **`main`** is production (`whatelz.vercel.app`). PR-protected, human-merge only. Direct pushes are rejected by GitHub at the wire (`GH006 protected branch hook declined`, `enforce_admins: true`).
+- **`main`** is production (`whatelz.ai`). PR-protected, human-merge only. Direct pushes are rejected by GitHub at the wire (`GH006 protected branch hook declined`, `enforce_admins: true`).
 - **`feat/<sprint-id>-<slug>`** — one branch per sprint, branched from `main`, merged back via PR. Multiple may exist concurrently — that is the parallelism.
 - **No long-lived `agents` branch.** Each sprint gets its own feat branch.
 - **Previews:** `feat/*` branches auto-deploy as Vercel **Preview** (not Production). The preview URL is `https://whatelz-git-<branch-slug>-elzmings-projects.vercel.app`. Use it for visual QA before merging.
 
 Verified 2026-05-28 by pushing `feat/zzz-ceiling-test`: Vercel created a Preview deploy with `target: null`; the prior direct push to `main` was rejected with `GH006`.
 
-**Inngest interaction:** Inngest is registered only against the production URL (`whatelz.vercel.app`). Preview deploys at ephemeral URLs are not auto-registered. If a feat/* preview ever tries to handle Inngest events (it shouldn't), Edmund should remove the stray registration from the Inngest dashboard.
+**Inngest interaction:** Inngest is registered only against the production URL (`whatelz.ai`). Preview deploys at ephemeral URLs are not auto-registered. If a feat/* preview ever tries to handle Inngest events (it shouldn't), Edmund should remove the stray registration from the Inngest dashboard.
 
 ### 2. Never commit secrets
 
@@ -131,7 +131,7 @@ Two `worktree-agent-*` branches exist locally — the pattern is active. Concurr
 
 ## Branch & commit conventions
 
-- **Production:** `main` → `whatelz.vercel.app` via Vercel auto-deploy on push. Protected: PR required, force-push disabled, deletion disabled, admin enforcement on.
+- **Production:** `main` → `whatelz.ai` via Vercel auto-deploy on push. Protected: PR required, force-push disabled, deletion disabled, admin enforcement on.
 - **Feature branches:** `feat/<sprint-id>-<slug>` (e.g. `feat/062-resume-bugfixes`). Branched from `main`, merged back to `main` via PR. Each gets its own Vercel Preview URL.
 - **No long-lived non-main branches.** No `dev`, no `uat`, no `agents`, no `worktree-agent-*`. If you see one, it's stale — flag it.
 - **Commit messages:** conventional + scope. Recent examples: `feat(admin/resume): ...`, `fix(admin/resume): ...`, `chore: ...`. Two-line minimum: short subject, blank, prose paragraph explaining *why*. Co-author trailer for Claude-Code-driven commits.

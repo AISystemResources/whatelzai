@@ -3,116 +3,98 @@
 import { motion } from "framer-motion";
 import type { Project } from "@/lib/projects";
 
-function StatusBadge({ status }: { status: Project["status"] }) {
-  const label = status === "active" ? "active" : status === "shipped" ? "shipped" : "archived";
-  const dot = status === "active" ? "●" : "✓";
-  return (
-    <span className="inline-flex items-center gap-1.5 font-mono text-[10px] tracking-widest uppercase">
-      <span style={{ color: "var(--accent-text)" }} aria-hidden="true">{dot}</span>
-      <span className="text-zinc-600">{label}</span>
-    </span>
-  );
-}
-
-function ProjectCard({ project, index }: { project: Project; index: number }) {
-  const Wrapper = project.external_url ? "a" : "div";
-  const wrapperProps = project.external_url
-    ? {
-        href: project.external_url,
-        target: "_blank" as const,
-        rel: "noopener noreferrer",
-        "aria-label": `${project.name} — open project`,
-      }
-    : {};
+function ProjectFeature({ project, index }: { project: Project; index: number }) {
+  const flip = index % 2 !== 0;
+  const num = String(index + 1).padStart(2, '0');
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 24 }}
+    <motion.section
+      initial={{ opacity: 0, y: 28 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-60px" }}
-      transition={{ delay: index * 0.08, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      id={`project-${project.slug}`}
+      className="border-b border-zinc-200 px-6 py-24 sm:px-8 sm:py-32"
     >
-      <Wrapper
-        {...wrapperProps}
-        className="group block border border-zinc-200 p-8 transition-colors hover:border-zinc-900 hover:bg-yellow-50/50"
-      >
-        <div className="flex items-center justify-between">
-          {project.status && <StatusBadge status={project.status} />}
-          {project.external_url && (
-            <span
-              aria-hidden="true"
-              className="font-mono text-xs text-zinc-400 transition-transform group-hover:translate-x-0.5 group-hover:translate-y-[-2px]"
-            >
-              ↗
-            </span>
+      <div className="mx-auto max-w-6xl">
+        <div
+          className={`flex flex-col gap-16 lg:items-start lg:gap-24 ${flip ? 'lg:flex-row-reverse' : 'lg:flex-row'}`}
+        >
+          {/* Text */}
+          <div className="min-w-0 flex-1">
+            <p className="font-mono text-[10px] tracking-widest text-zinc-400 uppercase">
+              {num} / Project
+            </p>
+            <h2 className="mt-4 font-display text-5xl font-bold tracking-tight sm:text-6xl">
+              {project.name}
+            </h2>
+            {project.tagline && (
+              <p className="mt-4 text-lg text-zinc-600 sm:text-xl">{project.tagline}</p>
+            )}
+            {project.description && (
+              <p className="mt-6 max-w-lg text-base leading-relaxed text-zinc-700">
+                {project.description}
+              </p>
+            )}
+            {project.tech_stack && project.tech_stack.length > 0 && (
+              <ul className="mt-8 flex flex-wrap gap-1.5">
+                {project.tech_stack.map((tech) => (
+                  <li
+                    key={tech}
+                    className="border border-zinc-200 px-2 py-1 font-mono text-[10px] tracking-wide text-zinc-600"
+                  >
+                    {tech}
+                  </li>
+                ))}
+              </ul>
+            )}
+            {project.external_url && (
+              <a
+                href={project.external_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-8 inline-flex items-center gap-2 border border-zinc-900 px-5 py-3 font-mono text-xs tracking-widest uppercase transition-colors hover:bg-[var(--accent)] hover:text-zinc-900"
+              >
+                View live <span aria-hidden="true">↗</span>
+              </a>
+            )}
+          </div>
+
+          {/* Metrics */}
+          {project.metrics && project.metrics.length > 0 && (
+            <div className="w-full shrink-0 lg:w-80 xl:w-96">
+              <dl className="grid grid-cols-2 gap-px bg-zinc-200">
+                {project.metrics.map((m) => (
+                  <div key={m.label} className="bg-white p-6">
+                    <dt className="font-mono text-[10px] tracking-widest text-zinc-500 uppercase">
+                      {m.label}
+                    </dt>
+                    <dd className="mt-2 text-2xl font-bold tracking-tight">{m.value}</dd>
+                  </div>
+                ))}
+              </dl>
+              {project.status && (
+                <p className="mt-3 flex items-center gap-1.5 font-mono text-[10px] tracking-widest text-zinc-500 uppercase">
+                  <span style={{ color: 'var(--accent-text)' }} aria-hidden="true">
+                    {project.status === 'active' ? '●' : '✓'}
+                  </span>
+                  {project.status}
+                </p>
+              )}
+            </div>
           )}
         </div>
-
-        <h3 className="mt-6 text-3xl font-semibold tracking-tight">{project.name}</h3>
-        <p className="mt-1 font-mono text-xs tracking-wide text-zinc-500 uppercase">
-          {project.tagline}
-        </p>
-
-        <p className="mt-5 text-sm leading-relaxed text-zinc-700">{project.description}</p>
-
-        {project.metrics && project.metrics.length > 0 && (
-          <dl className="mt-6 grid grid-cols-2 gap-4 border-t border-zinc-200 pt-6">
-            {project.metrics.map((m) => (
-              <div key={m.label}>
-                <dt className="font-mono text-[10px] tracking-widest text-zinc-500 uppercase">{m.label}</dt>
-                <dd className="mt-1 text-sm font-medium">{m.value}</dd>
-              </div>
-            ))}
-          </dl>
-        )}
-
-        {project.tech_stack && project.tech_stack.length > 0 && (
-          <ul className="mt-6 flex flex-wrap gap-1.5">
-            {project.tech_stack.map((tech) => (
-              <li
-                key={tech}
-                className="border border-zinc-200 px-2 py-1 font-mono text-[10px] tracking-wide text-zinc-600"
-              >
-                {tech}
-              </li>
-            ))}
-          </ul>
-        )}
-      </Wrapper>
-    </motion.div>
+      </div>
+    </motion.section>
   );
 }
 
 export function Projects({ projects }: { projects: Project[] }) {
   return (
-    <section
-      id="projects"
-      data-section="Projects"
-      data-section-href="/projects"
-      className="border-b border-zinc-200 px-6 py-20 sm:px-8 sm:py-24"
-    >
-      <div className="mx-auto max-w-6xl">
-        <motion.header
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-12 flex items-baseline justify-between"
-        >
-          <h2 id="projects-heading" className="text-2xl font-semibold text-zinc-900">
-            Projects
-          </h2>
-          <p className="hidden font-mono text-[10px] tracking-widest text-zinc-400 uppercase sm:block">
-            AI System Resources portfolio
-          </p>
-        </motion.header>
-
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          {projects.map((p, i) => (
-            <ProjectCard key={p.slug} project={p} index={i} />
-          ))}
-        </div>
-      </div>
-    </section>
+    <>
+      {projects.map((p, i) => (
+        <ProjectFeature key={p.slug} project={p} index={i} />
+      ))}
+    </>
   );
 }

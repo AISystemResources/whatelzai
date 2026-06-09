@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Syne } from "next/font/google";
 import { auth } from "@clerk/nextjs/server";
 import "./globals.css";
 import { ShellProvider } from "@/components/shell/ShellProvider";
@@ -15,10 +15,16 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const SITE_URL = "https://whatelz.vercel.app";
+const syne = Syne({
+  variable: "--font-syne",
+  subsets: ["latin"],
+  weight: ["700", "800"],
+});
+
+const SITE_URL = "https://whatelz.ai";
 const SITE_TITLE = "whatelz.ai — Edmund Lin Zhenming";
 const SITE_DESCRIPTION =
-  "AI Engineer. 4 years across data science, product, and AI engineering. Currently shipping AI to 5,000+ Financial Advisors at Prudential.";
+  "AI engineer and founder. Building ATLAS, DoubleLead, and EMDEE — AI systems for people who move fast.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -71,7 +77,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${syne.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-[var(--background)] text-[var(--foreground)]">
         <ShellProvider isAdmin={isAdmin}>

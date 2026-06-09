@@ -68,7 +68,7 @@ export function Hero() {
 
           {/* Text column */}
           <div className="min-w-0 flex-1">
-            <h1 className="flex flex-wrap gap-x-[0.27em] gap-y-1 text-4xl font-semibold leading-[1.1] tracking-tight sm:text-6xl">
+            <h1 className="flex flex-wrap gap-x-[0.22em] gap-y-1 font-display text-6xl font-bold leading-[1.05] tracking-tight sm:text-8xl">
               {TITLE_WORDS.map((word, i) => (
                 <motion.span
                   key={word}
@@ -86,8 +86,7 @@ export function Hero() {
                 initial={reduced ? "visible" : "hidden"}
                 animate="visible"
                 variants={wordVariants}
-                className="inline-block"
-                style={{ color: "var(--accent-text)" }}
+                className="inline-block bg-gradient-to-r from-yellow-400 to-amber-500 bg-clip-text text-transparent"
               >
                 AI
               </motion.span>

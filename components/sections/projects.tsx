@@ -1,7 +1,7 @@
 'use client';
 
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import type { Project } from "@/lib/projects";
 
 const sectionVariants = {
@@ -20,13 +20,14 @@ const scaleInVariants = {
 };
 
 function ProjectFeature({ project, index }: { project: Project; index: number }) {
+  const reduced = useReducedMotion();
   const flip = index % 2 !== 0;
   const num = String(index + 1).padStart(2, '0');
 
   return (
     <motion.section
       variants={sectionVariants}
-      initial="hidden"
+      initial={reduced ? "visible" : "hidden"}
       whileInView="visible"
       viewport={{ once: true, margin: "-80px" }}
       id={`project-${project.slug}`}

@@ -19,7 +19,7 @@ export function Contact() {
         <p className="mt-8 font-mono text-xs text-zinc-500">
           Prefer LinkedIn?{" "}
           <a
-            href="https://www.linkedin.com/in/elz-fintech/"
+            href="https://www.linkedin.com/in/whatelzai/"
             target="_blank"
             rel="noopener noreferrer"
             className="underline underline-offset-2 hover:text-zinc-900"

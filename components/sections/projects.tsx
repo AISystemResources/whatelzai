@@ -1,3 +1,6 @@
+'use client';
+
+import { motion } from "framer-motion";
 import type { Project } from "@/lib/projects";
 
 function StatusBadge({ status }: { status: Project["status"] }) {
@@ -5,15 +8,13 @@ function StatusBadge({ status }: { status: Project["status"] }) {
   const dot = status === "active" ? "●" : "✓";
   return (
     <span className="inline-flex items-center gap-1.5 font-mono text-[10px] tracking-widest uppercase">
-      <span style={{ color: "var(--accent-text)" }} aria-hidden="true">
-        {dot}
-      </span>
+      <span style={{ color: "var(--accent-text)" }} aria-hidden="true">{dot}</span>
       <span className="text-zinc-600">{label}</span>
     </span>
   );
 }
 
-function ProjectCard({ project }: { project: Project }) {
+function ProjectCard({ project, index }: { project: Project; index: number }) {
   const Wrapper = project.external_url ? "a" : "div";
   const wrapperProps = project.external_url
     ? {
@@ -25,59 +26,60 @@ function ProjectCard({ project }: { project: Project }) {
     : {};
 
   return (
-    <Wrapper
-      {...wrapperProps}
-      className="group block border border-zinc-200 p-8 transition-colors hover:border-zinc-900"
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ delay: index * 0.08, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
-      <div className="flex items-center justify-between">
-        {project.status && <StatusBadge status={project.status} />}
-        {project.external_url && (
-          <span
-            aria-hidden="true"
-            className="font-mono text-xs text-zinc-400 transition-transform group-hover:translate-x-0.5 group-hover:translate-y-[-2px]"
-          >
-            ↗
-          </span>
-        )}
-      </div>
-
-      <h3 className="mt-6 text-2xl font-semibold tracking-tight">
-        {project.name}
-      </h3>
-      <p className="mt-1 font-mono text-xs tracking-wide text-zinc-500 uppercase">
-        {project.tagline}
-      </p>
-
-      <p className="mt-5 text-sm leading-relaxed text-zinc-700">
-        {project.description}
-      </p>
-
-      {project.metrics && project.metrics.length > 0 && (
-        <dl className="mt-6 grid grid-cols-2 gap-4 border-t border-zinc-200 pt-6">
-          {project.metrics.map((m) => (
-            <div key={m.label}>
-              <dt className="font-mono text-[10px] tracking-widest text-zinc-500 uppercase">
-                {m.label}
-              </dt>
-              <dd className="mt-1 text-sm font-medium">{m.value}</dd>
-            </div>
-          ))}
-        </dl>
-      )}
-
-      {project.tech_stack && project.tech_stack.length > 0 && (
-        <ul className="mt-6 flex flex-wrap gap-1.5">
-          {project.tech_stack.map((tech) => (
-            <li
-              key={tech}
-              className="border border-zinc-200 px-2 py-1 font-mono text-[10px] tracking-wide text-zinc-600"
+      <Wrapper
+        {...wrapperProps}
+        className="group block border border-zinc-200 p-8 transition-colors hover:border-zinc-900"
+      >
+        <div className="flex items-center justify-between">
+          {project.status && <StatusBadge status={project.status} />}
+          {project.external_url && (
+            <span
+              aria-hidden="true"
+              className="font-mono text-xs text-zinc-400 transition-transform group-hover:translate-x-0.5 group-hover:translate-y-[-2px]"
             >
-              {tech}
-            </li>
-          ))}
-        </ul>
-      )}
-    </Wrapper>
+              ↗
+            </span>
+          )}
+        </div>
+
+        <h3 className="mt-6 text-2xl font-semibold tracking-tight">{project.name}</h3>
+        <p className="mt-1 font-mono text-xs tracking-wide text-zinc-500 uppercase">
+          {project.tagline}
+        </p>
+
+        <p className="mt-5 text-sm leading-relaxed text-zinc-700">{project.description}</p>
+
+        {project.metrics && project.metrics.length > 0 && (
+          <dl className="mt-6 grid grid-cols-2 gap-4 border-t border-zinc-200 pt-6">
+            {project.metrics.map((m) => (
+              <div key={m.label}>
+                <dt className="font-mono text-[10px] tracking-widest text-zinc-500 uppercase">{m.label}</dt>
+                <dd className="mt-1 text-sm font-medium">{m.value}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+
+        {project.tech_stack && project.tech_stack.length > 0 && (
+          <ul className="mt-6 flex flex-wrap gap-1.5">
+            {project.tech_stack.map((tech) => (
+              <li
+                key={tech}
+                className="border border-zinc-200 px-2 py-1 font-mono text-[10px] tracking-wide text-zinc-600"
+              >
+                {tech}
+              </li>
+            ))}
+          </ul>
+        )}
+      </Wrapper>
+    </motion.div>
   );
 }
 
@@ -90,18 +92,24 @@ export function Projects({ projects }: { projects: Project[] }) {
       className="border-b border-zinc-200 px-6 py-20 sm:px-8 sm:py-24"
     >
       <div className="mx-auto max-w-6xl">
-        <header className="mb-12 flex items-baseline justify-between">
+        <motion.header
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-12 flex items-baseline justify-between"
+        >
           <h2 id="projects-heading" className="text-2xl font-semibold text-zinc-900">
             Projects
           </h2>
           <p className="hidden font-mono text-[10px] tracking-widest text-zinc-400 uppercase sm:block">
             AI System Resources portfolio
           </p>
-        </header>
+        </motion.header>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          {projects.map((p) => (
-            <ProjectCard key={p.slug} project={p} />
+          {projects.map((p, i) => (
+            <ProjectCard key={p.slug} project={p} index={i} />
           ))}
         </div>
       </div>

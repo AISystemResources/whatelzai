@@ -1,6 +1,5 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
-import { AdminNavInjector } from "@/components/admin/AdminNavInjector";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { notFound } from "next/navigation";
 
@@ -22,7 +21,6 @@ export default async function AdminLayout({
 
   return (
     <ClerkProvider>
-      <AdminNavInjector />
       <div className="mx-auto max-w-5xl px-6 py-6">
         {children}
       </div>

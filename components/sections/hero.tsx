@@ -135,23 +135,30 @@ export function Hero() {
             </motion.div>
           </div>
 
-          {/* Portrait — cursor-parallax tilt */}
-          <div className="w-full shrink-0 sm:w-72 lg:w-80">
+          {/* Portrait — entry fade + cursor-parallax tilt */}
+          <motion.div
+            {...(reduced ? {} : {
+              initial: { opacity: 0, scale: 0.95 },
+              animate: { opacity: 1, scale: 1 },
+              transition: { delay: 1.0, duration: 0.7, ease: [0.16, 1, 0.3, 1] },
+            })}
+            className="w-full shrink-0 sm:w-72 lg:w-80"
+          >
             <div style={{ perspective: "1000px" }}>
               <motion.div
                 style={reduced ? {} : { rotateX, rotateY }}
-                className="relative aspect-[3/4] overflow-hidden border border-zinc-200"
+                className="group relative aspect-[3/4] overflow-hidden border border-zinc-200 shadow-sm transition-shadow duration-500 hover:shadow-xl"
               >
                 <Image
                   src={PORTRAIT_URL}
                   alt="Edmund Lin Zhenming"
                   fill
-                  className="object-cover"
+                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
                   priority
                 />
               </motion.div>
             </div>
-          </div>
+          </motion.div>
 
         </div>
       </div>

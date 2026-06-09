@@ -1,5 +1,6 @@
 'use client';
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import type { Project } from "@/lib/projects";
 
@@ -60,8 +61,27 @@ function ProjectFeature({ project, index }: { project: Project; index: number })
             )}
           </div>
 
-          {/* Metrics */}
-          {project.metrics && project.metrics.length > 0 && (
+          {/* Right column: screenshot if available, else metrics grid */}
+          {project.cover_image_url ? (
+            <div className="w-full shrink-0 lg:w-80 xl:w-96">
+              <div className="relative aspect-video overflow-hidden border border-zinc-200">
+                <Image
+                  src={project.cover_image_url}
+                  alt={`${project.name} screenshot`}
+                  fill
+                  className="object-cover object-top"
+                />
+              </div>
+              {project.status && (
+                <p className="mt-3 flex items-center gap-1.5 font-mono text-[10px] tracking-widest text-zinc-500 uppercase">
+                  <span style={{ color: 'var(--accent-text)' }} aria-hidden="true">
+                    {project.status === 'active' ? '●' : '✓'}
+                  </span>
+                  {project.status}
+                </p>
+              )}
+            </div>
+          ) : project.metrics && project.metrics.length > 0 ? (
             <div className="w-full shrink-0 lg:w-80 xl:w-96">
               <dl className="grid grid-cols-2 gap-px bg-zinc-200">
                 {project.metrics.map((m) => (
@@ -82,7 +102,7 @@ function ProjectFeature({ project, index }: { project: Project; index: number })
                 </p>
               )}
             </div>
-          )}
+          ) : null}
         </div>
       </div>
     </motion.section>

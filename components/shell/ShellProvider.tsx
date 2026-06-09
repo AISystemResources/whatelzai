@@ -2,6 +2,7 @@
 
 import { type ReactNode } from 'react';
 import { AppHeader } from './AppHeader';
+import { SiteFooter } from './SiteFooter';
 import { DeviceTracker } from './DeviceTracker';
 
 interface Props {
@@ -14,6 +15,7 @@ export function ShellProvider({ isAdmin, children }: Props) {
     <>
       <AppHeader />
       {children}
+      <SiteFooter />
       {!isAdmin && <DeviceTracker />}
     </>
   );

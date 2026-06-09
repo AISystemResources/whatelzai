@@ -34,7 +34,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
     >
       <Wrapper
         {...wrapperProps}
-        className="group block border border-zinc-200 p-8 transition-colors hover:border-zinc-900"
+        className="group block border border-zinc-200 p-8 transition-colors hover:border-zinc-900 hover:bg-yellow-50/50"
       >
         <div className="flex items-center justify-between">
           {project.status && <StatusBadge status={project.status} />}
@@ -48,7 +48,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
           )}
         </div>
 
-        <h3 className="mt-6 text-2xl font-semibold tracking-tight">{project.name}</h3>
+        <h3 className="mt-6 text-3xl font-semibold tracking-tight">{project.name}</h3>
         <p className="mt-1 font-mono text-xs tracking-wide text-zinc-500 uppercase">
           {project.tagline}
         </p>

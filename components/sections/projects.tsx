@@ -4,25 +4,39 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import type { Project } from "@/lib/projects";
 
+const sectionVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.18 } },
+};
+
+const slideUpVariants = {
+  hidden: { opacity: 0, y: 28 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.65, ease: [0.16, 1, 0.3, 1] as const } },
+};
+
+const scaleInVariants = {
+  hidden: { opacity: 0, scale: 0.94, y: 16 },
+  visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] as const } },
+};
+
 function ProjectFeature({ project, index }: { project: Project; index: number }) {
   const flip = index % 2 !== 0;
   const num = String(index + 1).padStart(2, '0');
 
   return (
     <motion.section
-      initial={{ opacity: 0, y: 28 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      variants={sectionVariants}
+      initial="hidden"
+      whileInView="visible"
       viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       id={`project-${project.slug}`}
       className="border-b border-zinc-200 px-6 py-24 sm:px-8 sm:py-32"
     >
       <div className="mx-auto max-w-6xl">
-        <div
-          className={`flex flex-col gap-16 lg:items-start lg:gap-24 ${flip ? 'lg:flex-row-reverse' : 'lg:flex-row'}`}
-        >
+        <div className={`flex flex-col gap-16 lg:items-start lg:gap-20 ${flip ? 'lg:flex-row-reverse' : 'lg:flex-row'}`}>
+
           {/* Text */}
-          <div className="min-w-0 flex-1">
+          <motion.div variants={slideUpVariants} className="min-w-0 flex-1">
             <p className="font-mono text-[10px] tracking-widest text-zinc-400 uppercase">
               {num} / Project
             </p>
@@ -31,11 +45,6 @@ function ProjectFeature({ project, index }: { project: Project; index: number })
             </h2>
             {project.tagline && (
               <p className="mt-4 text-lg text-zinc-600 sm:text-xl">{project.tagline}</p>
-            )}
-            {project.description && (
-              <p className="mt-6 max-w-lg text-base leading-relaxed text-zinc-700">
-                {project.description}
-              </p>
             )}
             {project.tech_stack && project.tech_stack.length > 0 && (
               <ul className="mt-8 flex flex-wrap gap-1.5">
@@ -59,17 +68,21 @@ function ProjectFeature({ project, index }: { project: Project; index: number })
                 View live <span aria-hidden="true">↗</span>
               </a>
             )}
-          </div>
+          </motion.div>
 
-          {/* Right column: screenshot if available, else metrics grid */}
+          {/* Right column: screenshot → metrics fallback */}
           {project.cover_image_url ? (
-            <div className="w-full shrink-0 lg:w-80 xl:w-96">
-              <div className="relative aspect-video overflow-hidden border border-zinc-200">
+            <motion.div
+              variants={scaleInVariants}
+              className="w-full shrink-0 lg:w-[500px]"
+            >
+              <div className="group relative aspect-[16/10] overflow-hidden border border-zinc-200 shadow-sm transition-shadow duration-500 hover:shadow-xl">
                 <Image
                   src={project.cover_image_url}
                   alt={`${project.name} screenshot`}
                   fill
-                  className="object-cover object-top"
+                  loading="lazy"
+                  className="object-cover object-top transition-transform duration-700 ease-out group-hover:scale-[1.04]"
                 />
               </div>
               {project.status && (
@@ -80,9 +93,12 @@ function ProjectFeature({ project, index }: { project: Project; index: number })
                   {project.status}
                 </p>
               )}
-            </div>
+            </motion.div>
           ) : project.metrics && project.metrics.length > 0 ? (
-            <div className="w-full shrink-0 lg:w-80 xl:w-96">
+            <motion.div
+              variants={scaleInVariants}
+              className="w-full shrink-0 lg:w-80 xl:w-96"
+            >
               <dl className="grid grid-cols-2 gap-px bg-zinc-200">
                 {project.metrics.map((m) => (
                   <div key={m.label} className="bg-white p-6">
@@ -101,8 +117,9 @@ function ProjectFeature({ project, index }: { project: Project; index: number })
                   {project.status}
                 </p>
               )}
-            </div>
+            </motion.div>
           ) : null}
+
         </div>
       </div>
     </motion.section>

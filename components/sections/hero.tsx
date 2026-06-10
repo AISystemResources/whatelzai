@@ -142,9 +142,14 @@ export function Hero() {
               animate: { opacity: 1, scale: 1 },
               transition: { delay: 1.0, duration: 0.7, ease: [0.16, 1, 0.3, 1] },
             })}
-            className="w-full shrink-0 sm:w-72 lg:w-80"
+            className="relative w-full shrink-0 sm:w-80 lg:w-[420px]"
           >
-            <div style={{ perspective: "1000px" }}>
+            {/* Amber accent block — offset behind portrait */}
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 translate-x-4 translate-y-4 bg-[var(--accent)]"
+            />
+            <div style={{ perspective: "1000px" }} className="relative">
               <motion.div
                 style={reduced ? {} : { rotateX, rotateY }}
                 className="group relative aspect-[3/4] overflow-hidden border border-zinc-200 shadow-sm transition-shadow duration-500 hover:shadow-xl"

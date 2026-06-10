@@ -29,7 +29,7 @@ body {
   position: absolute;
   border-radius: 50%;
   filter: blur(120px);
-  opacity: 0.13;
+  opacity: 0.22;
   will-change: transform;
   animation: hero-blob-drift linear infinite alternate;
 }

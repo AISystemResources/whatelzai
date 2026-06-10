@@ -77,14 +77,22 @@ function ProjectFeature({ project, index }: { project: Project; index: number })
               variants={scaleInVariants}
               className="w-full shrink-0 lg:w-[500px]"
             >
-              <div className="group relative aspect-[16/10] overflow-hidden border border-zinc-200 shadow-sm transition-shadow duration-500 hover:shadow-xl">
-                <Image
-                  src={project.cover_image_url}
-                  alt={`${project.name} screenshot`}
-                  fill
-                  loading="lazy"
-                  className="object-cover object-top transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-                />
+              <div className="group overflow-hidden rounded bg-zinc-950 shadow-xl transition-shadow duration-500 hover:shadow-2xl">
+                {/* Browser chrome dots */}
+                <div className="flex items-center gap-1.5 px-4 py-3" aria-hidden="true">
+                  <span className="h-2.5 w-2.5 rounded-full bg-zinc-700" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-zinc-700" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-zinc-700" />
+                </div>
+                <div className="relative aspect-[16/10] overflow-hidden">
+                  <Image
+                    src={project.cover_image_url}
+                    alt={`${project.name} screenshot`}
+                    fill
+                    loading="lazy"
+                    className="object-cover object-top transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+                  />
+                </div>
               </div>
               {project.status && (
                 <p className="mt-3 flex items-center gap-1.5 font-mono text-[10px] tracking-widest text-zinc-500 uppercase">

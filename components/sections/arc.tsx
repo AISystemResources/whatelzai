@@ -17,7 +17,7 @@ function firstBullet(description: string | null): string {
 
 export function Arc({ entries }: Props) {
   const sorted = [...entries].sort(
-    (a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
+    (a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
   );
 
   return (

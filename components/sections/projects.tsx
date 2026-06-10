@@ -47,6 +47,9 @@ function ProjectFeature({ project, index }: { project: Project; index: number })
             {project.tagline && (
               <p className="mt-4 text-lg text-zinc-600 sm:text-xl">{project.tagline}</p>
             )}
+            {project.description && (
+              <p className="mt-2 font-mono text-xs tracking-wide text-zinc-500">{project.description}</p>
+            )}
             {project.tech_stack && project.tech_stack.length > 0 && (
               <ul className="mt-8 flex flex-wrap gap-1.5">
                 {project.tech_stack.map((tech) => (

@@ -113,6 +113,13 @@ export function Hero() {
               Co-founder, AI System Resources
             </motion.p>
 
+            <motion.p
+              {...(reduced ? {} : fadeUp(0.72))}
+              className="mt-2 font-mono text-[10px] tracking-wide text-zinc-400 sm:text-xs"
+            >
+              Final-year Applied Computing (Fintech) @ SIT · graduating Oct 2026 · Singapore
+            </motion.p>
+
             <motion.div
               {...(reduced ? {} : fadeUp(0.82))}
               className="mt-8 max-w-lg space-y-3 text-base text-zinc-700 sm:text-lg"
@@ -121,9 +128,20 @@ export function Hero() {
               <p>I explore the question. The work is the answer.</p>
             </motion.div>
 
+            <motion.p
+              {...(reduced ? {} : fadeUp(0.90))}
+              className="mt-6 font-mono text-[10px] tracking-widest text-zinc-500 uppercase"
+            >
+              4 products shipped
+              <span className="mx-2 text-zinc-300">·</span>
+              6 hackathon podiums
+              <span className="mx-2 text-zinc-300">·</span>
+              2× AI Engineering intern @ Prudential
+            </motion.p>
+
             <motion.div
               {...(reduced ? {} : fadeUp(0.98))}
-              className="mt-10"
+              className="mt-10 flex flex-wrap gap-3"
             >
               <Link
                 href="mailto:elz.work22@gmail.com"
@@ -132,6 +150,14 @@ export function Hero() {
                 Get in touch
                 <span aria-hidden="true">→</span>
               </Link>
+              <a
+                href="/edmund-lin-resume.pdf"
+                download
+                className="inline-flex items-center gap-2 border border-zinc-300 px-5 py-3 font-mono text-xs tracking-widest uppercase text-zinc-600 transition-colors hover:border-zinc-900 hover:text-zinc-900"
+              >
+                Download CV
+                <span aria-hidden="true">↓</span>
+              </a>
             </motion.div>
           </div>
 

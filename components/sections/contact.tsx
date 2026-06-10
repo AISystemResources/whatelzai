@@ -16,17 +16,26 @@ export function Contact() {
 
         <ContactForm />
 
-        <p className="mt-8 font-mono text-xs text-zinc-500">
-          Prefer LinkedIn?{" "}
+        <div className="mt-8 flex flex-wrap items-center gap-6 font-mono text-xs text-zinc-500">
+          <p>
+            Prefer LinkedIn?{" "}
+            <a
+              href="https://www.linkedin.com/in/whatelzai/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2 hover:text-zinc-900"
+            >
+              Send a DM ↗
+            </a>
+          </p>
           <a
-            href="https://www.linkedin.com/in/whatelzai/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline underline-offset-2 hover:text-zinc-900"
+            href="/edmund-lin-resume.pdf"
+            download
+            className="inline-flex items-center gap-1.5 underline underline-offset-2 hover:text-zinc-900"
           >
-            Send a DM ↗
+            Download CV ↓
           </a>
-        </p>
+        </div>
       </div>
     </section>
   );

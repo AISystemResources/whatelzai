@@ -6,6 +6,8 @@ interface Props {
 
 export function Wins({ hackathons }: Props) {
   const winners = hackathons.filter(h => h.awards.length > 0);
+  const podiumCount = winners.length;
+  const totalCount = hackathons.length;
 
   return (
     <section
@@ -23,6 +25,13 @@ export function Wins({ hackathons }: Props) {
             Coding competitions
           </p>
         </header>
+
+        <p className="mb-8 font-mono text-sm text-zinc-600">
+          <span className="font-bold text-zinc-900" style={{ color: 'var(--accent-text)' }}>{podiumCount}</span>
+          {' '}podium finishes across{' '}
+          <span className="font-bold text-zinc-900">{totalCount}+</span>
+          {' '}hackathons
+        </p>
 
         <ul className="divide-y divide-zinc-200 border-y border-zinc-200">
           {winners.map((h) => (

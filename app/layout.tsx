@@ -59,12 +59,23 @@ export const metadata: Metadata = {
     firstName: "Edmund",
     lastName: "Lin Zhenming",
     username: "whatelzai",
+    images: [
+      {
+        url: `${SITE_URL}/api/og?title=${encodeURIComponent("whatelz.ai")}&subtitle=${encodeURIComponent("What else can you build with AI? — Edmund Lin Zhenming")}`,
+        width: 1200,
+        height: 630,
+        alt: "whatelz.ai — Edmund Lin Zhenming",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
     creator: "@whatelzai",
+    images: [
+      `${SITE_URL}/api/og?title=${encodeURIComponent("whatelz.ai")}&subtitle=${encodeURIComponent("What else can you build with AI? — Edmund Lin Zhenming")}`,
+    ],
   },
   alternates: {
     canonical: SITE_URL,
@@ -171,9 +182,7 @@ export default async function RootLayout({
         />
       </head>
       <body className="min-h-full bg-[var(--background)] text-[var(--foreground)]">
-        <ShellProvider isAdmin={isAdmin}>
-          {children}
-        </ShellProvider>
+        <ShellProvider isAdmin={isAdmin}>{children}</ShellProvider>
       </body>
     </html>
   );

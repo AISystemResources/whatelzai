@@ -10,25 +10,43 @@ export async function generateStaticParams() {
   return projects.map((p) => ({ slug: p.slug }));
 }
 
+const SITE_URL = "https://whatelz.ai";
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const project = await getProjectBySlug(slug);
   if (!project) return {};
+  const url = `${SITE_URL}/projects/${slug}`;
+  const ogUrl = `${SITE_URL}/api/og?eyebrow=${encodeURIComponent("Project")}&title=${encodeURIComponent(project.name)}&subtitle=${encodeURIComponent(project.tagline ?? "")}`;
   return {
     title: `${project.name} — Edmund Lin`,
     description: project.tagline ?? undefined,
+    alternates: { canonical: url },
+    openGraph: {
+      type: "article",
+      url,
+      title: project.name,
+      description: project.tagline ?? undefined,
+      images: [{ url: ogUrl, width: 1200, height: 630, alt: project.name }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: project.name,
+      description: project.tagline ?? undefined,
+      images: [ogUrl],
+    },
   };
 }
 
 const STATUS_LABEL: Record<string, string> = {
-  active:   "Active",
-  shipped:  "Shipped",
+  active: "Active",
+  shipped: "Shipped",
   archived: "Archived",
 };
 
 const STATUS_CLASSES: Record<string, string> = {
-  active:   "bg-green-50 text-green-700",
-  shipped:  "bg-zinc-100 text-zinc-600",
+  active: "bg-green-50 text-green-700",
+  shipped: "bg-zinc-100 text-zinc-600",
   archived: "bg-zinc-50 text-zinc-400",
 };
 
@@ -37,8 +55,45 @@ export default async function ProjectDetailPage({ params }: Props) {
   const project = await getProjectBySlug(slug);
   if (!project) notFound();
 
+  const url = `${SITE_URL}/projects/${slug}`;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CreativeWork",
+        "@id": `${url}#project`,
+        name: project.name,
+        headline: project.name,
+        description: project.description ?? project.tagline ?? undefined,
+        url,
+        image: project.cover_image_url ?? undefined,
+        dateCreated: project.created_at,
+        dateModified: project.updated_at,
+        creator: { "@id": `${SITE_URL}/#person` },
+        keywords: project.tech_stack ?? undefined,
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Projects",
+            item: `${SITE_URL}/projects`,
+          },
+          { "@type": "ListItem", position: 3, name: project.name, item: url },
+        ],
+      },
+    ],
+  };
+
   return (
     <main className="mx-auto max-w-3xl px-6 py-16 sm:px-8 sm:py-24">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <header className="mb-10">
         <p className="font-mono text-xs uppercase tracking-widest text-zinc-400">
           Project
@@ -50,7 +105,7 @@ export default async function ProjectDetailPage({ params }: Props) {
         <div className="mt-4 flex items-center gap-3">
           {project.status && (
             <span
-              className={`rounded px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest ${STATUS_CLASSES[project.status] ?? ''}`}
+              className={`rounded px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest ${STATUS_CLASSES[project.status] ?? ""}`}
             >
               {STATUS_LABEL[project.status] ?? project.status}
             </span>
@@ -86,11 +141,10 @@ export default async function ProjectDetailPage({ params }: Props) {
           </h2>
           <dl className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             {project.metrics.map((m) => (
-              <div
-                key={m.label}
-                className="border border-zinc-200 px-4 py-4"
-              >
-                <dd className="text-xl font-semibold text-zinc-900">{m.value}</dd>
+              <div key={m.label} className="border border-zinc-200 px-4 py-4">
+                <dd className="text-xl font-semibold text-zinc-900">
+                  {m.value}
+                </dd>
                 <dt className="mt-1 font-mono text-[10px] uppercase tracking-widest text-zinc-400">
                   {m.label}
                 </dt>

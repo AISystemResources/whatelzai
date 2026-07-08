@@ -1,12 +1,13 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { usePathname } from 'next/navigation';
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 const NAV_LINKS = [
-  { href: '/services', label: 'Services' },
-  { href: '/blog', label: 'Blog' },
+  { href: "/about", label: "About" },
+  { href: "/services", label: "Services" },
+  { href: "/blog", label: "Blog" },
 ];
 
 export function AppHeader() {
@@ -16,16 +17,16 @@ export function AppHeader() {
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 10);
     handler();
-    window.addEventListener('scroll', handler, { passive: true });
-    return () => window.removeEventListener('scroll', handler);
+    window.addEventListener("scroll", handler, { passive: true });
+    return () => window.removeEventListener("scroll", handler);
   }, []);
 
   return (
     <header
       className={`sticky top-0 z-40 flex h-14 items-center border-b transition-all duration-300 ${
         scrolled
-          ? 'border-zinc-200 bg-white/80 backdrop-blur-md'
-          : 'border-transparent bg-transparent'
+          ? "border-zinc-200 bg-white/80 backdrop-blur-md"
+          : "border-transparent bg-transparent"
       }`}
     >
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 sm:px-8">
@@ -42,7 +43,7 @@ export function AppHeader() {
               key={href}
               href={href}
               className={`font-mono text-[10px] uppercase tracking-widest transition-colors hover:text-zinc-900 ${
-                pathname.startsWith(href) ? 'text-zinc-900' : 'text-zinc-400'
+                pathname.startsWith(href) ? "text-zinc-900" : "text-zinc-400"
               }`}
             >
               {label}

@@ -24,12 +24,17 @@ body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
+/* ── Custom cursor — hide default on pointer devices ─────────────── */
+@media (pointer: fine) {
+  *, *::before, *::after { cursor: none !important; }
+}
+
 /* ── Hero gradient blobs ──────────────────────────────────────────── */
 .hero-blob {
   position: absolute;
   border-radius: 50%;
   filter: blur(120px);
-  opacity: 0.13;
+  opacity: 0.22;
   will-change: transform;
   animation: hero-blob-drift linear infinite alternate;
 }

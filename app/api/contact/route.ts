@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 const schema = z.object({
-  name: z.string().min(1).max(100),
+  name: z.string().max(100).optional(),
   email: z.string().email(),
-  intent: z.enum(["hire", "collab", "service", "other"]),
-  message: z.string().min(10).max(2000),
+  intent: z.enum(["hire", "collab", "service", "other"]).optional(),
+  message: z.string().min(1).max(2000),
 });
 
 export async function POST(req: NextRequest) {
@@ -24,17 +24,11 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { name, email, intent, message } = parsed.data;
+  const { name, email, message } = parsed.data;
 
-  const intentLabel: Record<typeof intent, string> = {
-    hire: "Hiring",
-    collab: "Collaboration",
-    service: "Service inquiry",
-    other: "Other",
-  };
-
-  const subject = `[${intentLabel[intent]}] Message from ${name}`;
-  const text = `From: ${name} <${email}>\nIntent: ${intentLabel[intent]}\n\n${message}`;
+  const displayName = name ?? "Anonymous";
+  const subject = `Message from ${displayName} via whatelz.ai`;
+  const text = `From: ${displayName} <${email}>\n\n${message}`;
 
   const apiKey = process.env.RESEND_API_KEY;
   if (apiKey) {

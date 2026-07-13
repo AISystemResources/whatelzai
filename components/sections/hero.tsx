@@ -74,6 +74,7 @@ export function Hero() {
   const [text, setText] = useState('');
   const [visibleCards, setVisibleCards] = useState(0);
   const [caretOn, setCaretOn] = useState(true);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   // Caret blink
@@ -190,19 +191,34 @@ export function Hero() {
               index={i}
               visible={i < visibleCards}
               reduced={!!reduced}
+              onHoverChange={(h) => setHoveredIndex(h ? i : (prev) => (prev === i ? null : prev))}
             />
           ))}
         </div>
 
-        {/* ── Scroll cue ─────────────────────────────────────── */}
-        <a
-          href="#projects"
-          aria-label="Scroll to see projects"
-          className="mt-4 flex flex-col items-center gap-2 font-mono text-[10px] tracking-widest text-zinc-400 uppercase transition-colors hover:text-zinc-700"
-        >
-          <span>scroll</span>
-          <span aria-hidden="true" className="scroll-bounce">↓</span>
-        </a>
+        {/* ── Bottom-center slot: SCROLL cue OR hover tooltip ── */}
+        <div className="relative mt-4 flex h-14 items-center justify-center">
+          {/* Scroll cue */}
+          <a
+            href="#projects"
+            aria-label="Scroll to see projects"
+            className={`absolute flex flex-col items-center gap-2 font-mono text-[10px] tracking-widest text-zinc-400 uppercase transition-opacity duration-200 hover:text-zinc-700 ${
+              hoveredIndex !== null ? 'opacity-0 pointer-events-none' : 'opacity-100'
+            }`}
+          >
+            <span>scroll</span>
+            <span aria-hidden="true" className="scroll-bounce">↓</span>
+          </a>
+          {/* Hover tooltip pill */}
+          <div
+            aria-hidden={hoveredIndex === null}
+            className={`absolute whitespace-nowrap rounded-full border-2 border-[color:var(--accent)] bg-white px-5 py-2.5 font-mono text-[11px] tracking-wide text-zinc-800 shadow-sm transition-opacity duration-200 sm:text-xs ${
+              hoveredIndex !== null ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            {hoveredIndex !== null ? SOCIALS[hoveredIndex].tagline : ' '}
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -216,13 +232,15 @@ function SocialLogo({
   index,
   visible,
   reduced,
+  onHoverChange,
 }: {
   social: SocialItem;
   index: number;
   visible: boolean;
   reduced: boolean;
+  onHoverChange: (hovered: boolean) => void;
 }) {
-  const { Icon, name, handle, url, tagline, tilt, color } = social;
+  const { Icon, name, handle, url, tilt, color } = social;
 
   const style: React.CSSProperties & Record<string, string | number> = {
     '--tilt': `${tilt}deg`,
@@ -240,15 +258,12 @@ function SocialLogo({
       style={style}
       data-reduced={reduced ? 'true' : undefined}
       data-visible={visible ? 'true' : 'false'}
+      onMouseEnter={() => onHoverChange(true)}
+      onMouseLeave={() => onHoverChange(false)}
+      onFocus={() => onHoverChange(true)}
+      onBlur={() => onHoverChange(false)}
       className="social-logo group relative flex flex-col items-center gap-3 text-zinc-800"
     >
-      {/* Hover tooltip — yellow-bordered pill */}
-      <span
-        aria-hidden="true"
-        className="social-tooltip pointer-events-none absolute left-1/2 -top-3 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-full border-2 border-[color:var(--accent)] bg-white px-4 py-2 font-mono text-[10px] tracking-wide text-zinc-800 opacity-0 shadow-sm sm:text-xs"
-      >
-        {tagline}
-      </span>
       <Icon className="social-logo-icon relative h-14 w-14 transition-colors duration-300 sm:h-16 sm:w-16" />
       <span className="relative font-mono text-[10px] font-medium tracking-wide text-zinc-700 sm:text-xs">
         {handle}

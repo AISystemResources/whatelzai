@@ -12,18 +12,27 @@ const NAV_LINKS = [
 
 export function AppHeader() {
   const [scrolled, setScrolled] = useState(false);
+  const [pastHero, setPastHero] = useState(false);
   const pathname = usePathname();
+  const isHome = pathname === "/";
 
   useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 10);
+    const handler = () => {
+      setScrolled(window.scrollY > 10);
+      setPastHero(window.scrollY > window.innerHeight * 0.6);
+    };
     handler();
     window.addEventListener("scroll", handler, { passive: true });
     return () => window.removeEventListener("scroll", handler);
   }, []);
 
+  const hidden = isHome && !pastHero;
+
   return (
     <header
       className={`sticky top-0 z-40 flex h-14 items-center border-b transition-all duration-300 ${
+        hidden ? "-translate-y-full opacity-0 pointer-events-none" : ""
+      } ${
         scrolled
           ? "border-zinc-200 bg-white/80 backdrop-blur-md"
           : "border-transparent bg-transparent"

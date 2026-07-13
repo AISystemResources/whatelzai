@@ -63,6 +63,73 @@ body {
   .hero-blob { animation: none; }
 }
 
+/* ── Social logo — tilt + wiggle + hover-straighten-glow ─────────── */
+.social-logo {
+  transform: rotate(var(--tilt));
+  transform-origin: center center;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.3s ease;
+  /* NO opacity transition here → disappear is instant */
+}
+.social-logo[data-visible="true"] {
+  opacity: 1;
+  pointer-events: auto;
+  transition:
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.3s ease,
+    opacity 0.5s ease;
+}
+.social-logo-icon {
+  animation: social-wiggle var(--wiggle-dur, 3.6s) ease-in-out infinite;
+  animation-delay: var(--wiggle-delay, 0s);
+  transform-origin: center center;
+  will-change: transform;
+}
+@keyframes social-wiggle {
+  0%, 100% { transform: rotate(-1.2deg); }
+  50% { transform: rotate(1.2deg); }
+}
+.social-logo:hover {
+  transform: rotate(0deg) scale(1.12);
+  filter: drop-shadow(0 8px 20px color-mix(in srgb, var(--glow) 55%, transparent));
+}
+.social-logo:hover .social-logo-icon {
+  color: var(--glow);
+  animation-play-state: paused;
+  transform: rotate(0deg);
+}
+.social-logo[data-reduced="true"] .social-logo-icon {
+  animation: none;
+}
+
+/* Tooltip pill — appears on hover, floats up gently */
+.social-tooltip {
+  transform: translate(-50%, calc(-100% + 6px));
+  transition:
+    opacity 0.25s ease,
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.social-logo:hover .social-tooltip {
+  opacity: 1;
+  transform: translate(-50%, -100%);
+}
+
+/* ── Scroll cue bounce ───────────────────────────────────────────── */
+.scroll-bounce {
+  display: inline-block;
+  animation: scroll-bounce 1.6s ease-in-out infinite;
+}
+@keyframes scroll-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(4px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .social-logo-icon, .scroll-bounce { animation: none; }
+}
+
 /* ── Grain noise overlay ──────────────────────────────────────────── */
 body::after {
   content: '';

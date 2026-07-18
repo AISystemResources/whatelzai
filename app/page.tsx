@@ -3,7 +3,6 @@ import { Intro } from "@/components/sections/intro";
 import { Arc } from "@/components/sections/arc";
 import { Projects } from "@/components/sections/projects";
 import { Wins } from "@/components/sections/wins";
-import { BuildingInPublic } from "@/components/sections/building-in-public";
 import { Contact } from "@/components/sections/contact";
 import { listHackathons } from "@/lib/hackathons";
 import { listCareer } from "@/lib/career";
@@ -23,7 +22,6 @@ export default async function Home() {
       <Projects projects={projects} />
       <Arc entries={career} />
       <Wins hackathons={hackathons} />
-      <BuildingInPublic />
       <Contact />
     </main>
   );

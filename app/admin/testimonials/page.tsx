@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { listAllTestimonials, CATEGORY_LABELS } from "@/lib/testimonials";
+import {
+  listAllTestimonials,
+  CATEGORY_LABELS,
+  TESTIMONIAL_CATEGORIES,
+  type Testimonial,
+  type TestimonialCategory,
+} from "@/lib/testimonials";
 import { ListRow } from "./ListRow";
 
 export const metadata: Metadata = {
@@ -10,6 +16,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 type Tab = "pending" | "approved" | "archived";
+type Sort = "alpha" | "type";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "pending", label: "Pending" },
@@ -17,20 +24,65 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "archived", label: "Archived" },
 ];
 
+const SORTS: { id: Sort; label: string }[] = [
+  { id: "alpha", label: "A–Z" },
+  { id: "type", label: "By type" },
+];
+
+const CATEGORY_ORDER: Record<TestimonialCategory, number> =
+  Object.fromEntries(
+    TESTIMONIAL_CATEGORIES.map((c, i) => [c, i]),
+  ) as Record<TestimonialCategory, number>;
+
+function sortRows(rows: Testimonial[], sort: Sort): Testimonial[] {
+  const byName = (a: Testimonial, b: Testimonial) =>
+    (a.author_name || "").localeCompare(b.author_name || "", undefined, {
+      sensitivity: "base",
+    });
+  if (sort === "type") {
+    return [...rows].sort((a, b) => {
+      const diff = CATEGORY_ORDER[a.category] - CATEGORY_ORDER[b.category];
+      return diff !== 0 ? diff : byName(a, b);
+    });
+  }
+  return [...rows].sort(byName);
+}
+
+function hrefFor(tab: Tab, sort: Sort): string {
+  const params = new URLSearchParams();
+  if (tab !== "pending") params.set("tab", tab);
+  if (sort !== "alpha") params.set("sort", sort);
+  const q = params.toString();
+  return q ? `?${q}` : "?";
+}
+
 export default async function AdminTestimonialsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; sort?: string }>;
 }) {
-  const { tab: tabParam } = await searchParams;
+  const { tab: tabParam, sort: sortParam } = await searchParams;
   const tab: Tab =
     tabParam === "approved" || tabParam === "archived" ? tabParam : "pending";
+  const sort: Sort = sortParam === "type" ? "type" : "alpha";
 
   const items = await listAllTestimonials();
-  const incomplete = items.filter((t) => t.status === "incomplete");
-  const pending = items.filter((t) => t.status === "pending");
-  const approved = items.filter((t) => t.status === "approved");
-  const rejected = items.filter((t) => t.status === "rejected");
+  const incomplete = sortRows(
+    items.filter((t) => t.status === "incomplete"),
+    sort,
+  );
+  const pending = sortRows(
+    items.filter((t) => t.status === "pending"),
+    sort,
+  );
+  const approved = sortRows(
+    items.filter((t) => t.status === "approved"),
+    sort,
+  );
+  const rejected = sortRows(
+    items.filter((t) => t.status === "rejected"),
+    sort,
+  );
 
   const counts: Record<Tab, number> = {
     pending: pending.length + incomplete.length,
@@ -67,7 +119,7 @@ export default async function AdminTestimonialsPage({
           return (
             <Link
               key={t.id}
-              href={t.id === "pending" ? "?" : `?tab=${t.id}`}
+              href={hrefFor(t.id, sort)}
               className={`-mb-px flex items-center gap-2 border-b-2 px-1 pb-3 font-mono text-xs uppercase tracking-widest transition-colors ${
                 active
                   ? "border-zinc-900 text-zinc-900"
@@ -87,6 +139,30 @@ export default async function AdminTestimonialsPage({
             </Link>
           );
         })}
+      </div>
+
+      <div className="flex items-center gap-3">
+        <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
+          Sort
+        </p>
+        <div className="flex gap-1">
+          {SORTS.map((s) => {
+            const active = s.id === sort;
+            return (
+              <Link
+                key={s.id}
+                href={hrefFor(tab, s.id)}
+                className={`border px-2.5 py-1 font-mono text-[10px] uppercase tracking-widest transition-colors ${
+                  active
+                    ? "border-zinc-900 bg-zinc-900 text-white"
+                    : "border-zinc-200 text-zinc-500 hover:border-zinc-400 hover:text-zinc-900"
+                }`}
+              >
+                {s.label}
+              </Link>
+            );
+          })}
+        </div>
       </div>
 
       {tab === "pending" && (

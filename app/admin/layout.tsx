@@ -13,10 +13,10 @@ export default async function AdminLayout({
 
   return (
     <ClerkProvider>
-      <div className="flex min-h-screen bg-zinc-50">
+      <div className="flex min-h-screen flex-col bg-zinc-50 md:flex-row">
         <AdminSidebar />
         <main className="flex-1 overflow-x-hidden bg-white">
-          <div className="mx-auto max-w-5xl px-6 py-8 sm:px-10 sm:py-10">
+          <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8 md:px-10 md:py-10">
             {children}
           </div>
         </main>

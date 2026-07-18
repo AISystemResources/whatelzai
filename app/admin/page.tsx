@@ -84,28 +84,9 @@ export default async function DashboardPage() {
           <h1 className="mt-2 text-2xl font-semibold tracking-tight text-zinc-900">
             Dashboard
           </h1>
-          <div className="mt-4 flex flex-wrap gap-3">
-            <a
-              href="/admin/landing"
-              className="inline-flex items-center gap-1.5 border border-zinc-300 px-3 py-1.5 font-mono text-xs uppercase tracking-widest text-zinc-600 transition-colors hover:border-zinc-900 hover:text-zinc-900"
-            >
-              Edit homepage →
-            </a>
-            <a
-              href="/admin/testimonials"
-              className="inline-flex items-center gap-1.5 border border-zinc-300 px-3 py-1.5 font-mono text-xs uppercase tracking-widest text-zinc-600 transition-colors hover:border-zinc-900 hover:text-zinc-900"
-            >
-              Testimonials →
-            </a>
-          </div>
         </div>
         <div className="flex items-center gap-3">
           <span className="font-mono text-xs text-zinc-400">{email}</span>
-          <SignOutButton>
-            <button className="border border-zinc-300 px-3 py-1.5 font-mono text-xs tracking-widest uppercase text-zinc-500 transition-colors hover:border-zinc-900 hover:text-zinc-900">
-              Sign out
-            </button>
-          </SignOutButton>
         </div>
       </div>
 

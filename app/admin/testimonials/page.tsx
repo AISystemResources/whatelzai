@@ -46,12 +46,20 @@ export default async function AdminTestimonialsPage() {
           </p>
         </div>
         <div className="flex flex-col items-end gap-2">
-          <Link
-            href="/admin/testimonials/new"
-            className="inline-flex items-center gap-1.5 border border-zinc-900 bg-zinc-900 px-3 py-1.5 font-mono text-xs uppercase tracking-widest text-white transition-colors hover:bg-[var(--accent)] hover:text-zinc-900 hover:border-[var(--accent)]"
-          >
-            + Add manually
-          </Link>
+          <div className="flex gap-2">
+            <Link
+              href="/admin/testimonials/invites"
+              className="inline-flex items-center gap-1.5 border border-zinc-300 px-3 py-1.5 font-mono text-xs uppercase tracking-widest text-zinc-600 transition-colors hover:border-zinc-900 hover:text-zinc-900"
+            >
+              Invites →
+            </Link>
+            <Link
+              href="/admin/testimonials/new"
+              className="inline-flex items-center gap-1.5 border border-zinc-900 bg-zinc-900 px-3 py-1.5 font-mono text-xs uppercase tracking-widest text-white transition-colors hover:bg-[var(--accent)] hover:text-zinc-900 hover:border-[var(--accent)]"
+            >
+              + Add manually
+            </Link>
+          </div>
           <Link
             href="/testimonials/new"
             target="_blank"

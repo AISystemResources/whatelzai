@@ -120,8 +120,7 @@ export default async function NewTestimonialPage({
 
   const preFilled = !!(
     testimonial.author_name ||
-    testimonial.author_role ||
-    testimonial.author_company ||
+    (testimonial.author_affiliations?.length ?? 0) > 0 ||
     testimonial.author_linkedin_url ||
     (testimonial.suggested_question_ids?.length ?? 0) > 0
   );

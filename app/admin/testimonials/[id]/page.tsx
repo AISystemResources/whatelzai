@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTestimonial } from "@/lib/testimonials";
+import { listServiceEvents } from "@/lib/service-events";
 import { TestimonialForm } from "../Form";
 
 export const metadata: Metadata = {
@@ -13,7 +14,13 @@ export default async function EditTestimonialPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const t = await getTestimonial(id);
+  const [t, events] = await Promise.all([getTestimonial(id), listServiceEvents()]);
   if (!t) notFound();
-  return <TestimonialForm initial={t} completionToken={t.completion_token} />;
+  return (
+    <TestimonialForm
+      initial={t}
+      completionToken={t.completion_token}
+      events={events}
+    />
+  );
 }

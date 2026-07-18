@@ -79,11 +79,11 @@ export function ListRow({
           <p className="mt-1 line-clamp-2 text-xs text-zinc-600">{t.quote}</p>
         )}
         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] text-zinc-400">
-          {(t.author_role || t.author_company) && (
-            <span>
-              {[t.author_role, t.author_company].filter(Boolean).join(" · ")}
+          {(t.author_affiliations ?? []).map((a, i) => (
+            <span key={i}>
+              {[a.role, a.company].filter(Boolean).join(", ")}
             </span>
-          )}
+          ))}
           {t.author_email && <span>{t.author_email}</span>}
           {t.author_linkedin_url && (
             <a

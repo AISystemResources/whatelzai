@@ -7,33 +7,89 @@ import {
   TESTIMONIAL_CATEGORIES,
   CATEGORY_LABELS,
   SUBMITTER_ROLE_LABELS,
+  type Affiliation,
   type Testimonial,
   type TestimonialCategory,
 } from "@/lib/testimonials";
 import {
   TESTIMONIAL_QUESTIONS,
-  type TestimonialQuestion,
+  getPrimaryQuestion,
 } from "@/lib/testimonial-questions";
 
+// The question ids the user has "opened" — always includes the primary + any suggested.
+function initialOpenedIds(
+  category: TestimonialCategory,
+  suggestedIds: string[],
+  answeredIds: string[],
+): Set<string> {
+  const s = new Set<string>();
+  s.add(getPrimaryQuestion(category).id);
+  suggestedIds.forEach((id) => s.add(id));
+  answeredIds.forEach((id) => s.add(id));
+  return s;
+}
+
 export function PublicForm({ prefill }: { prefill: Testimonial }) {
-  const [state, action, pending] = useActionState(
-    submitPublicTestimonial,
-    null,
-  );
+  const [state, action, pending] = useActionState(submitPublicTestimonial, null);
   const [category, setCategory] = useState<TestimonialCategory>(prefill.category);
   const [preview, setPreview] = useState<string | null>(prefill.author_avatar_url);
+  const [affiliations, setAffiliations] = useState<Affiliation[]>(
+    prefill.author_affiliations && prefill.author_affiliations.length > 0
+      ? prefill.author_affiliations
+      : [{ role: "", company: "" }],
+  );
+  const [openedIds, setOpenedIds] = useState<Set<string>>(
+    initialOpenedIds(
+      prefill.category,
+      prefill.suggested_question_ids ?? [],
+      (prefill.quote_answers ?? []).map((a) => a.question_id),
+    ),
+  );
+
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const questions: TestimonialQuestion[] = TESTIMONIAL_QUESTIONS[category] ?? [];
+  const questions = TESTIMONIAL_QUESTIONS[category] ?? [];
   const highlightedIds = new Set(prefill.suggested_question_ids ?? []);
   const existingAnswers = new Map(
     (prefill.quote_answers ?? []).map((a) => [a.question_id, a.answer]),
   );
+  const primary = getPrimaryQuestion(category);
+  const unopened = questions.filter((q) => !openedIds.has(q.id));
+
+  function onCategoryChange(next: TestimonialCategory) {
+    setCategory(next);
+    setOpenedIds(initialOpenedIds(next, prefill.suggested_question_ids ?? [], []));
+  }
+
+  function openQuestion(id: string) {
+    setOpenedIds(new Set([...openedIds, id]));
+  }
+
+  function closeQuestion(id: string) {
+    if (id === primary.id) return; // primary can't be closed
+    const next = new Set(openedIds);
+    next.delete(id);
+    setOpenedIds(next);
+  }
 
   function onPickAvatar(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     setPreview(URL.createObjectURL(file));
+  }
+
+  function updateAffiliation(i: number, patch: Partial<Affiliation>) {
+    setAffiliations(affiliations.map((a, j) => (i === j ? { ...a, ...patch } : a)));
+  }
+  function addAffiliation() {
+    setAffiliations([...affiliations, { role: "", company: "" }]);
+  }
+  function removeAffiliation(i: number) {
+    if (affiliations.length === 1) {
+      setAffiliations([{ role: "", company: "" }]);
+      return;
+    }
+    setAffiliations(affiliations.filter((_, j) => j !== i));
   }
 
   const inputCls =
@@ -88,7 +144,7 @@ export function PublicForm({ prefill }: { prefill: Testimonial }) {
         <select
           name="category"
           value={category}
-          onChange={(e) => setCategory(e.target.value as TestimonialCategory)}
+          onChange={(e) => onCategoryChange(e.target.value as TestimonialCategory)}
           className="mt-3 w-full border border-zinc-200 bg-white px-4 py-3 text-base text-zinc-900 focus:border-zinc-900 focus:outline-none"
         >
           {TESTIMONIAL_CATEGORIES.map((c) => (
@@ -99,10 +155,10 @@ export function PublicForm({ prefill }: { prefill: Testimonial }) {
         </select>
       </div>
 
-      {/* Name */}
+      {/* Display Name */}
       <div>
         <label className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
-          Your name *
+          Display name *
         </label>
         <input
           name="author_name"
@@ -111,38 +167,59 @@ export function PublicForm({ prefill }: { prefill: Testimonial }) {
           defaultValue={prefill.author_name ?? ""}
           maxLength={200}
           className={inputCls}
-          placeholder="Jane Doe"
+          placeholder="How you'd like to be shown (e.g. Sim Yee L.)"
         />
       </div>
 
-      {/* Role + company */}
-      <div className="grid gap-6 sm:grid-cols-2">
-        <div>
-          <label className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
-            Your role
-          </label>
-          <input
-            name="author_role"
-            type="text"
-            defaultValue={prefill.author_role ?? ""}
-            maxLength={200}
-            className={inputCls}
-            placeholder="Senior Engineer"
-          />
+      {/* Affiliations (multiple role + company pairs) */}
+      <div>
+        <label className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+          Role & company / team
+        </label>
+        <p className="mt-1 font-mono text-[10px] text-zinc-400">
+          Add more than one if you wear more than one hat.
+        </p>
+        <div className="mt-3 space-y-3">
+          {affiliations.map((aff, i) => (
+            <div key={i} className="grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
+              <input
+                name={`affiliation_role_${i}`}
+                type="text"
+                maxLength={200}
+                value={aff.role}
+                onChange={(e) => updateAffiliation(i, { role: e.target.value })}
+                className={inputCls}
+                placeholder="Role (e.g. Co-founder)"
+              />
+              <input
+                name={`affiliation_company_${i}`}
+                type="text"
+                maxLength={200}
+                value={aff.company}
+                onChange={(e) =>
+                  updateAffiliation(i, { company: e.target.value })
+                }
+                className={inputCls}
+                placeholder="Company / team"
+              />
+              <button
+                type="button"
+                onClick={() => removeAffiliation(i)}
+                className="self-center font-mono text-[10px] uppercase tracking-widest text-zinc-400 transition-colors hover:text-red-600"
+                aria-label="Remove"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
         </div>
-        <div>
-          <label className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
-            Company / team
-          </label>
-          <input
-            name="author_company"
-            type="text"
-            defaultValue={prefill.author_company ?? ""}
-            maxLength={200}
-            className={inputCls}
-            placeholder="Prudential Singapore"
-          />
-        </div>
+        <button
+          type="button"
+          onClick={addAffiliation}
+          className="mt-3 font-mono text-[10px] uppercase tracking-widest text-zinc-500 transition-colors hover:text-zinc-900"
+        >
+          + Add another role
+        </button>
       </div>
 
       {/* Email + LinkedIn */}
@@ -188,43 +265,85 @@ export function PublicForm({ prefill }: { prefill: Testimonial }) {
           Answer at least one *
         </p>
         <p className="mt-2 text-sm text-zinc-600">
-          Pick whichever question hits you. Specifics beat superlatives.
+          Specifics beat superlatives.
         </p>
 
         <div className="mt-6 space-y-6">
-          {questions.map((q) => {
-            const highlighted = highlightedIds.has(q.id);
-            return (
-              <div
-                key={q.id}
-                className={`border p-4 sm:p-5 ${
-                  highlighted
-                    ? "border-[var(--accent)] bg-[color-mix(in_srgb,var(--accent)_8%,transparent)]"
-                    : "border-zinc-200"
-                }`}
-              >
-                <p className="text-sm font-semibold text-zinc-900">
-                  {q.text}
-                  {highlighted && (
-                    <span
-                      className="ml-2 font-mono text-[10px] tracking-widest uppercase"
-                      style={{ color: "var(--accent-text)" }}
-                    >
-                      · suggested
-                    </span>
-                  )}
-                </p>
-                <textarea
-                  name={`answer_${q.id}`}
-                  rows={3}
-                  maxLength={2000}
-                  defaultValue={existingAnswers.get(q.id) ?? ""}
-                  className="mt-3 w-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none"
-                  placeholder="Skip if you don't want to answer this one."
-                />
+          {questions
+            .filter((q) => openedIds.has(q.id))
+            .map((q) => {
+              const highlighted = highlightedIds.has(q.id);
+              const isPrimary = q.id === primary.id;
+              return (
+                <div
+                  key={q.id}
+                  className={`border p-4 sm:p-5 ${
+                    highlighted
+                      ? "border-[var(--accent)] bg-[color-mix(in_srgb,var(--accent)_8%,transparent)]"
+                      : "border-zinc-200"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="text-sm font-semibold text-zinc-900">
+                      {q.text}
+                      {highlighted && (
+                        <span
+                          className="ml-2 font-mono text-[10px] tracking-widest uppercase"
+                          style={{ color: "var(--accent-text)" }}
+                        >
+                          · suggested
+                        </span>
+                      )}
+                    </p>
+                    {!isPrimary && (
+                      <button
+                        type="button"
+                        onClick={() => closeQuestion(q.id)}
+                        className="shrink-0 font-mono text-[10px] uppercase tracking-widest text-zinc-400 transition-colors hover:text-red-600"
+                        aria-label="Remove this question"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                  <textarea
+                    name={`answer_${q.id}`}
+                    rows={3}
+                    maxLength={2000}
+                    defaultValue={existingAnswers.get(q.id) ?? ""}
+                    required={isPrimary}
+                    minLength={isPrimary ? 15 : undefined}
+                    className="mt-3 w-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none"
+                    placeholder={
+                      isPrimary
+                        ? "Your answer here. At least 15 characters."
+                        : "Optional."
+                    }
+                  />
+                </div>
+              );
+            })}
+
+          {/* "Add another question" — only if there are unopened questions */}
+          {unopened.length > 0 && (
+            <details className="border border-dashed border-zinc-300 p-4">
+              <summary className="cursor-pointer font-mono text-xs uppercase tracking-widest text-zinc-600 transition-colors hover:text-zinc-900">
+                + Answer another question
+              </summary>
+              <div className="mt-3 space-y-2">
+                {unopened.map((q) => (
+                  <button
+                    key={q.id}
+                    type="button"
+                    onClick={() => openQuestion(q.id)}
+                    className="block w-full border border-zinc-200 bg-white p-3 text-left text-sm text-zinc-700 transition-colors hover:border-zinc-900 hover:text-zinc-900"
+                  >
+                    {q.text}
+                  </button>
+                ))}
               </div>
-            );
-          })}
+            </details>
+          )}
         </div>
       </div>
 

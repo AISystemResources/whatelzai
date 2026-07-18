@@ -1,22 +1,9 @@
-const BELIEFS = [
-  {
-    n: "01",
-    title: "Slideware isn't training.",
-    body: "If nobody leaves the room with something they can run on Monday morning, nothing happened. Every session I run ends with a working artifact — not a deck.",
-  },
-  {
-    n: "02",
-    title: "The best AI teachers are still shipping.",
-    body: "The moment you stop building, your teaching goes stale. I train the same week I ship. What you learn from me is what I just used yesterday.",
-  },
-  {
-    n: "03",
-    title: "Teams don't need more prompts.",
-    body: "They need to see AI think alongside them on their real work. Prompt libraries collect dust. Watching AI solve your problem sticks.",
-  },
-] as const;
+import { AccentText } from "@/components/shell/AccentText";
+import { getPovContent } from "@/lib/landing-content";
 
-export function POV() {
+export async function POV() {
+  const c = await getPovContent();
+
   return (
     <section
       id="pov"
@@ -25,17 +12,15 @@ export function POV() {
     >
       <div className="mx-auto max-w-4xl">
         <p className="font-mono text-[10px] tracking-widest text-zinc-400 uppercase">
-          What I think
+          {c.eyebrow}
         </p>
 
         <h2 className="mt-8 font-display text-3xl font-bold tracking-tight text-zinc-900 sm:text-5xl">
-          Three things about AI training
-          <br />
-          you don&rsquo;t hear enough.
+          <AccentText text={c.heading} />
         </h2>
 
         <ol className="mt-16 space-y-14">
-          {BELIEFS.map((b) => (
+          {c.beliefs.map((b) => (
             <li key={b.n} className="grid gap-6 sm:grid-cols-[80px_1fr] sm:gap-10">
               <span
                 className="font-mono text-xs tracking-widest"
@@ -45,10 +30,10 @@ export function POV() {
               </span>
               <div>
                 <h3 className="font-display text-xl font-bold tracking-tight text-zinc-900 sm:text-2xl">
-                  {b.title}
+                  <AccentText text={b.title} />
                 </h3>
                 <p className="mt-3 text-base leading-relaxed text-zinc-600 sm:text-lg">
-                  {b.body}
+                  <AccentText text={b.body} />
                 </p>
               </div>
             </li>

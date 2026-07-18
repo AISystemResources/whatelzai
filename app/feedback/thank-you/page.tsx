@@ -13,7 +13,7 @@ export default function ThankYouPage() {
         <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
           Received
         </p>
-        <h1 className="mt-4 font-display text-4xl font-bold tracking-tight text-zinc-900 sm:text-5xl">
+        <h1 className="mt-4 text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl">
           Thank you.
         </h1>
         <p className="mt-6 text-lg leading-relaxed text-zinc-600">

@@ -29,7 +29,7 @@ export default async function NewTestimonialPage({
           <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
             Feedback
           </p>
-          <h1 className="mt-4 font-display text-4xl font-bold tracking-tight text-zinc-900 sm:text-5xl">
+          <h1 className="mt-4 text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl">
             Share feedback.
           </h1>
           <p className="mt-5 text-lg leading-relaxed text-zinc-600">
@@ -68,7 +68,7 @@ export default async function NewTestimonialPage({
           <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
             Not found
           </p>
-          <h1 className="mt-4 font-display text-3xl font-bold tracking-tight text-zinc-900">
+          <h1 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900">
             This link is invalid.
           </h1>
           <p className="mt-4 text-zinc-600">
@@ -97,7 +97,7 @@ export default async function NewTestimonialPage({
           <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
             Received
           </p>
-          <h1 className="mt-4 font-display text-3xl font-bold tracking-tight text-zinc-900">
+          <h1 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900">
             Thanks — this one is already in.
           </h1>
           <p className="mt-4 text-zinc-600">
@@ -136,7 +136,7 @@ export default async function NewTestimonialPage({
         <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
           Testimonials
         </p>
-        <h1 className="mt-4 font-display text-4xl font-bold tracking-tight text-zinc-900 sm:text-5xl">
+        <h1 className="mt-4 text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl">
           {testimonial.author_name
             ? `Almost done, ${testimonial.author_name.split(" ")[0]}.`
             : "Almost done."}

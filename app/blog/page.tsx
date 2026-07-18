@@ -32,7 +32,7 @@ export default async function BlogIndexPage() {
               </span>
             )}
           </div>
-          <h1 className="mt-5 font-display text-5xl font-bold tracking-tight sm:text-6xl">
+          <h1 className="font-display-hero mt-5 text-5xl sm:text-6xl">
             Notes on building.
           </h1>
           <p className="mt-5 max-w-lg text-base text-zinc-600">
@@ -66,7 +66,7 @@ export default async function BlogIndexPage() {
                           <p className="font-mono text-[10px] tracking-widest text-zinc-400 uppercase">
                             {post.date}
                           </p>
-                          <h2 className="mt-3 font-display text-2xl font-bold tracking-tight text-zinc-900 transition-colors group-hover:text-amber-500 sm:text-3xl">
+                          <h2 className="mt-3 text-2xl font-semibold tracking-tight text-zinc-900 transition-colors group-hover:text-amber-500 sm:text-3xl">
                             {post.title}
                           </h2>
                           {post.summary && (

@@ -16,7 +16,7 @@ export async function TrackRecord() {
           {c.eyebrow}
         </p>
 
-        <h2 className="mt-8 font-display text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
+        <h2 className="mt-8 text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
           <AccentText text={c.heading} />
         </h2>
 
@@ -24,7 +24,7 @@ export async function TrackRecord() {
           {c.stats.map((s) => (
             <div key={s.label}>
               <dt
-                className="font-display text-4xl font-bold tracking-tight sm:text-5xl"
+                className="font-mono text-4xl font-medium tabular-nums tracking-tight sm:text-5xl"
                 style={{ color: "var(--accent-text)" }}
               >
                 {s.value}

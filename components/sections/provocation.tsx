@@ -15,7 +15,7 @@ export async function Provocation() {
           {c.eyebrow}
         </p>
 
-        <h2 className="mt-8 font-display text-4xl leading-[1.1] font-bold tracking-tight text-zinc-900 sm:text-6xl">
+        <h2 className="font-display-hero mt-8 text-4xl leading-[1.1] text-zinc-900 sm:text-6xl">
           <AccentText text={c.heading} />
         </h2>
 

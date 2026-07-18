@@ -113,7 +113,7 @@ function ServiceBlock({
           <div className="flex-1 border-t border-zinc-100" />
         </div>
 
-        <h2 className="mt-6 font-display text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+        <h2 className="mt-6 text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">
           {s.name}
         </h2>
         {s.tagline && (
@@ -252,12 +252,10 @@ export default async function ServicesPage() {
           <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
             Services · By enquiry
           </p>
-          <h1 className="mt-6 font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-7xl">
+          <h1 className="font-display-hero mt-6 text-5xl leading-[1.05] sm:text-7xl">
             Work
             <br />
-            <span className="bg-gradient-to-r from-yellow-400 to-amber-500 bg-clip-text text-transparent">
-              with me.
-            </span>
+            <span style={{ color: "var(--accent-text)" }}>with me.</span>
           </h1>
           <p className="mt-8 max-w-lg text-base text-zinc-600 sm:text-lg">
             Training, mentorship, and digital courses — plus a small number of
@@ -293,7 +291,7 @@ export default async function ServicesPage() {
             </span>
             <div className="flex-1 border-t border-zinc-100" />
           </div>
-          <h2 className="mt-6 font-display text-3xl font-bold tracking-tight sm:text-4xl">
+          <h2 className="mt-6 text-3xl font-semibold tracking-tight sm:text-4xl">
             Simple process
           </h2>
           <ol className="mt-10 grid gap-8 sm:grid-cols-3">
@@ -320,7 +318,7 @@ export default async function ServicesPage() {
           <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
             Get started
           </p>
-          <h2 className="mt-5 font-display text-4xl font-bold tracking-tight sm:text-5xl">
+          <h2 className="mt-5 text-4xl font-semibold tracking-tight sm:text-5xl">
             Ready to build?
           </h2>
           <p className="mt-5 max-w-md text-base text-zinc-600">

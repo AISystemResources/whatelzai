@@ -86,7 +86,7 @@ export function Intro({ site }: { site: SiteIdentity }) {
               Hello
             </p>
 
-            <h2 className="mt-4 font-display text-5xl leading-[1.05] font-bold tracking-tight sm:text-6xl">
+            <h2 className="font-display-hero mt-4 text-5xl leading-[1.05] sm:text-6xl">
               <NameLines name={site.owner_name} />
             </h2>
 

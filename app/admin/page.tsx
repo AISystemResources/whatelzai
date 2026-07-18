@@ -1,21 +1,20 @@
 import type { Metadata } from "next";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { SignOutButton } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase-server";
+import { ensureUserRow, isAdminRole } from "@/lib/users";
 
 export const metadata: Metadata = { title: "Dashboard — whatelz.ai" };
-
-const ALLOWED_EMAIL = process.env.ADMIN_ALLOWED_EMAIL ?? "";
 
 export default async function DashboardPage() {
   const { userId } = await auth();
   if (!userId) redirect("/");
 
-  const user = await currentUser();
-  const email = user?.emailAddresses[0]?.emailAddress ?? "";
+  const appUser = await ensureUserRow();
+  const email = appUser?.email ?? "";
 
-  if (email !== ALLOWED_EMAIL) {
+  if (!isAdminRole(appUser?.role)) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
         <p className="font-mono text-xs tracking-widest text-zinc-400 uppercase">

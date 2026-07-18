@@ -137,7 +137,7 @@ export function Hero() {
     <section
       id="top"
       data-section="Hero"
-      className="relative flex min-h-[calc(100vh-4rem)] items-center overflow-hidden border-b border-zinc-200 px-6 py-16 sm:px-8"
+      className="relative -mt-14 flex min-h-screen items-center overflow-hidden border-b border-zinc-200 px-6 py-16 sm:px-8"
     >
       {/* Ambient blobs */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">

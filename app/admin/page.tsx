@@ -91,6 +91,12 @@ export default async function DashboardPage() {
             >
               Edit homepage →
             </a>
+            <a
+              href="/admin/testimonials"
+              className="inline-flex items-center gap-1.5 border border-zinc-300 px-3 py-1.5 font-mono text-xs uppercase tracking-widest text-zinc-600 transition-colors hover:border-zinc-900 hover:text-zinc-900"
+            >
+              Testimonials →
+            </a>
           </div>
         </div>
         <div className="flex items-center gap-3">

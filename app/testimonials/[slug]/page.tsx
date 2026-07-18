@@ -103,7 +103,7 @@ export default async function TestimonialDetailPage({
           {CATEGORY_LABELS[t.category]}
         </p>
 
-        <blockquote className="mt-8 text-2xl leading-[1.4] text-zinc-900 sm:text-[1.75rem] sm:leading-[1.45]">
+        <blockquote className="font-display mt-8 text-[1.75rem] font-normal leading-[1.35] tracking-tight text-zinc-900 sm:text-[2rem] sm:leading-[1.35]" style={{ fontVariationSettings: '"opsz" 96, "SOFT" 60' }}>
           &ldquo;{t.quote}&rdquo;
         </blockquote>
 

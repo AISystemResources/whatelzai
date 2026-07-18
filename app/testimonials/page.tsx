@@ -116,7 +116,7 @@ export default async function TestimonialsPage() {
           <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
             Testimonials
           </p>
-          <h1 className="mt-4 font-display text-5xl font-bold tracking-tight text-zinc-900 sm:text-7xl">
+          <h1 className="font-display-hero mt-4 text-5xl text-zinc-900 sm:text-7xl">
             What people say.
           </h1>
           <p className="mt-6 max-w-2xl text-lg text-zinc-600">
@@ -149,7 +149,7 @@ export default async function TestimonialsPage() {
             return (
               <section key={cat} className="border-b border-zinc-100 py-14">
                 <div className="mb-8 flex items-baseline justify-between">
-                  <h2 className="font-display text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl">
+                  <h2 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl">
                     {CATEGORY_LABELS[cat]}
                   </h2>
                   <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">

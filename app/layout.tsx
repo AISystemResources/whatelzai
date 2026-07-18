@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Syne } from "next/font/google";
+import { Geist, Geist_Mono, Fraunces } from "next/font/google";
 import "./globals.css";
 import { ShellProvider } from "@/components/shell/ShellProvider";
 import { getSiteIdentity } from "@/lib/site-identity";
@@ -15,10 +15,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const syne = Syne({
-  variable: "--font-syne",
+// Fraunces — variable serif with SOFT + opsz axes. Distinctive editorial warmth
+// against Geist Sans/Mono. Used sparingly on Tier-1 display moments only.
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
   subsets: ["latin"],
-  weight: ["700", "800"],
+  axes: ["SOFT", "opsz"],
 });
 
 const SITE_URL = "https://whatelz.ai";
@@ -173,7 +175,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${syne.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} h-full antialiased`}
     >
       <head>
         <script

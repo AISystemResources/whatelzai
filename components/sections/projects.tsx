@@ -41,7 +41,7 @@ function ProjectFeature({ project, index }: { project: Project; index: number })
             <p className="font-mono text-[10px] tracking-widest text-zinc-400 uppercase">
               {num} / Project
             </p>
-            <h2 className="mt-4 font-display text-5xl font-bold tracking-tight sm:text-6xl">
+            <h2 className="mt-4 text-5xl font-semibold tracking-tight sm:text-6xl">
               {project.name}
             </h2>
             {project.tagline && (

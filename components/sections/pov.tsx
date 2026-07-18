@@ -15,7 +15,7 @@ export async function POV() {
           {c.eyebrow}
         </p>
 
-        <h2 className="mt-8 font-display text-3xl font-bold tracking-tight text-zinc-900 sm:text-5xl">
+        <h2 className="mt-8 text-3xl font-semibold tracking-tight text-zinc-900 sm:text-5xl">
           <AccentText text={c.heading} />
         </h2>
 
@@ -29,7 +29,7 @@ export async function POV() {
                 {b.n}
               </span>
               <div>
-                <h3 className="font-display text-xl font-bold tracking-tight text-zinc-900 sm:text-2xl">
+                <h3 className="text-xl font-semibold tracking-tight text-zinc-900 sm:text-2xl">
                   <AccentText text={b.title} />
                 </h3>
                 <p className="mt-3 text-base leading-relaxed text-zinc-600 sm:text-lg">

@@ -84,7 +84,7 @@ export async function Testimonials() {
           What people say
         </p>
 
-        <h2 className="mt-8 max-w-3xl pb-2 font-display text-3xl font-bold leading-[1.15] tracking-tight text-zinc-900 sm:text-5xl">
+        <h2 className="mt-8 max-w-3xl pb-2 text-3xl font-semibold leading-[1.15] tracking-tight text-zinc-900 sm:text-5xl">
           The people I&rsquo;ve trained, taught, or shipped with.
         </h2>
 

@@ -108,7 +108,7 @@ export default async function AboutPage() {
           <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
             About
           </p>
-          <h1 className="mt-4 font-display text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl">
+          <h1 className="font-display-hero mt-4 text-4xl text-zinc-900 sm:text-5xl">
             What is whatelz.ai?
           </h1>
           <p className="speakable-answer mt-6 text-lg leading-relaxed text-zinc-700">

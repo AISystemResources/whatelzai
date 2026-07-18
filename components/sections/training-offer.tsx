@@ -25,7 +25,7 @@ export async function TrainingOffer() {
           {c.eyebrow}
         </p>
 
-        <h2 className="mt-8 font-display text-5xl leading-[1.05] font-bold tracking-tight text-zinc-900 sm:text-7xl">
+        <h2 className="font-display-hero mt-8 text-5xl leading-[1.05] text-zinc-900 sm:text-7xl">
           <AccentText text={c.heading} />
         </h2>
 

@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   listPublicTestimonials,
+  testimonialSlug,
   CATEGORY_LABELS,
   TESTIMONIAL_CATEGORIES,
   type Testimonial,
@@ -34,22 +35,28 @@ function Card({ t }: { t: Testimonial }) {
   const affiliations = (t.author_affiliations ?? [])
     .map((a) => [a.role, a.company].filter(Boolean).join(", "))
     .filter(Boolean);
+  const href = `/testimonials/${testimonialSlug(t)}`;
   return (
-    <article className="flex flex-col gap-5 border border-zinc-200 bg-white p-6">
-      <p className="text-base leading-relaxed text-zinc-800 sm:text-lg">
+    <article className="group relative flex flex-col gap-5 border border-zinc-200 bg-white p-6 transition-colors hover:border-zinc-400">
+      <Link
+        href={href}
+        aria-label={`Read ${t.author_name}'s full testimonial`}
+        className="absolute inset-0 z-0"
+      />
+      <p className="relative z-10 text-base leading-relaxed text-zinc-800 sm:text-lg">
         &ldquo;{t.quote}&rdquo;
       </p>
 
       {t.outcome_tag && (
         <p
-          className="font-mono text-xs tracking-wide"
+          className="relative z-10 font-mono text-xs tracking-wide"
           style={{ color: "var(--accent-text)" }}
         >
           {t.outcome_tag}
         </p>
       )}
 
-      <div className="mt-auto flex items-center gap-3 border-t border-zinc-100 pt-4">
+      <div className="relative z-10 mt-auto flex items-center gap-3 border-t border-zinc-100 pt-4">
         {t.author_avatar_url ? (
           <Image
             src={t.author_avatar_url}
@@ -72,7 +79,7 @@ function Card({ t }: { t: Testimonial }) {
                 target="_blank"
                 rel="noopener noreferrer me"
                 aria-label={`${t.author_name} on LinkedIn`}
-                className="text-zinc-400 transition-colors hover:text-zinc-900"
+                className="relative z-20 text-zinc-400 transition-colors hover:text-zinc-900"
               >
                 <LinkedInIcon />
               </a>
@@ -84,6 +91,9 @@ function Card({ t }: { t: Testimonial }) {
             </p>
           ))}
         </div>
+        <span className="relative z-10 shrink-0 self-start font-mono text-[10px] uppercase tracking-widest text-zinc-300 transition-colors group-hover:text-zinc-900">
+          Read →
+        </span>
       </div>
     </article>
   );

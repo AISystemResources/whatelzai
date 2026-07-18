@@ -1,0 +1,196 @@
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import {
+  getTestimonialBySlug,
+  listPublicTestimonials,
+  testimonialSlug,
+  CATEGORY_LABELS,
+} from "@/lib/testimonials";
+
+export const dynamic = "force-dynamic";
+
+type Params = { slug: string };
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<Params>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const t = await getTestimonialBySlug(slug);
+  if (!t) return { title: "Testimonial not found" };
+
+  const affiliation = (t.author_affiliations ?? [])
+    .map((a) => [a.role, a.company].filter(Boolean).join(", "))
+    .find(Boolean);
+  const title = `${t.author_name} on working with Edmund — ${CATEGORY_LABELS[t.category]}`;
+  const description = t.quote.slice(0, 200);
+  const url = `https://whatelz.ai/testimonials/${slug}`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description,
+      url,
+      type: "article",
+      authors: [t.author_name],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+    other: affiliation ? { "profile:role": affiliation } : undefined,
+  };
+}
+
+export default async function TestimonialDetailPage({
+  params,
+}: {
+  params: Promise<Params>;
+}) {
+  const { slug } = await params;
+  const t = await getTestimonialBySlug(slug);
+  if (!t) notFound();
+
+  const affiliations = (t.author_affiliations ?? [])
+    .map((a) => [a.role, a.company].filter(Boolean).join(", "))
+    .filter(Boolean);
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Review",
+    itemReviewed: {
+      "@type": "Person",
+      name: "Edmund Lin Zhenming",
+      url: "https://whatelz.ai",
+      jobTitle: "AI Engineer",
+    },
+    reviewBody: t.quote,
+    author: {
+      "@type": "Person",
+      name: t.author_name,
+      ...(t.author_linkedin_url && { sameAs: [t.author_linkedin_url] }),
+      ...(affiliations[0] && { jobTitle: affiliations[0] }),
+    },
+    datePublished: t.submitted_at ?? t.created_at,
+    publisher: {
+      "@type": "Person",
+      name: "Edmund Lin Zhenming",
+      url: "https://whatelz.ai",
+    },
+  };
+
+  return (
+    <main className="px-6 py-16 sm:px-8 sm:py-24">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <div className="mx-auto max-w-3xl">
+        <nav className="mb-10 font-mono text-[10px] uppercase tracking-widest text-zinc-400">
+          <Link href="/testimonials" className="hover:text-zinc-900">
+            ← All testimonials
+          </Link>
+        </nav>
+
+        <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
+          {CATEGORY_LABELS[t.category]}
+        </p>
+
+        <blockquote className="mt-6 font-display text-3xl font-medium leading-[1.3] tracking-tight text-zinc-900 sm:text-4xl">
+          &ldquo;{t.quote}&rdquo;
+        </blockquote>
+
+        {t.outcome_tag && (
+          <p
+            className="mt-6 font-mono text-xs tracking-wide"
+            style={{ color: "var(--accent-text)" }}
+          >
+            {t.outcome_tag}
+          </p>
+        )}
+
+        <div className="mt-12 flex items-center gap-4 border-t border-zinc-200 pt-8">
+          {t.author_avatar_url ? (
+            <Image
+              src={t.author_avatar_url}
+              alt={t.author_name}
+              width={56}
+              height={56}
+              className="h-14 w-14 shrink-0 rounded-full object-cover"
+            />
+          ) : (
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-zinc-100 font-mono text-sm text-zinc-500">
+              {t.author_name.slice(0, 1)}
+            </div>
+          )}
+          <div className="min-w-0">
+            <p className="text-base font-semibold text-zinc-900">
+              {t.author_name}
+              {t.author_linkedin_url && (
+                <a
+                  href={t.author_linkedin_url}
+                  target="_blank"
+                  rel="noopener noreferrer me"
+                  className="ml-2 font-mono text-[10px] uppercase tracking-widest text-zinc-400 underline underline-offset-4 hover:text-zinc-900"
+                >
+                  LinkedIn ↗
+                </a>
+              )}
+            </p>
+            {affiliations.map((a) => (
+              <p key={a} className="font-mono text-xs text-zinc-500">
+                {a}
+              </p>
+            ))}
+          </div>
+        </div>
+
+        {t.quote_answers && t.quote_answers.length > 1 && (
+          <section className="mt-16 space-y-8 border-t border-zinc-200 pt-10">
+            <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
+              More from {t.author_name.split(" ")[0]}
+            </p>
+            {t.quote_answers.slice(1).map((qa, i) => (
+              <div key={i} className="space-y-2">
+                <p className="font-mono text-xs uppercase tracking-wide text-zinc-500">
+                  {qa.question_text}
+                </p>
+                <p className="text-base leading-relaxed text-zinc-800">
+                  {qa.answer}
+                </p>
+              </div>
+            ))}
+          </section>
+        )}
+
+        <section className="mt-20 border-t border-zinc-200 pt-10">
+          <p className="text-sm text-zinc-600">
+            Worked, trained, or shipped something with Edmund?{" "}
+            <Link
+              href="/feedback"
+              className="underline underline-offset-4 hover:text-zinc-900"
+            >
+              Add your voice →
+            </Link>
+          </p>
+        </section>
+      </div>
+    </main>
+  );
+}
+
+export async function generateStaticParams() {
+  try {
+    const items = await listPublicTestimonials();
+    return items.map((t) => ({ slug: testimonialSlug(t) }));
+  } catch {
+    return [];
+  }
+}

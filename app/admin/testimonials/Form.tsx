@@ -9,6 +9,7 @@ import {
   CATEGORY_LABELS,
   type Testimonial,
   type TestimonialCategory,
+  type ModerationStatus,
 } from "@/lib/testimonials";
 import {
   Button,
@@ -27,9 +28,13 @@ type FormState = {
   author_role: string;
   author_company: string;
   author_avatar_url: string;
+  author_email: string;
+  author_linkedin_url: string;
   context: string;
   outcome_tag: string;
   category: TestimonialCategory;
+  tags: string;
+  moderation_status: ModerationStatus;
   featured: boolean;
   published: boolean;
   sort_order: string;
@@ -44,9 +49,13 @@ function toState(t: Testimonial | null): FormState {
     author_role: t?.author_role ?? "",
     author_company: t?.author_company ?? "",
     author_avatar_url: t?.author_avatar_url ?? "",
+    author_email: t?.author_email ?? "",
+    author_linkedin_url: t?.author_linkedin_url ?? "",
     context: t?.context ?? "",
     outcome_tag: t?.outcome_tag ?? "",
     category: t?.category ?? "peer",
+    tags: t?.tags?.join(", ") ?? "",
+    moderation_status: t?.moderation_status ?? "approved",
     featured: t?.featured ?? false,
     published: t?.published ?? false,
     sort_order: t?.sort_order?.toString() ?? "",
@@ -73,9 +82,15 @@ export function TestimonialForm({ initial }: { initial: Testimonial | null }) {
           author_role: state.author_role || null,
           author_company: state.author_company || null,
           author_avatar_url: state.author_avatar_url || null,
+          author_email: state.author_email || null,
+          author_linkedin_url: state.author_linkedin_url || null,
           context: state.context || null,
           outcome_tag: state.outcome_tag || null,
           category: state.category,
+          tags: state.tags
+            ? state.tags.split(",").map((s) => s.trim()).filter(Boolean)
+            : null,
+          moderation_status: state.moderation_status,
           featured: state.featured,
           published: state.published,
           sort_order: state.sort_order ? Number(state.sort_order) : null,
@@ -185,6 +200,26 @@ export function TestimonialForm({ initial }: { initial: Testimonial | null }) {
             placeholder="https://…"
           />
         </Field>
+        <Field label="Email (private — for follow-up only)">
+          <TextInput
+            type="email"
+            value={state.author_email}
+            onChange={(e) =>
+              setState({ ...state, author_email: e.target.value })
+            }
+            placeholder="them@example.com"
+          />
+        </Field>
+        <Field label="LinkedIn URL (public — proof of authority)">
+          <TextInput
+            type="url"
+            value={state.author_linkedin_url}
+            onChange={(e) =>
+              setState({ ...state, author_linkedin_url: e.target.value })
+            }
+            placeholder="https://www.linkedin.com/in/…"
+          />
+        </Field>
       </SectionCard>
 
       <SectionCard title="Placement" slug="where it shows">
@@ -204,6 +239,31 @@ export function TestimonialForm({ initial }: { initial: Testimonial | null }) {
                 {CATEGORY_LABELS[c]}
               </option>
             ))}
+          </select>
+        </Field>
+
+        <Field label="Tags (comma-separated)">
+          <TextInput
+            value={state.tags}
+            onChange={(e) => setState({ ...state, tags: e.target.value })}
+            placeholder="prompt-engineering, workflow, fintech"
+          />
+        </Field>
+
+        <Field label="Moderation status">
+          <select
+            value={state.moderation_status}
+            onChange={(e) =>
+              setState({
+                ...state,
+                moderation_status: e.target.value as ModerationStatus,
+              })
+            }
+            className="w-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none"
+          >
+            <option value="pending">Pending review</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
           </select>
         </Field>
 

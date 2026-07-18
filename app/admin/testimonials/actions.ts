@@ -10,6 +10,7 @@ import {
   deleteTestimonial,
   type Testimonial,
   type TestimonialCategory,
+  type ModerationStatus,
 } from "@/lib/testimonials";
 
 async function assertAdmin(): Promise<void> {
@@ -27,6 +28,7 @@ async function assertAdmin(): Promise<void> {
 
 function afterWrite() {
   revalidatePath("/");
+  revalidatePath("/testimonials");
   revalidatePath("/admin/testimonials");
 }
 
@@ -65,6 +67,25 @@ export async function togglePublished(id: string, published: boolean) {
     .from("testimonials")
     .update({ published, updated_at: new Date().toISOString() })
     .eq("id", id);
+  if (error) throw new Error(error.message);
+  afterWrite();
+}
+
+export async function setModerationStatus(id: string, status: ModerationStatus) {
+  await assertAdmin();
+  const now = new Date().toISOString();
+  const patch: Record<string, unknown> = {
+    moderation_status: status,
+    moderated_at: now,
+    updated_at: now,
+  };
+  // Approving auto-publishes so the admin doesn't need a second click.
+  if (status === "approved") patch.published = true;
+  if (status === "rejected") {
+    patch.published = false;
+    patch.featured = false;
+  }
+  const { error } = await supabaseAdmin.from("testimonials").update(patch).eq("id", id);
   if (error) throw new Error(error.message);
   afterWrite();
 }

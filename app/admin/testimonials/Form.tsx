@@ -19,7 +19,7 @@ import {
   type QuoteAnswer,
 } from "@/lib/testimonials";
 import { TESTIMONIAL_QUESTIONS } from "@/lib/testimonial-questions";
-import type { ServiceEvent } from "@/lib/service-events";
+import { CATEGORY_EVENT_KINDS, type ServiceEvent } from "@/lib/service-events";
 import {
   Button,
   Field,
@@ -476,6 +476,7 @@ export function TestimonialForm({
               setState({
                 ...state,
                 category: e.target.value as TestimonialCategory,
+                service_event_id: "",
               })
             }
             className="w-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none"
@@ -487,22 +488,31 @@ export function TestimonialForm({
             ))}
           </select>
         </Field>
-        <Field label="Linked event (optional)">
-          <select
-            value={state.service_event_id}
-            onChange={(e) =>
-              setState({ ...state, service_event_id: e.target.value })
-            }
-            className="w-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none"
-          >
-            <option value="">— None —</option>
-            {events.map((e) => (
-              <option key={e.id} value={e.id}>
-                {e.name}
-              </option>
-            ))}
-          </select>
-        </Field>
+        {(() => {
+          const kinds = CATEGORY_EVENT_KINDS[state.category] ?? [];
+          const relevant = kinds.length
+            ? events.filter((e) => kinds.includes(e.kind))
+            : [];
+          if (relevant.length === 0) return null;
+          return (
+            <Field label="Linked event (optional)">
+              <select
+                value={state.service_event_id}
+                onChange={(e) =>
+                  setState({ ...state, service_event_id: e.target.value })
+                }
+                className="w-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none"
+              >
+                <option value="">— None —</option>
+                {relevant.map((e) => (
+                  <option key={e.id} value={e.id}>
+                    {e.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          );
+        })()}
         <Field label="Status">
           <select
             value={state.status}

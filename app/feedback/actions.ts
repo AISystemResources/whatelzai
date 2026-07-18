@@ -98,6 +98,7 @@ export async function submitPublicTestimonial(
   const token = clean(formData.get("completion_token"), 40) || null;
   const author_affiliations = parseAffiliations(formData);
   const improvement_note = clean(formData.get("improvement_note"), 2000) || null;
+  const service_event_id = clean(formData.get("service_event_id"), 40) || null;
 
   const category = (TESTIMONIAL_CATEGORIES as readonly string[]).includes(
     categoryRaw,
@@ -162,6 +163,7 @@ export async function submitPublicTestimonial(
         author_linkedin_url,
         category,
         improvement_note,
+        service_event_id,
       });
     } else {
       const fresh = await createIncompleteTestimonial({
@@ -181,6 +183,7 @@ export async function submitPublicTestimonial(
         author_linkedin_url,
         category,
         improvement_note,
+        service_event_id,
       });
     }
   } catch {

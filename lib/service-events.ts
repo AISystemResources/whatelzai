@@ -27,6 +27,21 @@ export const SERVICE_EVENT_KIND_LABELS: Record<ServiceEventKind, string> = {
   other: "Other",
 };
 
+// Which event kinds show up in the dropdown for each testimonial category.
+// Categories not listed here (peer, academic, friend) don't get an event dropdown.
+export const CATEGORY_EVENT_KINDS: Partial<Record<string, ServiceEventKind[]>> = {
+  trainer: ["training", "workshop"],
+  mentor: ["mentorship"],
+  hackathon: ["hackathon"],
+};
+
+// Label used above the event dropdown for each category.
+export const CATEGORY_EVENT_LABEL: Partial<Record<string, string>> = {
+  trainer: "Which training?",
+  mentor: "Which mentorship programme?",
+  hackathon: "Which hackathon?",
+};
+
 export interface ServiceEvent {
   id: string;
   slug: string;

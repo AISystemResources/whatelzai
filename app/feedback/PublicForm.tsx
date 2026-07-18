@@ -15,6 +15,11 @@ import {
   TESTIMONIAL_QUESTIONS,
   getPrimaryQuestion,
 } from "@/lib/testimonial-questions";
+import {
+  CATEGORY_EVENT_KINDS,
+  CATEGORY_EVENT_LABEL,
+  type ServiceEvent,
+} from "@/lib/service-events";
 
 // The question ids the user has "opened" — always includes the primary + any suggested.
 function initialOpenedIds(
@@ -29,9 +34,16 @@ function initialOpenedIds(
   return s;
 }
 
-export function PublicForm({ prefill }: { prefill: Testimonial }) {
+export function PublicForm({
+  prefill,
+  events,
+}: {
+  prefill: Testimonial;
+  events: ServiceEvent[];
+}) {
   const [state, action, pending] = useActionState(submitPublicTestimonial, null);
   const [category, setCategory] = useState<TestimonialCategory>(prefill.category);
+  const [eventId, setEventId] = useState<string>(prefill.service_event_id ?? "");
   const [preview, setPreview] = useState<string | null>(prefill.author_avatar_url);
   const [affiliations, setAffiliations] = useState<Affiliation[]>(
     prefill.author_affiliations && prefill.author_affiliations.length > 0
@@ -58,8 +70,15 @@ export function PublicForm({ prefill }: { prefill: Testimonial }) {
 
   function onCategoryChange(next: TestimonialCategory) {
     setCategory(next);
+    setEventId(""); // reset — old event kind may not match new category
     setOpenedIds(initialOpenedIds(next, prefill.suggested_question_ids ?? [], []));
   }
+
+  const eventKinds = CATEGORY_EVENT_KINDS[category] ?? [];
+  const relevantEvents = eventKinds.length
+    ? events.filter((e) => eventKinds.includes(e.kind))
+    : [];
+  const eventLabel = CATEGORY_EVENT_LABEL[category];
 
   function openQuestion(id: string) {
     setOpenedIds(new Set([...openedIds, id]));
@@ -154,6 +173,31 @@ export function PublicForm({ prefill }: { prefill: Testimonial }) {
           ))}
         </select>
       </div>
+
+      {/* Event dropdown — only shown when the category has relevant events */}
+      {relevantEvents.length > 0 && eventLabel && (
+        <div>
+          <label className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+            {eventLabel}
+          </label>
+          <select
+            name="service_event_id"
+            value={eventId}
+            onChange={(e) => setEventId(e.target.value)}
+            className="mt-3 w-full border border-zinc-200 bg-white px-4 py-3 text-base text-zinc-900 focus:border-zinc-900 focus:outline-none"
+          >
+            <option value="">— Select one —</option>
+            {relevantEvents.map((e) => (
+              <option key={e.id} value={e.id}>
+                {e.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+      {relevantEvents.length === 0 && eventId && (
+        <input type="hidden" name="service_event_id" value={eventId} />
+      )}
 
       {/* Display Name */}
       <div>

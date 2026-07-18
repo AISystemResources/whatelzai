@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 
-export function ContactForm() {
+export function ContactForm({ fallbackEmail }: { fallbackEmail: string }) {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
-  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
+    "idle",
+  );
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -32,13 +34,18 @@ export function ContactForm() {
   if (status === "sent") {
     return (
       <div className="mt-10 border-l-2 border-[var(--accent)] pl-6 py-2">
-        <p className="font-mono text-xs tracking-widest text-zinc-500 uppercase">Sent</p>
-        <p className="mt-1 text-base text-zinc-700">Got it — I&apos;ll get back to you soon.</p>
+        <p className="font-mono text-xs tracking-widest text-zinc-500 uppercase">
+          Sent
+        </p>
+        <p className="mt-1 text-base text-zinc-700">
+          Got it — I&apos;ll get back to you soon.
+        </p>
       </div>
     );
   }
 
-  const inputCls = "w-full border-b border-zinc-200 bg-transparent py-3 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-900 focus:outline-none transition-colors";
+  const inputCls =
+    "w-full border-b border-zinc-200 bg-transparent py-3 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-900 focus:outline-none transition-colors";
 
   return (
     <form onSubmit={handleSubmit} className="mt-10 space-y-6 max-w-xl">
@@ -68,7 +75,7 @@ export function ContactForm() {
 
       {status === "error" && (
         <p className="font-mono text-xs text-red-500">
-          Something went wrong — email elz.work22@gmail.com directly
+          Something went wrong — email {fallbackEmail} directly
         </p>
       )}
 

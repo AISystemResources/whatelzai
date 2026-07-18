@@ -1,21 +1,24 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getAllPosts } from "@/lib/blog";
+import { getSiteIdentity } from "@/lib/site-identity";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Blog — Edmund Lin Zhenming",
-  description:
-    "Irregular writing on AI systems, building in public, and whatever else is worth writing down.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const s = await getSiteIdentity();
+  return {
+    title: `Blog — ${s.owner_name}`,
+    description:
+      "Irregular writing on AI systems, building in public, and whatever else is worth writing down.",
+  };
+}
 
 export default async function BlogIndexPage() {
   const posts = await getAllPosts();
 
   return (
     <main>
-
       {/* ── Header ──────────────────────────────────────────────────── */}
       <section className="border-b border-zinc-200 px-6 py-20 sm:px-8 sm:py-28">
         <div className="mx-auto max-w-4xl">
@@ -42,7 +45,6 @@ export default async function BlogIndexPage() {
       {/* ── Posts list ──────────────────────────────────────────────── */}
       <section className="px-6 py-12 sm:px-8">
         <div className="mx-auto max-w-4xl">
-
           {posts.length === 0 ? (
             <div className="flex flex-col items-start py-20">
               <div className="flex items-center gap-4">
@@ -51,9 +53,7 @@ export default async function BlogIndexPage() {
                   Nothing here yet
                 </p>
               </div>
-              <p className="mt-6 text-zinc-500">
-                First post coming soon.
-              </p>
+              <p className="mt-6 text-zinc-500">First post coming soon.</p>
             </div>
           ) : (
             <ul className="divide-y divide-zinc-100">
@@ -98,10 +98,8 @@ export default async function BlogIndexPage() {
               ))}
             </ul>
           )}
-
         </div>
       </section>
-
     </main>
   );
 }

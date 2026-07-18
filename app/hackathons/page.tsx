@@ -1,13 +1,15 @@
-import type { Metadata } from 'next';
-import { listHackathons } from '@/lib/hackathons';
-import { HackathonList } from './_components/HackathonList';
-import { PageShell } from '@/components/shell/PageShell';
+import type { Metadata } from "next";
+import { listHackathons } from "@/lib/hackathons";
+import { HackathonList } from "./_components/HackathonList";
+import { PageShell } from "@/components/shell/PageShell";
+import { getSiteIdentity } from "@/lib/site-identity";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: 'Hackathons — Edmund Lin Zhenming',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const s = await getSiteIdentity();
+  return { title: `Hackathons — ${s.owner_name}` };
+}
 
 export default async function HackathonsPage({
   searchParams,
@@ -24,7 +26,9 @@ export default async function HackathonsPage({
       maxWidth="max-w-5xl"
     >
       {hackathons.length === 0 ? (
-        <p className="text-zinc-400 font-mono text-sm">No hackathons published yet.</p>
+        <p className="text-zinc-400 font-mono text-sm">
+          No hackathons published yet.
+        </p>
       ) : (
         <HackathonList hackathons={hackathons} highlight={highlight} />
       )}

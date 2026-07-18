@@ -1,13 +1,14 @@
 import { ImageResponse } from "next/og";
+import { getSiteIdentity } from "@/lib/site-identity";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 export async function GET(req: Request) {
+  const site = await getSiteIdentity();
   const { searchParams } = new URL(req.url);
   const title = (searchParams.get("title") ?? "whatelz.ai").slice(0, 120);
   const subtitle = (
-    searchParams.get("subtitle") ??
-    "What else can you build with AI? — Edmund Lin Zhenming"
+    searchParams.get("subtitle") ?? `${site.tagline ?? ""} — ${site.owner_name}`
   ).slice(0, 200);
   const eyebrow = (searchParams.get("eyebrow") ?? "whatelz.ai").slice(0, 40);
 
@@ -83,7 +84,7 @@ export async function GET(req: Request) {
         }}
       >
         <div>whatelz.ai</div>
-        <div>Edmund Lin Zhenming</div>
+        <div>{site.owner_name}</div>
       </div>
     </div>,
     { width: 1200, height: 630 },

@@ -1,27 +1,32 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
-import { listLeadership, getLeadershipBySlug } from '@/lib/leadership';
-import { ContentRenderer } from '@/components/shell/ContentRenderer';
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { listLeadership, getLeadershipBySlug } from "@/lib/leadership";
+import { ContentRenderer } from "@/components/shell/ContentRenderer";
+import { getSiteIdentity } from "@/lib/site-identity";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateStaticParams() {
   const entries = await listLeadership(true);
-  return entries.map(e => ({ slug: e.slug }));
+  return entries.map((e) => ({ slug: e.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const entry = await getLeadershipBySlug(slug);
+  const [entry, s] = await Promise.all([
+    getLeadershipBySlug(slug),
+    getSiteIdentity(),
+  ]);
   if (!entry) return {};
-  return { title: `${entry.role} — ${entry.organisation} — Edmund Lin Zhenming` };
+  return { title: `${entry.role} — ${entry.organisation} — ${s.owner_name}` };
 }
 
 function formatPeriod(start: string, end: string | null): string {
-  const fmt = (d: string) => new Date(d).toLocaleDateString('en-SG', { month: 'long', year: 'numeric' });
+  const fmt = (d: string) =>
+    new Date(d).toLocaleDateString("en-SG", { month: "long", year: "numeric" });
   return end ? `${fmt(start)} – ${fmt(end)}` : `${fmt(start)} – Present`;
 }
 
@@ -47,16 +52,18 @@ export default async function LeadershipDetailPage({ params }: Props) {
           <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
             {entry.role}
           </h1>
-          <p className="text-lg font-medium text-zinc-700">{entry.organisation}</p>
-          {entry.body && (
-            <p className="text-zinc-500">{entry.body}</p>
-          )}
+          <p className="text-lg font-medium text-zinc-700">
+            {entry.organisation}
+          </p>
+          {entry.body && <p className="text-zinc-500">{entry.body}</p>}
         </div>
 
         {entry.tags.length > 0 && (
           <div className="mt-4 flex flex-wrap gap-2">
-            {entry.tags.map(t => (
-              <span key={t} className="font-mono text-xs text-zinc-400">#{t}</span>
+            {entry.tags.map((t) => (
+              <span key={t} className="font-mono text-xs text-zinc-400">
+                #{t}
+              </span>
             ))}
           </div>
         )}

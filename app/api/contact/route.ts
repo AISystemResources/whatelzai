@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { getSiteIdentity } from "@/lib/site-identity";
 
 const schema = z.object({
   name: z.string().max(100).optional(),
@@ -20,7 +21,7 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json(
       { error: parsed.error.issues[0]?.message ?? "Invalid input" },
-      { status: 422 }
+      { status: 422 },
     );
   }
 
@@ -35,16 +36,20 @@ export async function POST(req: NextRequest) {
     try {
       const { Resend } = await import("resend");
       const resend = new Resend(apiKey);
+      const site = await getSiteIdentity();
       await resend.emails.send({
         from: "whatelz.ai <contact@whatelz.ai>",
-        to: "elz.work22@gmail.com",
+        to: site.email,
         replyTo: email,
         subject,
         text,
       });
     } catch (err) {
       console.error("[contact] Resend failed:", err);
-      return NextResponse.json({ error: "Failed to send message" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to send message" },
+        { status: 500 },
+      );
     }
   } else {
     console.log("[contact] RESEND_API_KEY not set — logging instead:");

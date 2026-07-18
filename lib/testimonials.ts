@@ -39,9 +39,16 @@ export const SUBMITTER_ROLE_LABELS: Record<TestimonialCategory, string> = {
   hackathon: "We hacked together (hackathon teammate)",
 };
 
+export interface QuoteAnswer {
+  question_id: string;
+  question_text: string;
+  answer: string;
+}
+
 export interface Testimonial {
   id: string;
   quote: string;
+  quote_answers: QuoteAnswer[] | null;
   long_quote: string | null;
   author_name: string;
   author_role: string | null;
@@ -127,6 +134,7 @@ export async function deleteTestimonial(id: string): Promise<void> {
 // Never trusts caller-supplied featured / published / moderation_status.
 export async function createPublicSubmission(input: {
   quote: string;
+  quote_answers: QuoteAnswer[];
   author_name: string;
   author_role: string | null;
   author_company: string | null;
@@ -134,14 +142,13 @@ export async function createPublicSubmission(input: {
   author_email: string;
   author_linkedin_url: string | null;
   category: TestimonialCategory;
-  tags: string[] | null;
-  context: string | null;
 }): Promise<Testimonial> {
   const now = new Date().toISOString();
   const { data, error } = await supabaseAdmin
     .from("testimonials")
     .insert({
       quote: input.quote,
+      quote_answers: input.quote_answers,
       author_name: input.author_name,
       author_role: input.author_role,
       author_company: input.author_company,
@@ -149,8 +156,6 @@ export async function createPublicSubmission(input: {
       author_email: input.author_email,
       author_linkedin_url: input.author_linkedin_url,
       category: input.category,
-      tags: input.tags,
-      context: input.context,
       moderation_status: "pending",
       published: false,
       featured: false,

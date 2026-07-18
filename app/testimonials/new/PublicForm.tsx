@@ -5,32 +5,52 @@ import Image from "next/image";
 import { submitPublicTestimonial } from "./actions";
 import {
   TESTIMONIAL_CATEGORIES,
+  CATEGORY_LABELS,
   SUBMITTER_ROLE_LABELS,
   type TestimonialCategory,
 } from "@/lib/testimonials";
+import {
+  TESTIMONIAL_QUESTIONS,
+  type TestimonialQuestion,
+} from "@/lib/testimonial-questions";
 
-export function PublicForm({ initialCategory }: { initialCategory: TestimonialCategory }) {
-  const [state, action, pending] = useActionState(submitPublicTestimonial, null);
-  const [category, setCategory] = useState<TestimonialCategory>(initialCategory);
+export interface PublicFormPrefill {
+  author_name?: string;
+  author_role?: string;
+  author_company?: string;
+  author_email?: string;
+  author_linkedin_url?: string;
+  category?: TestimonialCategory;
+  question_ids?: string[];
+  token?: string;
+}
+
+export function PublicForm({ prefill }: { prefill: PublicFormPrefill }) {
+  const [state, action, pending] = useActionState(
+    submitPublicTestimonial,
+    null,
+  );
+  const [category, setCategory] = useState<TestimonialCategory>(
+    prefill.category ?? "friend",
+  );
   const [preview, setPreview] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  const questions: TestimonialQuestion[] = TESTIMONIAL_QUESTIONS[category] ?? [];
+  const highlightedIds = new Set(prefill.question_ids ?? []);
+
   function onPickAvatar(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (!file) {
-      setPreview(null);
-      return;
-    }
-    const url = URL.createObjectURL(file);
-    setPreview(url);
+    if (!file) return setPreview(null);
+    setPreview(URL.createObjectURL(file));
   }
 
   const inputCls =
     "w-full border-b border-zinc-200 bg-transparent py-3 text-base text-zinc-900 placeholder-zinc-400 focus:border-zinc-900 focus:outline-none transition-colors";
 
   return (
-    <form action={action} className="space-y-10">
-      {/* Avatar upload */}
+    <form action={action} className="space-y-12">
+      {/* Avatar */}
       <div className="flex flex-col items-center gap-4">
         <button
           type="button"
@@ -69,35 +89,23 @@ export function PublicForm({ initialCategory }: { initialCategory: TestimonialCa
         </p>
       </div>
 
-      {/* Category */}
+      {/* Category dropdown */}
       <div>
         <label className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
           Where do you know me from?
         </label>
-        <div className="mt-3 space-y-2">
+        <select
+          name="category"
+          value={category}
+          onChange={(e) => setCategory(e.target.value as TestimonialCategory)}
+          className="mt-3 w-full border border-zinc-200 bg-white px-4 py-3 text-base text-zinc-900 focus:border-zinc-900 focus:outline-none"
+        >
           {TESTIMONIAL_CATEGORIES.map((c) => (
-            <label
-              key={c}
-              className={`flex cursor-pointer items-center gap-3 border px-4 py-3 transition-colors ${
-                category === c
-                  ? "border-zinc-900 bg-zinc-50"
-                  : "border-zinc-200 hover:border-zinc-400"
-              }`}
-            >
-              <input
-                type="radio"
-                name="category"
-                value={c}
-                checked={category === c}
-                onChange={() => setCategory(c)}
-                className="h-4 w-4"
-              />
-              <span className="text-sm text-zinc-800">
-                {SUBMITTER_ROLE_LABELS[c]}
-              </span>
-            </label>
+            <option key={c} value={c}>
+              {SUBMITTER_ROLE_LABELS[c]}
+            </option>
           ))}
-        </div>
+        </select>
       </div>
 
       {/* Name */}
@@ -109,13 +117,14 @@ export function PublicForm({ initialCategory }: { initialCategory: TestimonialCa
           name="author_name"
           type="text"
           required
+          defaultValue={prefill.author_name ?? ""}
           maxLength={200}
           className={inputCls}
           placeholder="Jane Doe"
         />
       </div>
 
-      {/* Role + Company */}
+      {/* Role + company */}
       <div className="grid gap-6 sm:grid-cols-2">
         <div>
           <label className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
@@ -124,6 +133,7 @@ export function PublicForm({ initialCategory }: { initialCategory: TestimonialCa
           <input
             name="author_role"
             type="text"
+            defaultValue={prefill.author_role ?? ""}
             maxLength={200}
             className={inputCls}
             placeholder="Senior Engineer"
@@ -136,6 +146,7 @@ export function PublicForm({ initialCategory }: { initialCategory: TestimonialCa
           <input
             name="author_company"
             type="text"
+            defaultValue={prefill.author_company ?? ""}
             maxLength={200}
             className={inputCls}
             placeholder="Prudential Singapore"
@@ -153,6 +164,7 @@ export function PublicForm({ initialCategory }: { initialCategory: TestimonialCa
             name="author_email"
             type="email"
             required
+            defaultValue={prefill.author_email ?? ""}
             maxLength={200}
             className={inputCls}
             placeholder="you@example.com"
@@ -168,6 +180,7 @@ export function PublicForm({ initialCategory }: { initialCategory: TestimonialCa
           <input
             name="author_linkedin_url"
             type="url"
+            defaultValue={prefill.author_linkedin_url ?? ""}
             maxLength={500}
             className={inputCls}
             placeholder="https://www.linkedin.com/in/…"
@@ -178,54 +191,58 @@ export function PublicForm({ initialCategory }: { initialCategory: TestimonialCa
         </div>
       </div>
 
-      {/* The quote */}
+      {/* Questions */}
       <div>
-        <label className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
-          Your testimonial *
-        </label>
-        <textarea
-          name="quote"
-          required
-          minLength={20}
-          maxLength={2000}
-          rows={5}
-          className={`${inputCls} resize-none`}
-          placeholder="What did you actually change or take away? What surprised you? What would you tell a colleague thinking of working with me?"
-        />
-        <p className="mt-1 font-mono text-[10px] text-zinc-400">
-          Speak in your own voice — specifics beat superlatives.
+        <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+          Answer at least one *
         </p>
+        <p className="mt-2 text-sm text-zinc-600">
+          Pick whichever question hits you. Specifics beat superlatives.
+        </p>
+
+        <div className="mt-6 space-y-6">
+          {questions.map((q) => {
+            const highlighted = highlightedIds.has(q.id);
+            return (
+              <div
+                key={q.id}
+                className={`border p-4 sm:p-5 ${
+                  highlighted
+                    ? "border-[var(--accent)] bg-[color-mix(in_srgb,var(--accent)_8%,transparent)]"
+                    : "border-zinc-200"
+                }`}
+              >
+                <p className="text-sm font-semibold text-zinc-900">
+                  {q.text}
+                  {highlighted && (
+                    <span
+                      className="ml-2 font-mono text-[10px] tracking-widest uppercase"
+                      style={{ color: "var(--accent-text)" }}
+                    >
+                      · suggested
+                    </span>
+                  )}
+                </p>
+                <textarea
+                  name={`answer_${q.id}`}
+                  rows={3}
+                  maxLength={2000}
+                  className="mt-3 w-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none"
+                  placeholder="Skip if you don't want to answer this one."
+                  autoFocus={highlighted && highlightedIds.size === 1}
+                />
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Context */}
-      <div>
-        <label className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
-          Context (optional)
-        </label>
-        <input
-          name="context"
-          type="text"
-          maxLength={500}
-          className={inputCls}
-          placeholder="Hackomania 2026 · March 2026"
-        />
-      </div>
+      {/* Hidden: token so server can mark it used */}
+      {prefill.token && (
+        <input type="hidden" name="invite_token" value={prefill.token} />
+      )}
 
-      {/* Tags */}
-      <div>
-        <label className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
-          Tags (optional, comma-separated)
-        </label>
-        <input
-          name="tags"
-          type="text"
-          maxLength={500}
-          className={inputCls}
-          placeholder="prompt-engineering, workflow, fintech"
-        />
-      </div>
-
-      {/* Honeypot — hidden from real users */}
+      {/* Honeypot */}
       <div className="hidden" aria-hidden="true">
         <label>
           Website (leave blank)
@@ -233,14 +250,12 @@ export function PublicForm({ initialCategory }: { initialCategory: TestimonialCa
         </label>
       </div>
 
-      {/* Error */}
       {state?.error && (
         <p className="border-l-2 border-red-500 bg-red-50 p-3 text-sm text-red-700">
           {state.error}
         </p>
       )}
 
-      {/* Submit */}
       <button
         type="submit"
         disabled={pending}
@@ -251,7 +266,7 @@ export function PublicForm({ initialCategory }: { initialCategory: TestimonialCa
       </button>
 
       <p className="font-mono text-[10px] text-zinc-400">
-        Your submission is reviewed before it appears. Thanks for taking the time.
+        {CATEGORY_LABELS[category]} · Your submission is reviewed before it appears.
       </p>
     </form>
   );

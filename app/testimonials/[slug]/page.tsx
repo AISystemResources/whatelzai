@@ -92,8 +92,8 @@ export default async function TestimonialDetailPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <div className="mx-auto max-w-3xl">
-        <nav className="mb-10 font-mono text-[10px] uppercase tracking-widest text-zinc-400">
+      <div className="mx-auto max-w-2xl">
+        <nav className="mb-16 font-mono text-[10px] uppercase tracking-widest text-zinc-400">
           <Link href="/testimonials" className="hover:text-zinc-900">
             ← All testimonials
           </Link>
@@ -103,20 +103,20 @@ export default async function TestimonialDetailPage({
           {CATEGORY_LABELS[t.category]}
         </p>
 
-        <blockquote className="mt-6 font-display text-3xl font-medium leading-[1.3] tracking-tight text-zinc-900 sm:text-4xl">
+        <blockquote className="mt-8 text-2xl leading-[1.4] text-zinc-900 sm:text-[1.75rem] sm:leading-[1.45]">
           &ldquo;{t.quote}&rdquo;
         </blockquote>
 
         {t.outcome_tag && (
           <p
-            className="mt-6 font-mono text-xs tracking-wide"
+            className="mt-8 font-mono text-xs tracking-wide"
             style={{ color: "var(--accent-text)" }}
           >
             {t.outcome_tag}
           </p>
         )}
 
-        <div className="mt-12 flex items-center gap-4 border-t border-zinc-200 pt-8">
+        <div className="mt-14 flex items-center gap-4 border-t border-zinc-200 pt-8">
           {t.author_avatar_url ? (
             <Image
               src={t.author_avatar_url}
@@ -153,16 +153,16 @@ export default async function TestimonialDetailPage({
         </div>
 
         {t.quote_answers && t.quote_answers.length > 1 && (
-          <section className="mt-16 space-y-8 border-t border-zinc-200 pt-10">
+          <section className="mt-20 space-y-10 border-t border-zinc-200 pt-12">
             <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
               More from {t.author_name.split(" ")[0]}
             </p>
             {t.quote_answers.slice(1).map((qa, i) => (
-              <div key={i} className="space-y-2">
-                <p className="font-mono text-xs uppercase tracking-wide text-zinc-500">
+              <div key={i} className="space-y-3">
+                <p className="text-sm font-semibold text-zinc-900">
                   {qa.question_text}
                 </p>
-                <p className="text-base leading-relaxed text-zinc-800">
+                <p className="text-base leading-relaxed text-zinc-700">
                   {qa.answer}
                 </p>
               </div>

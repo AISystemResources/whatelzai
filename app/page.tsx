@@ -1,4 +1,5 @@
 import { Hero } from "@/components/sections/hero";
+import { Intro } from "@/components/sections/intro";
 import { Arc } from "@/components/sections/arc";
 import { Projects } from "@/components/sections/projects";
 import { Wins } from "@/components/sections/wins";
@@ -18,6 +19,7 @@ export default async function Home() {
   return (
     <main>
       <Hero />
+      <Intro />
       <Projects projects={projects} />
       <Arc entries={career} />
       <Wins hackathons={hackathons} />

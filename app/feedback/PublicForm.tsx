@@ -91,10 +91,29 @@ export function PublicForm({
     setOpenedIds(next);
   }
 
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+  const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
+
   function onPickAvatar(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > MAX_AVATAR_BYTES) {
+      setAvatarError(
+        `Photo is ${(file.size / 1024 / 1024).toFixed(1)}MB — please pick one under 5MB, or skip.`,
+      );
+      // Clear the picked file so it won't be submitted
+      if (fileRef.current) fileRef.current.value = "";
+      setPreview(null);
+      return;
+    }
+    setAvatarError(null);
     setPreview(URL.createObjectURL(file));
+  }
+
+  function clearAvatar() {
+    if (fileRef.current) fileRef.current.value = "";
+    setPreview(null);
+    setAvatarError(null);
   }
 
   function updateAffiliation(i: number, patch: Partial<Affiliation>) {
@@ -153,6 +172,20 @@ export function PublicForm({
         <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
           Optional · JPG / PNG / WebP · Under 5MB
         </p>
+        {preview && (
+          <button
+            type="button"
+            onClick={clearAvatar}
+            className="font-mono text-[10px] uppercase tracking-widest text-red-500 transition-colors hover:text-red-700"
+          >
+            Skip photo
+          </button>
+        )}
+        {avatarError && (
+          <p className="max-w-xs border-l-2 border-red-500 bg-red-50 px-3 py-2 text-center text-xs text-red-700">
+            {avatarError}
+          </p>
+        )}
       </div>
 
       {/* Category */}
@@ -356,11 +389,10 @@ export function PublicForm({
                     maxLength={2000}
                     defaultValue={existingAnswers.get(q.id) ?? ""}
                     required={isPrimary}
-                    minLength={isPrimary ? 15 : undefined}
                     className="mt-3 w-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none"
                     placeholder={
                       isPrimary
-                        ? "Your answer here. At least 15 characters."
+                        ? "Your answer — a sentence or more works great."
                         : "Optional."
                     }
                   />

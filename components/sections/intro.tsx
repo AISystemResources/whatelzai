@@ -111,11 +111,9 @@ export function Intro({ site }: { site: SiteIdentity }) {
               </p>
             )}
 
-            <p className="mt-6 font-mono text-[10px] tracking-widest text-zinc-500 uppercase">
-              4 products shipped
-              <span className="mx-2 text-zinc-300">·</span>6 hackathon podiums
-              <span className="mx-2 text-zinc-300">·</span>
-              2× AI Engineering intern @ Prudential
+            <p className="mt-6 text-base leading-relaxed text-zinc-700 sm:text-lg">
+              I build production AI systems, and I train teams to build the
+              same kind of thing. Same person, both jobs.
             </p>
 
             <div className="mt-10 flex flex-wrap gap-3">

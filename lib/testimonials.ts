@@ -218,6 +218,7 @@ export async function completeTestimonial(
     author_linkedin_url: string | null;
     category: TestimonialCategory;
     improvement_note: string | null;
+    service_event_id: string | null;
   },
 ): Promise<Testimonial> {
   const now = new Date().toISOString();
@@ -233,6 +234,7 @@ export async function completeTestimonial(
       author_linkedin_url: input.author_linkedin_url,
       category: input.category,
       improvement_note: input.improvement_note,
+      service_event_id: input.service_event_id,
       status: "pending",
       submitted_at: now,
       updated_at: now,

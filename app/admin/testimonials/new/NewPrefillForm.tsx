@@ -10,7 +10,7 @@ import {
   type TestimonialCategory,
 } from "@/lib/testimonials";
 import { TESTIMONIAL_QUESTIONS } from "@/lib/testimonial-questions";
-import type { ServiceEvent } from "@/lib/service-events";
+import { CATEGORY_EVENT_KINDS, type ServiceEvent } from "@/lib/service-events";
 import {
   Button,
   Field,
@@ -165,6 +165,7 @@ export function NewPrefillForm({ events }: { events: ServiceEvent[] }) {
             onChange={(e) => {
               setCategory(e.target.value as TestimonialCategory);
               setSuggested(new Set());
+              setEventId("");
             }}
             className="w-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none"
           >
@@ -176,20 +177,29 @@ export function NewPrefillForm({ events }: { events: ServiceEvent[] }) {
           </select>
         </Field>
 
-        <Field label="Linked event (optional)">
-          <select
-            value={service_event_id}
-            onChange={(e) => setEventId(e.target.value)}
-            className="w-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none"
-          >
-            <option value="">— None —</option>
-            {events.map((e) => (
-              <option key={e.id} value={e.id}>
-                {e.name}
-              </option>
-            ))}
-          </select>
-        </Field>
+        {(() => {
+          const kinds = CATEGORY_EVENT_KINDS[category] ?? [];
+          const relevant = kinds.length
+            ? events.filter((e) => kinds.includes(e.kind))
+            : [];
+          if (relevant.length === 0) return null;
+          return (
+            <Field label="Linked event (optional)">
+              <select
+                value={service_event_id}
+                onChange={(e) => setEventId(e.target.value)}
+                className="w-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none"
+              >
+                <option value="">— None —</option>
+                {relevant.map((e) => (
+                  <option key={e.id} value={e.id}>
+                    {e.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          );
+        })()}
       </SectionCard>
 
       <SectionCard title="Suggested questions" slug="what to nudge">

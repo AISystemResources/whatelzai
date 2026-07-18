@@ -3,6 +3,7 @@ import Link from "next/link";
 import { PublicForm } from "./PublicForm";
 import { StartForm } from "./StartForm";
 import { getTestimonialByToken } from "@/lib/testimonials";
+import { listServiceEvents } from "@/lib/service-events";
 
 export const metadata: Metadata = {
   title: "Share feedback",
@@ -55,7 +56,10 @@ export default async function NewTestimonialPage({
   }
 
   // Path B: token present — lookup + render full form (or "already submitted" note)
-  const testimonial = await getTestimonialByToken(t);
+  const [testimonial, events] = await Promise.all([
+    getTestimonialByToken(t),
+    listServiceEvents(),
+  ]);
 
   if (!testimonial) {
     return (
@@ -149,7 +153,7 @@ export default async function NewTestimonialPage({
         )}
 
         <div className="mt-14">
-          <PublicForm prefill={testimonial} />
+          <PublicForm prefill={testimonial} events={events} />
         </div>
 
         <div className="mt-16 border-t border-zinc-200 pt-8">

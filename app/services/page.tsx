@@ -1,58 +1,13 @@
 import type { Metadata } from "next";
+import { listServices, type Service, type PricingTier } from "@/lib/services";
 
 export const metadata: Metadata = {
   title: "Services — Edmund Lin Zhenming",
   description:
-    "Landing pages, AI systems, and AI training by Edmund Lin Zhenming. Build fast, ship real.",
+    "AI training, mentorship, digital courses, and system-building by Edmund Lin Zhenming.",
 };
 
-const SERVICES = [
-  {
-    num: "01",
-    type: "Web Development",
-    name: "Landing Pages & Sites",
-    description:
-      "Next.js sites that look like this one — fast, SEO-ready, and deployable in days. Full-stack web apps with clean design, not templates. If you want something that stands out, this is where we start.",
-    deliverables: [
-      "Next.js with App Router — fast, SEO-ready",
-      "Supabase backend or integration with your existing stack",
-      "Auth, payments, email, and analytics",
-      "Deployed to Vercel — live in days, not weeks",
-      "Mobile-responsive from day one",
-    ],
-    proof: "This site was built in a day on the same stack I'd use for yours.",
-  },
-  {
-    num: "02",
-    type: "AI Systems",
-    name: "Production AI",
-    description:
-      "I've shipped AI to 5,000+ Financial Advisors at Prudential. I build systems that hold up under real usage — not polished demos that break when actual users arrive. ATLAS, DoubleLead, and EMDEE are three systems I built and run myself.",
-    deliverables: [
-      "RAG chatbots grounded in your own data",
-      "AI-powered dashboards and internal tools",
-      "Model integration — OpenAI, Groq, Anthropic, local models",
-      "MCP servers for Claude agent workflows",
-      "Agentic pipelines built for production reliability",
-    ],
-    proof: "If it can break in production, I've already broken it on my own systems.",
-  },
-  {
-    num: "03",
-    type: "AI Training",
-    name: "Individuals & Teams",
-    description:
-      "Practical AI workshops for people who want to use AI effectively — not just understand it in theory. Tailored to your tools, your workflow, and your pace. Available for one-off sessions or ongoing coaching.",
-    deliverables: [
-      "Prompt engineering for your specific use cases",
-      "AI workflow design and automation",
-      "Tool selection — what to use and why",
-      "1:1 sessions or group workshops",
-      "Follow-up resources and templates included",
-    ],
-    proof: "For individuals looking to level up, or teams rolling out AI internally.",
-  },
-] as const;
+export const dynamic = "force-dynamic";
 
 const PROCESS = [
   {
@@ -72,68 +27,188 @@ const PROCESS = [
   },
 ] as const;
 
-export default function ServicesPage() {
+const CATEGORY_LABELS: Record<string, string> = {
+  training: "AI Training",
+  mentor: "Mentorship",
+  course: "Digital Course",
+  speak: "Speaking",
+  build: "AI Systems",
+};
+
+function formatAmount(amount: number | null, currency: string): string {
+  if (amount === null || amount === undefined) return "By enquiry";
+  return `${currency} ${amount.toLocaleString("en-SG")}`;
+}
+
+function PricingTable({
+  tiers,
+  currency,
+}: {
+  tiers: PricingTier[];
+  currency: string;
+}) {
   return (
-    <main>
-
-      {/* ── Hero ────────────────────────────────────────────────────── */}
-      <section className="border-b border-zinc-200 px-6 py-24 sm:px-8 sm:py-32">
-        <div className="mx-auto max-w-6xl">
-          <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
-            Freelance Services · By Inquiry
-          </p>
-          <h1 className="mt-6 font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-7xl">
-            Build something
-            <br />
-            <span className="bg-gradient-to-r from-yellow-400 to-amber-500 bg-clip-text text-transparent">
-              worth shipping.
-            </span>
-          </h1>
-          <p className="mt-8 max-w-lg text-base text-zinc-600 sm:text-lg">
-            I take on a small number of client projects alongside building my own
-            systems. Three things I do well — below.
-          </p>
-        </div>
-      </section>
-
-      {/* ── Services ────────────────────────────────────────────────── */}
-      {SERVICES.map((s) => (
-        <section
-          key={s.num}
-          className="border-b border-zinc-200 px-6 py-20 transition-colors duration-300 hover:bg-zinc-50/60 sm:px-8 sm:py-28"
+    <ul className="space-y-2">
+      {tiers.map((t) => (
+        <li
+          key={t.id}
+          className="flex items-baseline justify-between gap-4 border-b border-zinc-100 py-2"
         >
-          <div className="mx-auto max-w-6xl">
+          <div>
+            <p className="text-sm text-zinc-800">{t.label}</p>
+            {t.note && (
+              <p className="mt-0.5 font-mono text-[10px] tracking-wide text-zinc-400">
+                {t.note}
+              </p>
+            )}
+          </div>
+          <p className="font-mono text-sm tabular-nums text-zinc-900">
+            {formatAmount(t.amount, currency)}
+            {t.amount !== null && t.unit && (
+              <span className="ml-1 text-zinc-400">/{t.unit}</span>
+            )}
+          </p>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
-            {/* Number + type rule */}
-            <div className="flex items-center gap-4">
-              <span className="font-mono text-xs tracking-widest text-zinc-300">
-                {s.num}
-              </span>
-              <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
-                {s.type}
-              </span>
-              <div className="flex-1 border-t border-zinc-100" />
-            </div>
+function ServiceBlock({ s, index }: { s: Service; index: number }) {
+  const num = String(index + 1).padStart(2, "0");
+  const typeLabel = CATEGORY_LABELS[s.category] ?? s.category;
+  const comingSoon = s.status === "coming_soon";
+  const showFounding =
+    s.pricing?.founding && s.pricing.founding.public !== false;
 
-            {/* Service heading */}
-            <h2 className="mt-6 font-display text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-              {s.name}
-            </h2>
+  return (
+    <section className="border-b border-zinc-200 px-6 py-20 transition-colors duration-300 hover:bg-zinc-50/60 sm:px-8 sm:py-28">
+      <div className="mx-auto max-w-6xl">
+        <div className="flex items-center gap-4">
+          <span className="font-mono text-xs tracking-widest text-zinc-300">
+            {num}
+          </span>
+          <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
+            {typeLabel}
+          </span>
+          {comingSoon && (
+            <span
+              className="font-mono text-[10px] uppercase tracking-widest"
+              style={{ color: "var(--accent-text)" }}
+            >
+              Coming soon
+            </span>
+          )}
+          <div className="flex-1 border-t border-zinc-100" />
+        </div>
 
-            {/* Description + deliverables */}
-            <div className="mt-10 grid gap-10 lg:grid-cols-2 lg:gap-20">
-              <div>
-                <p className="text-base leading-relaxed text-zinc-600 sm:text-lg">
-                  {s.description}
+        <h2 className="mt-6 font-display text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+          {s.name}
+        </h2>
+        {s.tagline && (
+          <p className="mt-3 max-w-2xl font-mono text-xs tracking-wide text-zinc-500 sm:text-sm">
+            {s.tagline}
+          </p>
+        )}
+
+        <div className="mt-10 grid gap-10 lg:grid-cols-2 lg:gap-20">
+          <div>
+            {s.description && (
+              <p className="text-base leading-relaxed text-zinc-600 sm:text-lg">
+                {s.description}
+              </p>
+            )}
+            {s.audience && (
+              <p className="mt-4 font-mono text-[10px] uppercase tracking-widest text-zinc-400">
+                For: {s.audience}
+              </p>
+            )}
+            {s.proof && (
+              <p className="mt-6 font-mono text-[10px] tracking-wide text-zinc-400">
+                {s.proof}
+              </p>
+            )}
+
+            {s.pricing && (
+              <div className="mt-8">
+                <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
+                  Pricing
                 </p>
-                <p className="mt-6 font-mono text-[10px] tracking-wide text-zinc-400">
-                  {s.proof}
-                </p>
+                <div className="mt-3">
+                  <PricingTable
+                    tiers={s.pricing.tiers}
+                    currency={s.pricing.currency}
+                  />
+                </div>
+
+                {showFounding && s.pricing.founding && (
+                  <div
+                    className="mt-6 border-l-2 p-4"
+                    style={{
+                      borderColor: "var(--accent)",
+                      background:
+                        "color-mix(in srgb, var(--accent) 8%, transparent)",
+                    }}
+                  >
+                    <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-700">
+                      Founding client rate
+                      {s.pricing.founding.expires_after_engagements &&
+                        ` · first ${s.pricing.founding.expires_after_engagements} only`}
+                    </p>
+                    {s.pricing.founding.trade && (
+                      <p className="mt-1 text-xs text-zinc-600">
+                        Traded for {s.pricing.founding.trade}.
+                      </p>
+                    )}
+                    <div className="mt-3">
+                      <PricingTable
+                        tiers={s.pricing.founding.tiers}
+                        currency={s.pricing.currency}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {s.terms && (
+                  <ul className="mt-5 space-y-1 font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+                    {s.terms.deposit_pct !== undefined && (
+                      <li>· {s.terms.deposit_pct}% deposit confirms booking</li>
+                    )}
+                    {s.terms.cap_pax !== undefined && (
+                      <li>· Capped at {s.terms.cap_pax} pax (add-ons above)</li>
+                    )}
+                    {s.terms.notes?.map((n) => (
+                      <li key={n}>· {n}</li>
+                    ))}
+                  </ul>
+                )}
               </div>
+            )}
 
-              <ul className="space-y-3">
+            {(s.cta_label || s.cta_url) && (
+              <div className="mt-10">
+                <a
+                  href={s.cta_url ?? "mailto:elz.work22@gmail.com"}
+                  className="inline-flex items-center gap-2 border border-zinc-900 px-5 py-3 font-mono text-xs tracking-widest uppercase transition-colors hover:bg-[var(--accent)] hover:text-zinc-900"
+                >
+                  {s.cta_label ?? "Get in touch"}
+                  <span aria-hidden="true">→</span>
+                </a>
+              </div>
+            )}
+          </div>
+
+          {s.deliverables && s.deliverables.length > 0 && (
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
+                What you get
+              </p>
+              <ul className="mt-4 space-y-3">
                 {s.deliverables.map((item) => (
-                  <li key={item} className="flex items-start gap-3 text-zinc-700">
+                  <li
+                    key={item}
+                    className="flex items-start gap-3 text-zinc-700"
+                  >
                     <span
                       className="mt-[3px] shrink-0 text-xs"
                       style={{ color: "var(--accent-text)" }}
@@ -146,26 +221,65 @@ export default function ServicesPage() {
                 ))}
               </ul>
             </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
 
+export default async function ServicesPage() {
+  const services = await listServices(true);
+
+  return (
+    <main>
+      <section className="border-b border-zinc-200 px-6 py-24 sm:px-8 sm:py-32">
+        <div className="mx-auto max-w-6xl">
+          <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
+            Services · By enquiry
+          </p>
+          <h1 className="mt-6 font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-7xl">
+            Work
+            <br />
+            <span className="bg-gradient-to-r from-yellow-400 to-amber-500 bg-clip-text text-transparent">
+              with me.
+            </span>
+          </h1>
+          <p className="mt-8 max-w-lg text-base text-zinc-600 sm:text-lg">
+            Training, mentorship, and digital courses — plus a small number of
+            client builds alongside my own systems. Everything below is what I
+            actually do; nothing is a placeholder.
+          </p>
+        </div>
+      </section>
+
+      {services.length === 0 ? (
+        <section className="border-b border-zinc-200 px-6 py-20 sm:px-8 sm:py-28">
+          <div className="mx-auto max-w-6xl">
+            <p className="font-mono text-sm text-zinc-500">
+              Catalogue is being updated. Email me directly at{" "}
+              <a className="underline" href="mailto:elz.work22@gmail.com">
+                elz.work22@gmail.com
+              </a>
+              .
+            </p>
           </div>
         </section>
-      ))}
+      ) : (
+        services.map((s, i) => <ServiceBlock key={s.id} s={s} index={i} />)
+      )}
 
-      {/* ── Process ─────────────────────────────────────────────────── */}
       <section className="border-b border-zinc-200 px-6 py-20 sm:px-8 sm:py-28">
         <div className="mx-auto max-w-6xl">
-
           <div className="flex items-center gap-4">
             <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
               How it works
             </span>
             <div className="flex-1 border-t border-zinc-100" />
           </div>
-
           <h2 className="mt-6 font-display text-3xl font-bold tracking-tight sm:text-4xl">
             Simple process
           </h2>
-
           <ol className="mt-10 grid gap-8 sm:grid-cols-3">
             {PROCESS.map(({ n, title, body }) => (
               <li key={n} className="flex gap-5">
@@ -182,11 +296,9 @@ export default function ServicesPage() {
               </li>
             ))}
           </ol>
-
         </div>
       </section>
 
-      {/* ── Final CTA ───────────────────────────────────────────────── */}
       <section className="px-6 py-24 sm:px-8 sm:py-32">
         <div className="mx-auto max-w-6xl">
           <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
@@ -196,8 +308,8 @@ export default function ServicesPage() {
             Ready to build?
           </h2>
           <p className="mt-5 max-w-md text-base text-zinc-600">
-            I&apos;m selective — I take projects where I can do my best work.
-            If it&apos;s not a fit, I&apos;ll say so early.
+            I&apos;m selective — I take work where I can do my best. If
+            it&apos;s not a fit, I&apos;ll say so early.
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
             <a
@@ -217,7 +329,6 @@ export default function ServicesPage() {
           </div>
         </div>
       </section>
-
     </main>
   );
 }

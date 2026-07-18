@@ -1,29 +1,18 @@
 import { ClerkProvider } from "@clerk/nextjs";
-import { auth } from "@clerk/nextjs/server";
-import { supabaseAdmin } from "@/lib/supabase-server";
 import { notFound } from "next/navigation";
+import { ensureUserRow, isAdminRole } from "@/lib/users";
 
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { userId } = await auth();
-  const { data } = await supabaseAdmin
-    .from("system_config")
-    .select("value")
-    .eq("key", "clerk_admin_user_id")
-    .single();
-
-  if (!userId || !data?.value || userId !== data.value) {
-    notFound();
-  }
+  const user = await ensureUserRow();
+  if (!user || !isAdminRole(user.role)) notFound();
 
   return (
     <ClerkProvider>
-      <div className="mx-auto max-w-5xl px-6 py-6">
-        {children}
-      </div>
+      <div className="mx-auto max-w-5xl px-6 py-6">{children}</div>
     </ClerkProvider>
   );
 }

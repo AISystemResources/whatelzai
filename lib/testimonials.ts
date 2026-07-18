@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { supabaseAdmin } from "./supabase-server";
+import { slugify } from "./slug";
 
 export type TestimonialCategory =
   | "trainer"
@@ -126,6 +127,29 @@ export async function getTestimonial(id: string): Promise<Testimonial | null> {
     .maybeSingle();
   if (error) throw new Error(`getTestimonial: ${error.message}`);
   return data as Testimonial | null;
+}
+
+// URL slug is `<kebab-name>-<first-8-of-id>`. Deterministic per row without a migration.
+export function testimonialSlug(t: Pick<Testimonial, "id" | "author_name">): string {
+  const name = slugify(t.author_name || "", 60) || "voice";
+  return `${name}-${t.id.slice(0, 8)}`;
+}
+
+export async function getTestimonialBySlug(
+  slug: string,
+): Promise<Testimonial | null> {
+  const m = slug.match(/-([0-9a-f]{8})$/i);
+  if (!m) return null;
+  const idPrefix = m[1].toLowerCase();
+  const { data, error } = await supabaseAdmin
+    .from("testimonials")
+    .select("*")
+    .ilike("id", `${idPrefix}%`)
+    .limit(2);
+  if (error || !data || data.length !== 1) return null;
+  const row = data[0] as Testimonial;
+  if (row.status !== "approved" || !row.published) return null;
+  return row;
 }
 
 export async function getTestimonialByToken(

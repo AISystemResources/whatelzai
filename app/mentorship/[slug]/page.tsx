@@ -1,27 +1,32 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
-import { listMentorship, getMentorshipBySlug } from '@/lib/mentorship';
-import { ContentRenderer } from '@/components/shell/ContentRenderer';
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { listMentorship, getMentorshipBySlug } from "@/lib/mentorship";
+import { ContentRenderer } from "@/components/shell/ContentRenderer";
+import { getSiteIdentity } from "@/lib/site-identity";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateStaticParams() {
   const entries = await listMentorship(true);
-  return entries.map(e => ({ slug: e.slug }));
+  return entries.map((e) => ({ slug: e.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const entry = await getMentorshipBySlug(slug);
+  const [entry, s] = await Promise.all([
+    getMentorshipBySlug(slug),
+    getSiteIdentity(),
+  ]);
   if (!entry) return {};
-  return { title: `${entry.programme} — ${entry.organiser} — Edmund Lin Zhenming` };
+  return { title: `${entry.programme} — ${entry.organiser} — ${s.owner_name}` };
 }
 
 function formatPeriod(start: string, end: string | null): string {
-  const fmt = (d: string) => new Date(d).toLocaleDateString('en-SG', { month: 'long', year: 'numeric' });
+  const fmt = (d: string) =>
+    new Date(d).toLocaleDateString("en-SG", { month: "long", year: "numeric" });
   return end ? `${fmt(start)} – ${fmt(end)}` : `${fmt(start)} – Present`;
 }
 
@@ -52,8 +57,10 @@ export default async function MentorshipDetailPage({ params }: Props) {
 
         {entry.tags.length > 0 && (
           <div className="mt-4 flex flex-wrap gap-2">
-            {entry.tags.map(t => (
-              <span key={t} className="font-mono text-xs text-zinc-400">#{t}</span>
+            {entry.tags.map((t) => (
+              <span key={t} className="font-mono text-xs text-zinc-400">
+                #{t}
+              </span>
             ))}
           </div>
         )}

@@ -4,6 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import "./globals.css";
 import { ShellProvider } from "@/components/shell/ShellProvider";
 import { supabaseAdmin } from "@/lib/supabase-server";
+import { getSiteIdentity } from "@/lib/site-identity";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,133 +23,79 @@ const syne = Syne({
 });
 
 const SITE_URL = "https://whatelz.ai";
-const SITE_TITLE = "whatelz.ai — Edmund Lin Zhenming";
-const SITE_DESCRIPTION =
-  "What else can you build with AI? Edmund Lin Zhenming is an AI engineer and founder building ATLAS (trading AI), DoubleLead (CRM AI), and EMDEE (knowledge graph). Available for landing pages, production AI systems, and AI training.";
+const SITE_NAME = "whatelz.ai";
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  title: {
-    default: SITE_TITLE,
-    template: "%s — whatelz.ai",
-  },
-  description: SITE_DESCRIPTION,
-  keywords: [
-    "AI engineer",
-    "build with AI",
-    "what else can you build with AI",
-    "AI systems",
-    "production AI",
-    "AI training",
-    "landing pages Next.js",
-    "Edmund Lin Zhenming",
-    "whatelz",
-    "ATLAS trading AI",
-    "DoubleLead CRM",
-    "EMDEE knowledge graph",
-  ],
-  applicationName: "whatelz.ai",
-  authors: [{ name: "Edmund Lin Zhenming", url: SITE_URL }],
-  creator: "Edmund Lin Zhenming",
-  openGraph: {
-    type: "profile",
-    url: SITE_URL,
-    title: SITE_TITLE,
-    description: SITE_DESCRIPTION,
-    siteName: "whatelz.ai",
-    firstName: "Edmund",
-    lastName: "Lin Zhenming",
-    username: "whatelzai",
-    images: [
-      {
-        url: `${SITE_URL}/api/og?title=${encodeURIComponent("whatelz.ai")}&subtitle=${encodeURIComponent("What else can you build with AI? — Edmund Lin Zhenming")}`,
-        width: 1200,
-        height: 630,
-        alt: "whatelz.ai — Edmund Lin Zhenming",
-      },
+export async function generateMetadata(): Promise<Metadata> {
+  const s = await getSiteIdentity();
+  const title = `${SITE_NAME} — ${s.owner_name}`;
+  const description = s.meta_description ?? s.tagline ?? SITE_NAME;
+  const ogSubtitle = `${s.tagline ?? SITE_NAME} — ${s.owner_name}`;
+  const ogImage = `${SITE_URL}/api/og?title=${encodeURIComponent(SITE_NAME)}&subtitle=${encodeURIComponent(ogSubtitle)}`;
+  const [firstName, ...rest] = s.owner_name.split(" ");
+  const lastName = rest.join(" ");
+
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: {
+      default: title,
+      template: `%s — ${SITE_NAME}`,
+    },
+    description,
+    keywords: [
+      "AI engineer",
+      "build with AI",
+      "what else can you build with AI",
+      "AI systems",
+      "production AI",
+      "AI training",
+      "landing pages Next.js",
+      s.owner_name,
+      "whatelz",
+      "ATLAS trading AI",
+      "DoubleLead CRM",
+      "EMDEE knowledge graph",
     ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: SITE_TITLE,
-    description: SITE_DESCRIPTION,
-    creator: "@whatelzai",
-    images: [
-      `${SITE_URL}/api/og?title=${encodeURIComponent("whatelz.ai")}&subtitle=${encodeURIComponent("What else can you build with AI? — Edmund Lin Zhenming")}`,
-    ],
-  },
-  alternates: {
-    canonical: SITE_URL,
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
+    applicationName: SITE_NAME,
+    authors: [{ name: s.owner_name, url: SITE_URL }],
+    creator: s.owner_name,
+    openGraph: {
+      type: "profile",
+      url: SITE_URL,
+      title,
+      description,
+      siteName: SITE_NAME,
+      firstName,
+      lastName,
+      username: "whatelzai",
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: `${SITE_NAME} — ${s.owner_name}`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      creator: "@whatelzai",
+      images: [ogImage],
+    },
+    alternates: { canonical: SITE_URL },
+    robots: {
       index: true,
       follow: true,
-      "max-snippet": -1,
-      "max-image-preview": "large",
-    },
-  },
-};
-
-const JSON_LD = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Person",
-      "@id": `${SITE_URL}/#person`,
-      name: "Edmund Lin Zhenming",
-      url: SITE_URL,
-      jobTitle: "AI Engineer & Founder",
-      description:
-        "AI engineer and founder building AI systems — ATLAS (autonomous trading), DoubleLead (AI CRM), and EMDEE (knowledge graph). What else can you build with AI?",
-      sameAs: [
-        "https://www.instagram.com/whatelz.ai/",
-        "https://www.linkedin.com/in/whatelzai/",
-        "https://www.youtube.com/@whatelzai",
-        "https://medium.com/@whatelz.ai",
-        "https://github.com/whatelzai",
-      ],
-      knowsAbout: [
-        "Artificial Intelligence",
-        "AI Systems Engineering",
-        "Large Language Models",
-        "Retrieval-Augmented Generation",
-        "Next.js",
-        "TypeScript",
-        "Supabase",
-        "AI Training",
-      ],
-    },
-    {
-      "@type": "WebSite",
-      "@id": `${SITE_URL}/#website`,
-      url: SITE_URL,
-      name: "whatelz.ai",
-      description: SITE_DESCRIPTION,
-      author: { "@id": `${SITE_URL}/#person` },
-      potentialAction: {
-        "@type": "SearchAction",
-        target: {
-          "@type": "EntryPoint",
-          urlTemplate: `${SITE_URL}/blog?q={search_term_string}`,
-        },
-        "query-input": "required name=search_term_string",
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-snippet": -1,
+        "max-image-preview": "large",
       },
     },
-    {
-      "@type": "ProfessionalService",
-      "@id": `${SITE_URL}/services#service`,
-      name: "whatelz.ai Services",
-      url: `${SITE_URL}/services`,
-      provider: { "@id": `${SITE_URL}/#person` },
-      serviceType: ["Web Development", "AI Systems", "AI Training"],
-      description:
-        "Landing pages and sites, production AI systems, and AI training for individuals and businesses.",
-    },
-  ],
-};
+  };
+}
 
 async function getIsAdmin(): Promise<boolean> {
   try {
@@ -168,7 +115,65 @@ async function getIsAdmin(): Promise<boolean> {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const isAdmin = await getIsAdmin();
+  const [isAdmin, s] = await Promise.all([getIsAdmin(), getSiteIdentity()]);
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Person",
+        "@id": `${SITE_URL}/#person`,
+        name: s.owner_name,
+        url: SITE_URL,
+        jobTitle: "AI Engineer & Founder",
+        description:
+          s.meta_description ?? "AI engineer and founder building AI systems.",
+        sameAs: [
+          "https://www.instagram.com/whatelz.ai/",
+          s.linkedin_url,
+          "https://www.youtube.com/@whatelzai",
+          "https://medium.com/@whatelz.ai",
+          "https://github.com/whatelzai",
+        ].filter(Boolean),
+        knowsAbout: [
+          "Artificial Intelligence",
+          "AI Systems Engineering",
+          "Large Language Models",
+          "Retrieval-Augmented Generation",
+          "Next.js",
+          "TypeScript",
+          "Supabase",
+          "AI Training",
+        ],
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${SITE_URL}/#website`,
+        url: SITE_URL,
+        name: SITE_NAME,
+        description: s.meta_description ?? s.tagline ?? SITE_NAME,
+        author: { "@id": `${SITE_URL}/#person` },
+        potentialAction: {
+          "@type": "SearchAction",
+          target: {
+            "@type": "EntryPoint",
+            urlTemplate: `${SITE_URL}/blog?q={search_term_string}`,
+          },
+          "query-input": "required name=search_term_string",
+        },
+      },
+      {
+        "@type": "ProfessionalService",
+        "@id": `${SITE_URL}/services#service`,
+        name: `${SITE_NAME} Services`,
+        url: `${SITE_URL}/services`,
+        provider: { "@id": `${SITE_URL}/#person` },
+        serviceType: ["Web Development", "AI Systems", "AI Training"],
+        description:
+          "Landing pages and sites, production AI systems, and AI training for individuals and businesses.",
+      },
+    ],
+  };
 
   return (
     <html
@@ -178,11 +183,13 @@ export default async function RootLayout({
       <head>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
       <body className="min-h-full bg-[var(--background)] text-[var(--foreground)]">
-        <ShellProvider isAdmin={isAdmin}>{children}</ShellProvider>
+        <ShellProvider isAdmin={isAdmin} ownerName={s.owner_name}>
+          {children}
+        </ShellProvider>
       </body>
     </html>
   );

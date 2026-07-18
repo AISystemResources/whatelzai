@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { listProjects, getProjectBySlug } from "@/lib/projects";
 import { ContentRenderer } from "@/components/shell/ContentRenderer";
+import { getSiteIdentity } from "@/lib/site-identity";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -14,12 +15,15 @@ const SITE_URL = "https://whatelz.ai";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const project = await getProjectBySlug(slug);
+  const [project, s] = await Promise.all([
+    getProjectBySlug(slug),
+    getSiteIdentity(),
+  ]);
   if (!project) return {};
   const url = `${SITE_URL}/projects/${slug}`;
   const ogUrl = `${SITE_URL}/api/og?eyebrow=${encodeURIComponent("Project")}&title=${encodeURIComponent(project.name)}&subtitle=${encodeURIComponent(project.tagline ?? "")}`;
   return {
-    title: `${project.name} — Edmund Lin`,
+    title: `${project.name} — ${s.owner_short_name}`,
     description: project.tagline ?? undefined,
     alternates: { canonical: url },
     openGraph: {

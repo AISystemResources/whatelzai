@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { getPost, getAllPosts } from "@/lib/blog";
+import { getSiteIdentity } from "@/lib/site-identity";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -14,12 +15,12 @@ const SITE_URL = "https://whatelz.ai";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const result = await getPost(slug);
+  const [result, site] = await Promise.all([getPost(slug), getSiteIdentity()]);
   if (!result) return {};
   const url = `${SITE_URL}/blog/${slug}`;
   const ogUrl = `${SITE_URL}/api/og?eyebrow=${encodeURIComponent("Blog")}&title=${encodeURIComponent(result.meta.title)}&subtitle=${encodeURIComponent(result.meta.summary || "")}`;
   return {
-    title: `${result.meta.title} — Edmund Lin Zhenming`,
+    title: `${result.meta.title} — ${site.owner_name}`,
     description: result.meta.summary || undefined,
     alternates: { canonical: url },
     openGraph: {
@@ -29,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: result.meta.summary || undefined,
       publishedTime: result.meta.date || undefined,
       tags: result.meta.tags,
-      authors: ["Edmund Lin Zhenming"],
+      authors: [site.owner_name],
       images: [
         { url: ogUrl, width: 1200, height: 630, alt: result.meta.title },
       ],

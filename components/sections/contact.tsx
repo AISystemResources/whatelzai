@@ -1,8 +1,15 @@
 import { ContactForm } from "@/components/sections/contact-form";
+import { getSiteIdentity } from "@/lib/site-identity";
 
-export function Contact() {
+export async function Contact() {
+  const s = await getSiteIdentity();
   return (
-    <section id="contact" data-section="Contact" data-section-href="/contact" className="px-6 py-24 sm:px-8 sm:py-32">
+    <section
+      id="contact"
+      data-section="Contact"
+      data-section-href="/contact"
+      className="px-6 py-24 sm:px-8 sm:py-32"
+    >
       <div className="mx-auto max-w-4xl">
         <p className="font-mono text-xs tracking-widest text-zinc-500 uppercase">
           Contact
@@ -14,27 +21,31 @@ export function Contact() {
           Drop a message below. LinkedIn DMs work too.
         </p>
 
-        <ContactForm />
+        <ContactForm fallbackEmail={s.email} />
 
         <div className="mt-8 flex flex-wrap items-center gap-6 font-mono text-xs text-zinc-500">
-          <p>
-            Prefer LinkedIn?{" "}
+          {s.linkedin_url && (
+            <p>
+              Prefer LinkedIn?{" "}
+              <a
+                href={s.linkedin_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline underline-offset-2 hover:text-zinc-900"
+              >
+                Send a DM ↗
+              </a>
+            </p>
+          )}
+          {s.resume_url && (
             <a
-              href="https://www.linkedin.com/in/whatelzai/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline underline-offset-2 hover:text-zinc-900"
+              href={s.resume_url}
+              download
+              className="inline-flex items-center gap-1.5 underline underline-offset-2 hover:text-zinc-900"
             >
-              Send a DM ↗
+              Download CV ↓
             </a>
-          </p>
-          <a
-            href="/edmund-lin-resume.pdf"
-            download
-            className="inline-flex items-center gap-1.5 underline underline-offset-2 hover:text-zinc-900"
-          >
-            Download CV ↓
-          </a>
+          )}
         </div>
       </div>
     </section>

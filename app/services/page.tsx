@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import { listServices, type Service, type PricingTier } from "@/lib/services";
+import { getSiteIdentity } from "@/lib/site-identity";
 
-export const metadata: Metadata = {
-  title: "Services — Edmund Lin Zhenming",
-  description:
-    "AI training, mentorship, digital courses, and system-building by Edmund Lin Zhenming.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const s = await getSiteIdentity();
+  return {
+    title: `Services — ${s.owner_name}`,
+    description: `AI training, mentorship, digital courses, and system-building by ${s.owner_name}.`,
+  };
+}
 
 export const dynamic = "force-dynamic";
 
@@ -74,7 +77,15 @@ function PricingTable({
   );
 }
 
-function ServiceBlock({ s, index }: { s: Service; index: number }) {
+function ServiceBlock({
+  s,
+  index,
+  fallbackEmail,
+}: {
+  s: Service;
+  index: number;
+  fallbackEmail: string;
+}) {
   const num = String(index + 1).padStart(2, "0");
   const typeLabel = CATEGORY_LABELS[s.category] ?? s.category;
   const comingSoon = s.status === "coming_soon";
@@ -188,7 +199,7 @@ function ServiceBlock({ s, index }: { s: Service; index: number }) {
             {(s.cta_label || s.cta_url) && (
               <div className="mt-10">
                 <a
-                  href={s.cta_url ?? "mailto:elz.work22@gmail.com"}
+                  href={s.cta_url ?? `mailto:${fallbackEmail}`}
                   className="inline-flex items-center gap-2 border border-zinc-900 px-5 py-3 font-mono text-xs tracking-widest uppercase transition-colors hover:bg-[var(--accent)] hover:text-zinc-900"
                 >
                   {s.cta_label ?? "Get in touch"}
@@ -229,7 +240,10 @@ function ServiceBlock({ s, index }: { s: Service; index: number }) {
 }
 
 export default async function ServicesPage() {
-  const services = await listServices(true);
+  const [services, site] = await Promise.all([
+    listServices(true),
+    getSiteIdentity(),
+  ]);
 
   return (
     <main>
@@ -258,15 +272,17 @@ export default async function ServicesPage() {
           <div className="mx-auto max-w-6xl">
             <p className="font-mono text-sm text-zinc-500">
               Catalogue is being updated. Email me directly at{" "}
-              <a className="underline" href="mailto:elz.work22@gmail.com">
-                elz.work22@gmail.com
+              <a className="underline" href={`mailto:${site.email}`}>
+                {site.email}
               </a>
               .
             </p>
           </div>
         </section>
       ) : (
-        services.map((s, i) => <ServiceBlock key={s.id} s={s} index={i} />)
+        services.map((s, i) => (
+          <ServiceBlock key={s.id} s={s} index={i} fallbackEmail={site.email} />
+        ))
       )}
 
       <section className="border-b border-zinc-200 px-6 py-20 sm:px-8 sm:py-28">
@@ -313,19 +329,21 @@ export default async function ServicesPage() {
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
             <a
-              href="mailto:elz.work22@gmail.com"
+              href={`mailto:${site.email}`}
               className="inline-flex items-center gap-2 border border-zinc-900 px-5 py-3 font-mono text-xs tracking-widest uppercase transition-colors hover:bg-[var(--accent)] hover:text-zinc-900"
             >
               Start with an email <span aria-hidden="true">→</span>
             </a>
-            <a
-              href="https://www.linkedin.com/in/edmund-lin-zhenming/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 border border-zinc-300 px-5 py-3 font-mono text-xs tracking-widest uppercase text-zinc-700 transition-colors hover:border-zinc-900 hover:text-zinc-900"
-            >
-              LinkedIn <span aria-hidden="true">↗</span>
-            </a>
+            {site.linkedin_url && (
+              <a
+                href={site.linkedin_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 border border-zinc-300 px-5 py-3 font-mono text-xs tracking-widest uppercase text-zinc-700 transition-colors hover:border-zinc-900 hover:text-zinc-900"
+              >
+                LinkedIn <span aria-hidden="true">↗</span>
+              </a>
+            )}
           </div>
         </div>
       </section>

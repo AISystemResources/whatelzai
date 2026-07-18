@@ -6,13 +6,14 @@ import { revalidatePath } from "next/cache";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { checkRateLimit } from "@/lib/rate-limit";
 import {
-  createPublicSubmission,
+  completeTestimonial,
+  createIncompleteTestimonial,
+  getTestimonialByToken,
   TESTIMONIAL_CATEGORIES,
   type TestimonialCategory,
   type QuoteAnswer,
 } from "@/lib/testimonials";
 import { TESTIMONIAL_QUESTIONS } from "@/lib/testimonial-questions";
-import { getInviteByToken, markInviteUsed } from "@/lib/testimonial-invites";
 
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
 const ALLOWED_MIME = new Set([
@@ -31,12 +32,21 @@ function clean(v: FormDataEntryValue | null, max = 1000): string {
   return v.trim().slice(0, max);
 }
 
+async function requireRateLimit(): Promise<void> {
+  const hdrs = await headers();
+  const ip =
+    hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    hdrs.get("x-real-ip") ??
+    "unknown";
+  const rl = checkRateLimit(ip);
+  if (!rl.allowed) throw new Error("rate-limited");
+}
+
 async function uploadAvatar(file: File): Promise<string | null> {
   if (!file || file.size === 0) return null;
   if (file.size > MAX_AVATAR_BYTES) throw new Error("Avatar exceeds 5MB");
   if (!ALLOWED_MIME.has(file.type))
     throw new Error("Avatar must be JPG, PNG, WebP, or GIF");
-
   const ext =
     file.type === "image/png"
       ? "png"
@@ -46,35 +56,57 @@ async function uploadAvatar(file: File): Promise<string | null> {
           ? "gif"
           : "jpg";
   const path = `${crypto.randomUUID()}.${ext}`;
-
   const { error } = await supabaseAdmin.storage
     .from("testimonial-avatars")
     .upload(path, file, { contentType: file.type, upsert: false });
   if (error) throw new Error(`Avatar upload failed: ${error.message}`);
-
   const { data } = supabaseAdmin.storage
     .from("testimonial-avatars")
     .getPublicUrl(path);
   return data.publicUrl;
 }
 
-export async function submitPublicTestimonial(
+// STAGE 1: user-initiated. Email input only. Creates incomplete testimonial + token.
+export async function startTestimonial(
   _prev: { error?: string } | null,
   formData: FormData,
 ): Promise<{ error?: string }> {
-  // Honeypot
   if (clean(formData.get("website"), 200)) {
     redirect("/testimonials/thank-you");
   }
 
-  // Rate limit
-  const hdrs = await headers();
-  const ip =
-    hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    hdrs.get("x-real-ip") ??
-    "unknown";
-  const rl = checkRateLimit(ip);
-  if (!rl.allowed) {
+  try {
+    await requireRateLimit();
+  } catch {
+    return bad("Too many attempts. Please try again later.");
+  }
+
+  const email = clean(formData.get("author_email"), 200);
+  if (!email) return bad("Please share your email to get started.");
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return bad("That doesn't look like a valid email.");
+  }
+
+  const t = await createIncompleteTestimonial({
+    category: "friend",
+    author_email: email,
+  });
+
+  redirect(`/testimonials/new?t=${t.completion_token}`);
+}
+
+// STAGE 2: the final submission (any path).
+export async function submitPublicTestimonial(
+  _prev: { error?: string } | null,
+  formData: FormData,
+): Promise<{ error?: string }> {
+  if (clean(formData.get("website"), 200)) {
+    redirect("/testimonials/thank-you");
+  }
+
+  try {
+    await requireRateLimit();
+  } catch {
     return bad("Too many submissions from this network. Please try again later.");
   }
 
@@ -85,7 +117,7 @@ export async function submitPublicTestimonial(
   const author_linkedin_url =
     clean(formData.get("author_linkedin_url"), 500) || null;
   const categoryRaw = clean(formData.get("category"), 50);
-  const inviteToken = clean(formData.get("invite_token"), 40) || null;
+  const token = clean(formData.get("completion_token"), 40) || null;
 
   const category = (TESTIMONIAL_CATEGORIES as readonly string[]).includes(
     categoryRaw,
@@ -93,21 +125,15 @@ export async function submitPublicTestimonial(
     ? (categoryRaw as TestimonialCategory)
     : "friend";
 
-  // Collect answered questions.
   const questions = TESTIMONIAL_QUESTIONS[category] ?? [];
   const quote_answers: QuoteAnswer[] = [];
   for (const q of questions) {
-    const answer = clean(formData.get(`answer_${q.id}`), 2000);
-    if (answer.length >= 15) {
-      quote_answers.push({
-        question_id: q.id,
-        question_text: q.text,
-        answer,
-      });
+    const a = clean(formData.get(`answer_${q.id}`), 2000);
+    if (a.length >= 15) {
+      quote_answers.push({ question_id: q.id, question_text: q.text, answer: a });
     }
   }
 
-  // Validate
   if (!author_name) return bad("Please tell me your name.");
   if (!author_email) return bad("Please share your email — it stays private.");
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(author_email)) {
@@ -120,7 +146,6 @@ export async function submitPublicTestimonial(
     return bad("Please answer at least one question — 15+ characters.");
   }
 
-  // Optional avatar
   let author_avatar_url: string | null = null;
   const file = formData.get("avatar");
   if (file instanceof File && file.size > 0) {
@@ -131,34 +156,53 @@ export async function submitPublicTestimonial(
     }
   }
 
-  // The primary "quote" for card display: the first answer.
   const quote = quote_answers[0].answer;
 
   try {
-    const submission = await createPublicSubmission({
-      quote,
-      quote_answers,
-      author_name,
-      author_role,
-      author_company,
-      author_avatar_url,
-      author_email,
-      author_linkedin_url,
-      category,
-    });
+    let targetId: string | null = null;
+    if (token) {
+      const existing = await getTestimonialByToken(token);
+      if (existing) targetId = existing.id;
+    }
 
-    // Mark invite consumed if this came from one.
-    if (inviteToken) {
-      const invite = await getInviteByToken(inviteToken);
-      if (invite && !invite.used_at) {
-        await markInviteUsed(inviteToken, submission.id);
-      }
+    if (targetId) {
+      await completeTestimonial(targetId, {
+        quote,
+        quote_answers,
+        author_name,
+        author_role,
+        author_company,
+        author_avatar_url,
+        author_email,
+        author_linkedin_url,
+        category,
+      });
+    } else {
+      // Cold path: create fresh, immediately go to pending.
+      const fresh = await createIncompleteTestimonial({
+        category,
+        author_name,
+        author_email,
+        author_role: author_role ?? undefined,
+        author_company: author_company ?? undefined,
+        author_linkedin_url: author_linkedin_url ?? undefined,
+      });
+      await completeTestimonial(fresh.id, {
+        quote,
+        quote_answers,
+        author_name,
+        author_role,
+        author_company,
+        author_avatar_url,
+        author_email,
+        author_linkedin_url,
+        category,
+      });
     }
   } catch {
     return bad("Something went wrong saving your testimonial. Please try again.");
   }
 
   revalidatePath("/admin/testimonials");
-  revalidatePath("/admin/testimonials/invites");
   redirect("/testimonials/thank-you");
 }

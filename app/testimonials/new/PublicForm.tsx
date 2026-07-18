@@ -7,6 +7,7 @@ import {
   TESTIMONIAL_CATEGORIES,
   CATEGORY_LABELS,
   SUBMITTER_ROLE_LABELS,
+  type Testimonial,
   type TestimonialCategory,
 } from "@/lib/testimonials";
 import {
@@ -14,34 +15,24 @@ import {
   type TestimonialQuestion,
 } from "@/lib/testimonial-questions";
 
-export interface PublicFormPrefill {
-  author_name?: string;
-  author_role?: string;
-  author_company?: string;
-  author_email?: string;
-  author_linkedin_url?: string;
-  category?: TestimonialCategory;
-  question_ids?: string[];
-  token?: string;
-}
-
-export function PublicForm({ prefill }: { prefill: PublicFormPrefill }) {
+export function PublicForm({ prefill }: { prefill: Testimonial }) {
   const [state, action, pending] = useActionState(
     submitPublicTestimonial,
     null,
   );
-  const [category, setCategory] = useState<TestimonialCategory>(
-    prefill.category ?? "friend",
-  );
-  const [preview, setPreview] = useState<string | null>(null);
+  const [category, setCategory] = useState<TestimonialCategory>(prefill.category);
+  const [preview, setPreview] = useState<string | null>(prefill.author_avatar_url);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const questions: TestimonialQuestion[] = TESTIMONIAL_QUESTIONS[category] ?? [];
-  const highlightedIds = new Set(prefill.question_ids ?? []);
+  const highlightedIds = new Set(prefill.suggested_question_ids ?? []);
+  const existingAnswers = new Map(
+    (prefill.quote_answers ?? []).map((a) => [a.question_id, a.answer]),
+  );
 
   function onPickAvatar(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (!file) return setPreview(null);
+    if (!file) return;
     setPreview(URL.createObjectURL(file));
   }
 
@@ -89,7 +80,7 @@ export function PublicForm({ prefill }: { prefill: PublicFormPrefill }) {
         </p>
       </div>
 
-      {/* Category dropdown */}
+      {/* Category */}
       <div>
         <label className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
           Where do you know me from?
@@ -170,7 +161,7 @@ export function PublicForm({ prefill }: { prefill: PublicFormPrefill }) {
             placeholder="you@example.com"
           />
           <p className="mt-1 font-mono text-[10px] text-zinc-400">
-            Kept private. I use it to reply, never displayed.
+            Private. Never displayed.
           </p>
         </div>
         <div>
@@ -186,7 +177,7 @@ export function PublicForm({ prefill }: { prefill: PublicFormPrefill }) {
             placeholder="https://www.linkedin.com/in/…"
           />
           <p className="mt-1 font-mono text-[10px] text-zinc-400">
-            Shown alongside your quote as proof of authority (not spam).
+            Public — proof of authority.
           </p>
         </div>
       </div>
@@ -227,9 +218,9 @@ export function PublicForm({ prefill }: { prefill: PublicFormPrefill }) {
                   name={`answer_${q.id}`}
                   rows={3}
                   maxLength={2000}
+                  defaultValue={existingAnswers.get(q.id) ?? ""}
                   className="mt-3 w-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none"
                   placeholder="Skip if you don't want to answer this one."
-                  autoFocus={highlighted && highlightedIds.size === 1}
                 />
               </div>
             );
@@ -237,9 +228,12 @@ export function PublicForm({ prefill }: { prefill: PublicFormPrefill }) {
         </div>
       </div>
 
-      {/* Hidden: token so server can mark it used */}
-      {prefill.token && (
-        <input type="hidden" name="invite_token" value={prefill.token} />
+      {prefill.completion_token && (
+        <input
+          type="hidden"
+          name="completion_token"
+          value={prefill.completion_token}
+        />
       )}
 
       {/* Honeypot */}
@@ -266,7 +260,7 @@ export function PublicForm({ prefill }: { prefill: PublicFormPrefill }) {
       </button>
 
       <p className="font-mono text-[10px] text-zinc-400">
-        {CATEGORY_LABELS[category]} · Your submission is reviewed before it appears.
+        {CATEGORY_LABELS[category]} · Reviewed before it appears on the site.
       </p>
     </form>
   );

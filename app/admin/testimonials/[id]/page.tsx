@@ -15,5 +15,5 @@ export default async function EditTestimonialPage({
   const { id } = await params;
   const t = await getTestimonial(id);
   if (!t) notFound();
-  return <TestimonialForm initial={t} />;
+  return <TestimonialForm initial={t} completionToken={t.completion_token} />;
 }

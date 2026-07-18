@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { TestimonialForm } from "../Form";
+import { NewPrefillForm } from "./NewPrefillForm";
 
 export const metadata: Metadata = {
-  title: "New testimonial — whatelz.ai Admin",
+  title: "New prefill — whatelz.ai Admin",
 };
 
-export default function NewTestimonialPage() {
-  return <TestimonialForm initial={null} />;
+export default function NewPrefillPage() {
+  return <NewPrefillForm />;
 }

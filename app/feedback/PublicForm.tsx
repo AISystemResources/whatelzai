@@ -347,6 +347,25 @@ export function PublicForm({ prefill }: { prefill: Testimonial }) {
         </div>
       </div>
 
+      {/* Private improvement note */}
+      <div className="rounded border border-zinc-200 bg-zinc-50 p-4 sm:p-5">
+        <label className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+          What could be improved? (optional, private)
+        </label>
+        <p className="mt-1 font-mono text-[10px] text-zinc-400">
+          Only Edmund sees this — never shown publicly. Any honest feedback
+          welcome.
+        </p>
+        <textarea
+          name="improvement_note"
+          rows={3}
+          maxLength={2000}
+          defaultValue={prefill.improvement_note ?? ""}
+          className="mt-3 w-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none"
+          placeholder="What could have been better, sharper, or different?"
+        />
+      </div>
+
       {prefill.completion_token && (
         <input
           type="hidden"
@@ -374,7 +393,7 @@ export function PublicForm({ prefill }: { prefill: Testimonial }) {
         disabled={pending}
         className="inline-flex items-center gap-2 border border-zinc-900 bg-zinc-900 px-6 py-4 font-mono text-xs tracking-widest uppercase text-white transition-colors hover:bg-[var(--accent)] hover:text-zinc-900 disabled:opacity-50"
       >
-        {pending ? "Sending…" : "Send testimonial"}
+        {pending ? "Sending…" : "Send feedback"}
         <span aria-hidden="true">→</span>
       </button>
 

@@ -43,6 +43,7 @@ type FormState = {
   published: boolean;
   sort_order: string;
   admin_note: string;
+  improvement_note: string;
   service_event_id: string;
   suggested_question_ids: Set<string>;
   answers: Map<string, string>;
@@ -67,6 +68,7 @@ function toState(t: Testimonial): FormState {
     published: t.published,
     sort_order: t.sort_order?.toString() ?? "",
     admin_note: t.admin_note ?? "",
+    improvement_note: t.improvement_note ?? "",
     service_event_id: t.service_event_id ?? "",
     suggested_question_ids: new Set(t.suggested_question_ids ?? []),
     answers: new Map((t.quote_answers ?? []).map((a) => [a.question_id, a.answer])),
@@ -98,7 +100,7 @@ export function TestimonialForm({
 
   const questions = TESTIMONIAL_QUESTIONS[state.category] ?? [];
   const completionUrl = completionToken
-    ? `${PUBLIC_ORIGIN}/testimonials/new?t=${completionToken}`
+    ? `${PUBLIC_ORIGIN}/feedback?t=${completionToken}`
     : null;
   const isIncomplete = state.status === "incomplete";
 
@@ -205,6 +207,7 @@ export function TestimonialForm({
           published: state.published,
           sort_order: state.sort_order ? Number(state.sort_order) : null,
           admin_note: state.admin_note || null,
+          improvement_note: state.improvement_note || null,
           suggested_question_ids: Array.from(state.suggested_question_ids),
           service_event_id: state.service_event_id || null,
         });
@@ -441,13 +444,28 @@ export function TestimonialForm({
             onChange={(e) => setState({ ...state, outcome_tag: e.target.value })}
           />
         </Field>
-        <Field label="Private admin note">
+        <Field label="Private admin note (your own tracking, not from them)">
           <TextArea
             rows={2}
             value={state.admin_note}
             onChange={(e) => setState({ ...state, admin_note: e.target.value })}
           />
         </Field>
+      </SectionCard>
+
+      <SectionCard title="What could be improved" slug="private feedback from them">
+        <p className="text-xs text-zinc-500">
+          What they wrote in the &ldquo;could be improved&rdquo; box.
+          Never shown publicly. You can edit this if you need to.
+        </p>
+        <TextArea
+          rows={4}
+          value={state.improvement_note}
+          onChange={(e) =>
+            setState({ ...state, improvement_note: e.target.value })
+          }
+          placeholder="Nothing shared yet."
+        />
       </SectionCard>
 
       <SectionCard title="Placement" slug="where it shows">

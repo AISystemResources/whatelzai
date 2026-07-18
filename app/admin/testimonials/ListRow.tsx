@@ -21,7 +21,7 @@ export function ListRow({
   const [copied, setCopied] = useState(false);
 
   const completionUrl = t.completion_token
-    ? `${PUBLIC_ORIGIN}/testimonials/new?t=${t.completion_token}`
+    ? `${PUBLIC_ORIGIN}/feedback?t=${t.completion_token}`
     : null;
 
   const isIncomplete = t.status === "incomplete";

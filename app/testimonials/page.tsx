@@ -111,7 +111,7 @@ export default async function TestimonialsPage() {
             Words from training clients, mentees, peers, professors, hackathon
             teammates, and friends. If you&rsquo;ve got something to add,{" "}
             <Link
-              href="/testimonials/new"
+              href="/feedback"
               className="underline underline-offset-4 hover:text-zinc-900"
             >
               share it here
@@ -124,7 +124,7 @@ export default async function TestimonialsPage() {
           <section className="py-20 text-center">
             <p className="text-zinc-500">No testimonials yet.</p>
             <Link
-              href="/testimonials/new"
+              href="/feedback"
               className="mt-4 inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-zinc-500 underline underline-offset-4 hover:text-zinc-900"
             >
               Be the first →

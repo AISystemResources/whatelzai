@@ -110,7 +110,7 @@ export async function submitPublicTestimonial(
   const quote_answers: QuoteAnswer[] = [];
   for (const q of questions) {
     const a = clean(formData.get(`answer_${q.id}`), 2000);
-    if (a.length >= 15) {
+    if (a.length >= 5) {
       quote_answers.push({ question_id: q.id, question_text: q.text, answer: a });
     }
   }
@@ -124,7 +124,7 @@ export async function submitPublicTestimonial(
     return bad("LinkedIn URL must start with https://");
   }
   if (quote_answers.length === 0) {
-    return bad("Please answer at least one question — 15+ characters.");
+    return bad("Please write at least a sentence in one of the questions.");
   }
 
   let author_avatar_url: string | null = null;

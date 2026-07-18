@@ -9,13 +9,34 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminTestimonialsPage() {
+type Tab = "pending" | "approved" | "archived";
+
+const TABS: { id: Tab; label: string }[] = [
+  { id: "pending", label: "Pending" },
+  { id: "approved", label: "Approved" },
+  { id: "archived", label: "Archived" },
+];
+
+export default async function AdminTestimonialsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
+  const { tab: tabParam } = await searchParams;
+  const tab: Tab =
+    tabParam === "approved" || tabParam === "archived" ? tabParam : "pending";
+
   const items = await listAllTestimonials();
   const incomplete = items.filter((t) => t.status === "incomplete");
   const pending = items.filter((t) => t.status === "pending");
-  const library = items.filter(
-    (t) => t.status === "approved" || t.status === "rejected",
-  );
+  const approved = items.filter((t) => t.status === "approved");
+  const rejected = items.filter((t) => t.status === "rejected");
+
+  const counts: Record<Tab, number> = {
+    pending: pending.length + incomplete.length,
+    approved: approved.length,
+    archived: rejected.length,
+  };
 
   return (
     <div className="space-y-8">
@@ -40,73 +61,145 @@ export default async function AdminTestimonialsPage() {
         </Link>
       </div>
 
-      {/* Waiting on them */}
-      {incomplete.length > 0 && (
+      <div className="flex gap-6 border-b border-zinc-200">
+        {TABS.map((t) => {
+          const active = t.id === tab;
+          return (
+            <Link
+              key={t.id}
+              href={t.id === "pending" ? "?" : `?tab=${t.id}`}
+              className={`-mb-px flex items-center gap-2 border-b-2 px-1 pb-3 font-mono text-xs uppercase tracking-widest transition-colors ${
+                active
+                  ? "border-zinc-900 text-zinc-900"
+                  : "border-transparent text-zinc-400 hover:text-zinc-700"
+              }`}
+            >
+              {t.label}
+              <span
+                className={`rounded px-1.5 py-0.5 text-[10px] ${
+                  active
+                    ? "bg-zinc-900 text-white"
+                    : "bg-zinc-100 text-zinc-500"
+                }`}
+              >
+                {counts[t.id]}
+              </span>
+            </Link>
+          );
+        })}
+      </div>
+
+      {tab === "pending" && (
+        <>
+          {pending.length > 0 && (
+            <section className="space-y-3">
+              <div className="flex items-center gap-2">
+                <p className="font-mono text-xs uppercase tracking-widest text-amber-600">
+                  Pending approval
+                </p>
+                <span className="rounded bg-amber-100 px-2 py-0.5 font-mono text-[10px] text-amber-800">
+                  {pending.length}
+                </span>
+              </div>
+              <div className="divide-y divide-zinc-100 rounded border border-amber-200 bg-amber-50/30">
+                {pending.map((t) => (
+                  <ListRow
+                    key={t.id}
+                    t={t}
+                    categoryLabel={CATEGORY_LABELS[t.category]}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {incomplete.length > 0 && (
+            <section className="space-y-3">
+              <div className="flex items-center gap-2">
+                <p className="font-mono text-xs uppercase tracking-widest text-zinc-500">
+                  Waiting on them
+                </p>
+                <span className="rounded bg-zinc-100 px-2 py-0.5 font-mono text-[10px] text-zinc-600">
+                  {incomplete.length}
+                </span>
+              </div>
+              <div className="divide-y divide-zinc-100 rounded border border-zinc-200">
+                {incomplete.map((t) => (
+                  <ListRow
+                    key={t.id}
+                    t={t}
+                    categoryLabel={CATEGORY_LABELS[t.category]}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {pending.length === 0 && incomplete.length === 0 && (
+            <EmptyState label="No pending or in-flight testimonials." />
+          )}
+        </>
+      )}
+
+      {tab === "approved" && (
+        <section className="space-y-3">
+          <div className="flex items-center gap-2">
+            <p className="font-mono text-xs uppercase tracking-widest text-emerald-700">
+              Approved
+            </p>
+            <span className="rounded bg-emerald-100 px-2 py-0.5 font-mono text-[10px] text-emerald-800">
+              {approved.length}
+            </span>
+          </div>
+          {approved.length === 0 ? (
+            <EmptyState label="Nothing approved yet." />
+          ) : (
+            <div className="divide-y divide-zinc-100 rounded border border-emerald-200 bg-emerald-50/20">
+              {approved.map((t) => (
+                <ListRow
+                  key={t.id}
+                  t={t}
+                  categoryLabel={CATEGORY_LABELS[t.category]}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {tab === "archived" && (
         <section className="space-y-3">
           <div className="flex items-center gap-2">
             <p className="font-mono text-xs uppercase tracking-widest text-zinc-500">
-              Waiting on them
+              Archived (rejected)
             </p>
             <span className="rounded bg-zinc-100 px-2 py-0.5 font-mono text-[10px] text-zinc-600">
-              {incomplete.length}
+              {rejected.length}
             </span>
           </div>
-          <div className="divide-y divide-zinc-100 rounded border border-zinc-200">
-            {incomplete.map((t) => (
-              <ListRow
-                key={t.id}
-                t={t}
-                categoryLabel={CATEGORY_LABELS[t.category]}
-              />
-            ))}
-          </div>
+          {rejected.length === 0 ? (
+            <EmptyState label="Nothing archived." />
+          ) : (
+            <div className="divide-y divide-zinc-100 rounded border border-zinc-200">
+              {rejected.map((t) => (
+                <ListRow
+                  key={t.id}
+                  t={t}
+                  categoryLabel={CATEGORY_LABELS[t.category]}
+                />
+              ))}
+            </div>
+          )}
         </section>
       )}
+    </div>
+  );
+}
 
-      {/* Pending review */}
-      {pending.length > 0 && (
-        <section className="space-y-3">
-          <div className="flex items-center gap-2">
-            <p className="font-mono text-xs uppercase tracking-widest text-amber-600">
-              Pending review
-            </p>
-            <span className="rounded bg-amber-100 px-2 py-0.5 font-mono text-[10px] text-amber-800">
-              {pending.length}
-            </span>
-          </div>
-          <div className="divide-y divide-zinc-100 rounded border border-amber-200 bg-amber-50/30">
-            {pending.map((t) => (
-              <ListRow
-                key={t.id}
-                t={t}
-                categoryLabel={CATEGORY_LABELS[t.category]}
-              />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Library */}
-      <section className="space-y-3">
-        <p className="font-mono text-xs uppercase tracking-widest text-zinc-400">
-          Library
-        </p>
-        {library.length === 0 ? (
-          <div className="rounded border border-dashed border-zinc-200 px-6 py-12 text-center">
-            <p className="text-sm text-zinc-500">Nothing here yet.</p>
-          </div>
-        ) : (
-          <div className="divide-y divide-zinc-100 rounded border border-zinc-200">
-            {library.map((t) => (
-              <ListRow
-                key={t.id}
-                t={t}
-                categoryLabel={CATEGORY_LABELS[t.category]}
-              />
-            ))}
-          </div>
-        )}
-      </section>
+function EmptyState({ label }: { label: string }) {
+  return (
+    <div className="rounded border border-dashed border-zinc-200 px-6 py-12 text-center">
+      <p className="text-sm text-zinc-500">{label}</p>
     </div>
   );
 }

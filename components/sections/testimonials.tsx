@@ -16,7 +16,7 @@ function TestimonialCard({ t }: { t: Testimonial }) {
 
   return (
     <article className="flex flex-col gap-6 border border-zinc-200 p-6 sm:p-8">
-      <p className="font-display text-xl leading-snug tracking-tight text-zinc-900 sm:text-2xl">
+      <p className="text-lg leading-relaxed text-zinc-800 sm:text-xl">
         &ldquo;{t.quote}&rdquo;
       </p>
 
@@ -74,7 +74,7 @@ export async function Testimonials() {
           What people say
         </p>
 
-        <h2 className="mt-8 max-w-3xl font-display text-3xl font-bold tracking-tight text-zinc-900 sm:text-5xl">
+        <h2 className="mt-8 max-w-3xl pb-2 font-display text-3xl font-bold leading-[1.15] tracking-tight text-zinc-900 sm:text-5xl">
           The people I&rsquo;ve trained, taught, or shipped with.
         </h2>
 

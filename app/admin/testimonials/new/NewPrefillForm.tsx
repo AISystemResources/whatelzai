@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { createInviteAction } from "../actions";
+import { createPrefillTestimonial } from "../actions";
 import {
   TESTIMONIAL_CATEGORIES,
   CATEGORY_LABELS,
@@ -18,43 +18,42 @@ import {
   TextInput,
 } from "@/app/admin/landing/forms/primitives";
 
-export function NewInviteForm() {
+export function NewPrefillForm() {
   const [author_name, setName] = useState("");
   const [author_role, setRole] = useState("");
   const [author_company, setCompany] = useState("");
   const [author_email, setEmail] = useState("");
   const [author_linkedin_url, setLinkedin] = useState("");
   const [category, setCategory] = useState<TestimonialCategory>("peer");
-  const [questionIds, setQuestionIds] = useState<Set<string>>(new Set());
-  const [note, setNote] = useState("");
+  const [suggested, setSuggested] = useState<Set<string>>(new Set());
+  const [admin_note, setNote] = useState("");
   const [status, setStatus] = useState<"idle" | "saving" | "error">("idle");
   const [pending, start] = useTransition();
 
   const questions = TESTIMONIAL_QUESTIONS[category] ?? [];
 
-  function toggleQuestion(id: string) {
-    const next = new Set(questionIds);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    setQuestionIds(next);
+  function toggle(qid: string) {
+    const next = new Set(suggested);
+    if (next.has(qid)) next.delete(qid);
+    else next.add(qid);
+    setSuggested(next);
   }
 
   function create() {
     setStatus("saving");
     start(async () => {
       try {
-        await createInviteAction(
-          {
-            author_name: author_name || undefined,
-            author_role: author_role || undefined,
-            author_company: author_company || undefined,
-            author_email: author_email || undefined,
-            author_linkedin_url: author_linkedin_url || undefined,
-            category,
-            question_ids: Array.from(questionIds),
-          },
-          note || null,
-        );
+        await createPrefillTestimonial({
+          category,
+          author_name: author_name || undefined,
+          author_role: author_role || undefined,
+          author_company: author_company || undefined,
+          author_email: author_email || undefined,
+          author_linkedin_url: author_linkedin_url || undefined,
+          suggested_question_ids: Array.from(suggested),
+          admin_note: admin_note || undefined,
+        });
+        // action redirects, no need to reset status
       } catch {
         setStatus("error");
       }
@@ -69,22 +68,21 @@ export function NewInviteForm() {
             Testimonials
           </p>
           <h1 className="mt-2 text-2xl font-semibold tracking-tight text-zinc-900">
-            New invite
+            New prefill
           </h1>
           <p className="mt-1 text-sm text-zinc-500">
-            Pre-fill what you know. All fields optional except category — but
-            the more you fill, the easier for them.
+            Fill what you know. Save. You&rsquo;ll get a link to send them.
           </p>
         </div>
         <Link
-          href="/admin/testimonials/invites"
+          href="/admin/testimonials"
           className="font-mono text-xs uppercase tracking-widest text-zinc-500 transition-colors hover:text-zinc-900"
         >
           ← Back
         </Link>
       </div>
 
-      <SectionCard title="Who is this for?" slug="prefill">
+      <SectionCard title="Who is this for?" slug="anchor">
         <Field label="Name">
           <TextInput
             value={author_name}
@@ -103,10 +101,9 @@ export function NewInviteForm() {
           <TextInput
             value={author_company}
             onChange={(e) => setCompany(e.target.value)}
-            placeholder="Prudential Singapore"
           />
         </Field>
-        <Field label="Email">
+        <Field label="Email (anchor point — helps track them)">
           <TextInput
             type="email"
             value={author_email}
@@ -121,12 +118,12 @@ export function NewInviteForm() {
             placeholder="https://www.linkedin.com/in/…"
           />
         </Field>
-        <Field label="Category">
+        <Field label="Category (defines which questions they see)">
           <select
             value={category}
             onChange={(e) => {
               setCategory(e.target.value as TestimonialCategory);
-              setQuestionIds(new Set());
+              setSuggested(new Set());
             }}
             className="w-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none"
           >
@@ -139,26 +136,25 @@ export function NewInviteForm() {
         </Field>
       </SectionCard>
 
-      <SectionCard title="Suggested questions" slug="what to nudge them toward">
+      <SectionCard title="Suggested questions" slug="what to nudge">
         <p className="text-xs text-zinc-500">
-          Highlight the questions you&rsquo;d most like this person to answer.
-          They&rsquo;ll see all questions for their category, but the ones you
-          pick get a &ldquo;suggested&rdquo; badge.
+          Tick the questions you&rsquo;d most like them to answer. They&rsquo;ll
+          see all questions but ticked ones get a yellow highlight.
         </p>
         <div className="space-y-2">
           {questions.map((q) => (
             <label
               key={q.id}
               className={`flex cursor-pointer items-start gap-3 border p-3 transition-colors ${
-                questionIds.has(q.id)
+                suggested.has(q.id)
                   ? "border-zinc-900 bg-zinc-50"
                   : "border-zinc-200 hover:border-zinc-400"
               }`}
             >
               <input
                 type="checkbox"
-                checked={questionIds.has(q.id)}
-                onChange={() => toggleQuestion(q.id)}
+                checked={suggested.has(q.id)}
+                onChange={() => toggle(q.id)}
                 className="mt-1 h-4 w-4"
               />
               <span className="text-sm text-zinc-800">{q.text}</span>
@@ -167,11 +163,11 @@ export function NewInviteForm() {
         </div>
       </SectionCard>
 
-      <SectionCard title="Note (private)" slug="for your own tracking">
-        <Field label="Note about this invite (not shown to the recipient)">
+      <SectionCard title="Private note" slug="for your own tracking">
+        <Field label="Not shown to the recipient">
           <TextArea
             rows={2}
-            value={note}
+            value={admin_note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="Sent via WhatsApp · deadline end of month"
           />
@@ -180,7 +176,7 @@ export function NewInviteForm() {
 
       <div className="flex items-center gap-3 border-t border-zinc-200 pt-6">
         <Button onClick={create} disabled={pending}>
-          Create invite link
+          Create prefill link
         </Button>
         {status === "saving" && <StatusPill status="saving" />}
         {status === "error" && <StatusPill status="error" />}

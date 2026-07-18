@@ -44,11 +44,6 @@ function TestimonialCard({ t }: { t: Testimonial }) {
           {authorLine && (
             <p className="font-mono text-xs text-zinc-500">{authorLine}</p>
           )}
-          {t.context && (
-            <p className="mt-1 font-mono text-[10px] tracking-widest text-zinc-400 uppercase">
-              {t.context}
-            </p>
-          )}
         </div>
         <span className="ml-auto shrink-0 self-start font-mono text-[10px] tracking-widest text-zinc-400 uppercase">
           {CATEGORY_LABELS[t.category]}

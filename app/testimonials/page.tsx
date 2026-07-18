@@ -47,19 +47,6 @@ function Card({ t }: { t: Testimonial }) {
         </p>
       )}
 
-      {t.tags && t.tags.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {t.tags.map((tag) => (
-            <span
-              key={tag}
-              className="rounded bg-zinc-100 px-2 py-0.5 font-mono text-[10px] text-zinc-500"
-            >
-              #{tag}
-            </span>
-          ))}
-        </div>
-      )}
-
       <div className="mt-auto flex items-center gap-3 border-t border-zinc-100 pt-4">
         {t.author_avatar_url ? (
           <Image
@@ -91,11 +78,6 @@ function Card({ t }: { t: Testimonial }) {
           </p>
           {authorLine && (
             <p className="font-mono text-[10px] text-zinc-500">{authorLine}</p>
-          )}
-          {t.context && (
-            <p className="font-mono text-[10px] tracking-widest text-zinc-400 uppercase">
-              {t.context}
-            </p>
           )}
         </div>
       </div>

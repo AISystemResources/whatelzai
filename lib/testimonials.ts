@@ -9,7 +9,11 @@ export type TestimonialCategory =
   | "friend"
   | "hackathon";
 
-export type ModerationStatus = "pending" | "approved" | "rejected";
+export type TestimonialStatus =
+  | "incomplete"
+  | "pending"
+  | "approved"
+  | "rejected";
 
 export const TESTIMONIAL_CATEGORIES: readonly TestimonialCategory[] = [
   "trainer",
@@ -29,7 +33,6 @@ export const CATEGORY_LABELS: Record<TestimonialCategory, string> = {
   hackathon: "Hackathon teammate",
 };
 
-// Labels shown to the public submitter — plain-English, no "mentor" jargon.
 export const SUBMITTER_ROLE_LABELS: Record<TestimonialCategory, string> = {
   trainer: "I attended a training / workshop with Edmund",
   mentor: "Edmund mentored me (junior / mentee)",
@@ -49,25 +52,36 @@ export interface Testimonial {
   id: string;
   quote: string;
   quote_answers: QuoteAnswer[] | null;
-  long_quote: string | null;
   author_name: string;
   author_role: string | null;
   author_company: string | null;
   author_avatar_url: string | null;
   author_email: string | null;
   author_linkedin_url: string | null;
-  context: string | null;
   outcome_tag: string | null;
   category: TestimonialCategory;
-  tags: string[] | null;
-  moderation_status: ModerationStatus;
+  status: TestimonialStatus;
   featured: boolean;
   published: boolean;
   sort_order: number | null;
+  completion_token: string | null;
+  suggested_question_ids: string[] | null;
+  admin_note: string | null;
+  created_by_clerk_id: string | null;
   submitted_at: string | null;
   moderated_at: string | null;
   created_at: string;
   updated_at: string;
+}
+
+// URL-safe short token: 10 chars.
+const ALPHABET =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+export function generateToken(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(10));
+  let out = "";
+  for (const b of bytes) out += ALPHABET[b % ALPHABET.length];
+  return out;
 }
 
 async function baseQuery(): Promise<Testimonial[]> {
@@ -82,22 +96,21 @@ async function baseQuery(): Promise<Testimonial[]> {
   return (data ?? []) as Testimonial[];
 }
 
-export const listAllTestimonials = cache(async (): Promise<Testimonial[]> => baseQuery());
+export const listAllTestimonials = cache(async (): Promise<Testimonial[]> =>
+  baseQuery(),
+);
 
 export const listPublicTestimonials = cache(async (): Promise<Testimonial[]> => {
   const rows = await baseQuery();
-  return rows.filter((r) => r.published && r.moderation_status === "approved");
+  return rows.filter((r) => r.published && r.status === "approved");
 });
 
-export const listFeaturedTestimonials = cache(async (): Promise<Testimonial[]> => {
-  const rows = await listPublicTestimonials();
-  return rows.filter((r) => r.featured);
-});
-
-export const listPendingTestimonials = cache(async (): Promise<Testimonial[]> => {
-  const rows = await baseQuery();
-  return rows.filter((r) => r.moderation_status === "pending");
-});
+export const listFeaturedTestimonials = cache(
+  async (): Promise<Testimonial[]> => {
+    const rows = await listPublicTestimonials();
+    return rows.filter((r) => r.featured);
+  },
+);
 
 export async function getTestimonial(id: string): Promise<Testimonial | null> {
   const { data, error } = await supabaseAdmin
@@ -109,16 +122,33 @@ export async function getTestimonial(id: string): Promise<Testimonial | null> {
   return data as Testimonial | null;
 }
 
+export async function getTestimonialByToken(
+  token: string,
+): Promise<Testimonial | null> {
+  if (!token || token.length > 20) return null;
+  const { data, error } = await supabaseAdmin
+    .from("testimonials")
+    .select("*")
+    .eq("completion_token", token)
+    .maybeSingle();
+  if (error) return null;
+  return data as Testimonial | null;
+}
+
 export async function upsertTestimonial(
   fields: Partial<Testimonial> & {
-    quote: string;
-    author_name: string;
+    author_name?: string;
     category: TestimonialCategory;
   },
 ): Promise<Testimonial> {
   const payload = { ...fields, updated_at: new Date().toISOString() };
   const query = fields.id
-    ? supabaseAdmin.from("testimonials").update(payload).eq("id", fields.id).select().single()
+    ? supabaseAdmin
+        .from("testimonials")
+        .update(payload)
+        .eq("id", fields.id)
+        .select()
+        .single()
     : supabaseAdmin.from("testimonials").insert(payload).select().single();
   const { data, error } = await query;
   if (error) throw new Error(`upsertTestimonial: ${error.message}`);
@@ -130,23 +160,64 @@ export async function deleteTestimonial(id: string): Promise<void> {
   if (error) throw new Error(`deleteTestimonial: ${error.message}`);
 }
 
-// Server-only: inserts a public submission with moderation_status='pending', published=false.
-// Never trusts caller-supplied featured / published / moderation_status.
-export async function createPublicSubmission(input: {
-  quote: string;
-  quote_answers: QuoteAnswer[];
-  author_name: string;
-  author_role: string | null;
-  author_company: string | null;
-  author_avatar_url: string | null;
-  author_email: string;
-  author_linkedin_url: string | null;
+// Server-only: creates a fresh incomplete testimonial. Used by both admin (pre-fill) and
+// public (email-first) flows. Always starts as 'incomplete'; caller can seed known fields.
+export async function createIncompleteTestimonial(input: {
   category: TestimonialCategory;
+  author_name?: string;
+  author_role?: string;
+  author_email?: string;
+  author_linkedin_url?: string;
+  author_company?: string;
+  suggested_question_ids?: string[];
+  admin_note?: string;
+  created_by_clerk_id?: string;
 }): Promise<Testimonial> {
   const now = new Date().toISOString();
   const { data, error } = await supabaseAdmin
     .from("testimonials")
     .insert({
+      category: input.category,
+      author_name: input.author_name ?? "",
+      author_role: input.author_role ?? null,
+      author_email: input.author_email ?? null,
+      author_linkedin_url: input.author_linkedin_url ?? null,
+      author_company: input.author_company ?? null,
+      suggested_question_ids: input.suggested_question_ids ?? null,
+      admin_note: input.admin_note ?? null,
+      created_by_clerk_id: input.created_by_clerk_id ?? null,
+      quote: "",
+      status: "incomplete",
+      published: false,
+      featured: false,
+      completion_token: generateToken(),
+      updated_at: now,
+    })
+    .select()
+    .single();
+  if (error) throw new Error(`createIncompleteTestimonial: ${error.message}`);
+  return data as Testimonial;
+}
+
+// Server-only: marks an incomplete testimonial as pending with the completed data.
+export async function completeTestimonial(
+  id: string,
+  input: {
+    quote: string;
+    quote_answers: QuoteAnswer[];
+    author_name: string;
+    author_role: string | null;
+    author_company: string | null;
+    author_avatar_url: string | null;
+    author_email: string;
+    author_linkedin_url: string | null;
+    category: TestimonialCategory;
+  },
+): Promise<Testimonial> {
+  const now = new Date().toISOString();
+  const { data, error } = await supabaseAdmin
+    .from("testimonials")
+    .update({
       quote: input.quote,
       quote_answers: input.quote_answers,
       author_name: input.author_name,
@@ -156,14 +227,13 @@ export async function createPublicSubmission(input: {
       author_email: input.author_email,
       author_linkedin_url: input.author_linkedin_url,
       category: input.category,
-      moderation_status: "pending",
-      published: false,
-      featured: false,
+      status: "pending",
       submitted_at: now,
       updated_at: now,
     })
+    .eq("id", id)
     .select()
     .single();
-  if (error) throw new Error(`createPublicSubmission: ${error.message}`);
+  if (error) throw new Error(`completeTestimonial: ${error.message}`);
   return data as Testimonial;
 }

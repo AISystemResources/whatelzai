@@ -6,14 +6,15 @@ import { auth } from "@clerk/nextjs/server";
 import { isAdminRole } from "@/lib/users";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import {
-  upsertTestimonial,
+  createIncompleteTestimonial,
   deleteTestimonial,
+  upsertTestimonial,
   type Testimonial,
   type TestimonialCategory,
-  type ModerationStatus,
+  type TestimonialStatus,
 } from "@/lib/testimonials";
 
-async function assertAdmin(): Promise<void> {
+async function assertAdmin(): Promise<string> {
   const { userId } = await auth();
   if (!userId) throw new Error("Not signed in");
   const { data } = await supabaseAdmin
@@ -24,6 +25,7 @@ async function assertAdmin(): Promise<void> {
   if (!isAdminRole(data?.role as "admin" | "superadmin" | undefined)) {
     throw new Error("Forbidden");
   }
+  return userId;
 }
 
 function afterWrite() {
@@ -33,11 +35,7 @@ function afterWrite() {
 }
 
 export async function saveTestimonial(
-  fields: Partial<Testimonial> & {
-    quote: string;
-    author_name: string;
-    category: TestimonialCategory;
-  },
+  fields: Partial<Testimonial> & { category: TestimonialCategory },
 ) {
   await assertAdmin();
   await upsertTestimonial(fields);
@@ -71,15 +69,14 @@ export async function togglePublished(id: string, published: boolean) {
   afterWrite();
 }
 
-export async function setModerationStatus(id: string, status: ModerationStatus) {
+export async function setStatus(id: string, status: TestimonialStatus) {
   await assertAdmin();
   const now = new Date().toISOString();
   const patch: Record<string, unknown> = {
-    moderation_status: status,
+    status,
     moderated_at: now,
     updated_at: now,
   };
-  // Approving auto-publishes so the admin doesn't need a second click.
   if (status === "approved") patch.published = true;
   if (status === "rejected") {
     patch.published = false;
@@ -88,4 +85,23 @@ export async function setModerationStatus(id: string, status: ModerationStatus) 
   const { error } = await supabaseAdmin.from("testimonials").update(patch).eq("id", id);
   if (error) throw new Error(error.message);
   afterWrite();
+}
+
+export async function createPrefillTestimonial(input: {
+  category: TestimonialCategory;
+  author_name?: string;
+  author_role?: string;
+  author_email?: string;
+  author_linkedin_url?: string;
+  author_company?: string;
+  suggested_question_ids?: string[];
+  admin_note?: string;
+}) {
+  const userId = await assertAdmin();
+  const t = await createIncompleteTestimonial({
+    ...input,
+    created_by_clerk_id: userId,
+  });
+  afterWrite();
+  redirect(`/admin/testimonials/${t.id}`);
 }

@@ -141,15 +141,10 @@ export async function getTestimonialBySlug(
   const m = slug.match(/-([0-9a-f]{8})$/i);
   if (!m) return null;
   const idPrefix = m[1].toLowerCase();
-  const { data, error } = await supabaseAdmin
-    .from("testimonials")
-    .select("*")
-    .ilike("id", `${idPrefix}%`)
-    .limit(2);
-  if (error || !data || data.length !== 1) return null;
-  const row = data[0] as Testimonial;
-  if (row.status !== "approved" || !row.published) return null;
-  return row;
+  // Postgres `uuid` columns don't accept LIKE/ILIKE without a text cast; fetch
+  // the published set and match in memory. Dataset is small (dozens, not thousands).
+  const rows = await listPublicTestimonials();
+  return rows.find((r) => r.id.toLowerCase().startsWith(idPrefix)) ?? null;
 }
 
 export async function getTestimonialByToken(

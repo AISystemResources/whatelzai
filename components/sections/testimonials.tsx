@@ -1,6 +1,8 @@
 import Image from "next/image";
+import Link from "next/link";
 import {
   listFeaturedTestimonials,
+  testimonialSlug,
   CATEGORY_LABELS,
   type Testimonial,
 } from "@/lib/testimonials";
@@ -13,9 +15,17 @@ function formatAffiliations(t: Testimonial): string[] {
 
 function TestimonialCard({ t }: { t: Testimonial }) {
   const affiliations = formatAffiliations(t);
+  const href = `/testimonials/${testimonialSlug(t)}`;
 
   return (
-    <article className="flex flex-col gap-6 border border-zinc-200 p-6 sm:p-8">
+    <article className="group relative flex flex-col gap-6 border border-zinc-200 p-6 transition-colors hover:border-zinc-400 sm:p-8">
+      <Link
+        href={href}
+        aria-label={`Read ${t.author_name}'s full testimonial`}
+        className="absolute inset-0 z-10"
+      >
+        <span className="sr-only">Read {t.author_name}&rsquo;s testimonial</span>
+      </Link>
       <p className="text-lg leading-relaxed text-zinc-800 sm:text-xl">
         &ldquo;{t.quote}&rdquo;
       </p>

@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Syne } from "next/font/google";
-import { auth } from "@clerk/nextjs/server";
 import "./globals.css";
 import { ShellProvider } from "@/components/shell/ShellProvider";
-import { supabaseAdmin } from "@/lib/supabase-server";
 import { getSiteIdentity } from "@/lib/site-identity";
+import { ensureUserRow, isAdminRole } from "@/lib/users";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -97,16 +96,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+// Upserts the current Clerk user into the users table on every request and returns
+// whether they're an admin. New sign-ins land as 'unauthorized' by default.
 async function getIsAdmin(): Promise<boolean> {
   try {
-    const { userId } = await auth();
-    if (!userId) return false;
-    const { data } = await supabaseAdmin
-      .from("system_config")
-      .select("value")
-      .eq("key", "clerk_admin_user_id")
-      .single();
-    return !!data?.value && userId === data.value;
+    const user = await ensureUserRow();
+    return isAdminRole(user?.role);
   } catch {
     return false;
   }

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { listServices, type Service, type PricingTier } from "@/lib/services";
 import { getSiteIdentity } from "@/lib/site-identity";
+import { getOfferBySlug } from "@/lib/offers";
 
 export async function generateMetadata(): Promise<Metadata> {
   const s = await getSiteIdentity();
@@ -240,9 +242,10 @@ function ServiceBlock({
 }
 
 export default async function ServicesPage() {
-  const [services, site] = await Promise.all([
+  const [services, site, membership] = await Promise.all([
     listServices(true),
     getSiteIdentity(),
+    getOfferBySlug("whatelz-membership"),
   ]);
 
   return (
@@ -250,7 +253,7 @@ export default async function ServicesPage() {
       <section className="border-b border-zinc-200 px-6 py-24 sm:px-8 sm:py-32">
         <div className="mx-auto max-w-6xl">
           <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
-            Services · By enquiry
+            Services
           </p>
           <h1 className="font-display-hero mt-6 text-5xl leading-[1.05] sm:text-7xl">
             Work
@@ -264,6 +267,62 @@ export default async function ServicesPage() {
           </p>
         </div>
       </section>
+
+      {membership && membership.active && (
+        <section className="border-b border-zinc-200 px-6 py-20 sm:px-8 sm:py-28">
+          <div className="mx-auto max-w-6xl">
+            <div className="flex items-center gap-4">
+              <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
+                Self-serve
+              </span>
+              <div className="flex-1 border-t border-zinc-100" />
+              <span
+                className="font-mono text-[10px] uppercase tracking-widest"
+                style={{ color: "var(--accent-text)" }}
+              >
+                {membership.price_display}
+              </span>
+            </div>
+
+            <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end">
+              <div>
+                <h2 className="text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">
+                  {membership.name}
+                </h2>
+                {membership.description && (
+                  <p className="mt-5 max-w-xl text-base text-zinc-600 sm:text-lg">
+                    {membership.description}
+                  </p>
+                )}
+                {membership.features && membership.features.length > 0 && (
+                  <ul className="mt-8 grid gap-3 sm:grid-cols-2">
+                    {membership.features.map((f) => (
+                      <li
+                        key={f}
+                        className="flex items-start gap-3 text-sm text-zinc-700"
+                      >
+                        <span
+                          aria-hidden
+                          className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full"
+                          style={{ background: "var(--accent-text)" }}
+                        />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <Link
+                href="/members"
+                className="inline-flex items-center gap-2 self-start border border-zinc-900 bg-zinc-900 px-6 py-4 font-mono text-xs tracking-widest uppercase text-white transition-colors hover:bg-[var(--accent)] hover:text-zinc-900 hover:border-[var(--accent)] lg:self-end"
+              >
+                Join the library
+                <span aria-hidden="true">→</span>
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {services.length === 0 ? (
         <section className="border-b border-zinc-200 px-6 py-20 sm:px-8 sm:py-28">

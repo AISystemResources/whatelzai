@@ -9,6 +9,7 @@ type NavItem = { href: string; label: string; exact?: boolean };
 const NAV: readonly NavItem[] = [
   { href: "/admin", label: "Dashboard", exact: true },
   { href: "/admin/testimonials", label: "Testimonials" },
+  { href: "/admin/events", label: "Events" },
   { href: "/admin/landing", label: "Edit homepage" },
 ];
 

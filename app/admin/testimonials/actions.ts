@@ -5,10 +5,12 @@ import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { isAdminRole } from "@/lib/users";
 import { supabaseAdmin } from "@/lib/supabase-server";
+import { uploadTestimonialAvatar } from "@/lib/avatar-upload";
 import {
   createIncompleteTestimonial,
   deleteTestimonial,
   upsertTestimonial,
+  type Affiliation,
   type Testimonial,
   type TestimonialCategory,
   type TestimonialStatus,
@@ -90,12 +92,12 @@ export async function setStatus(id: string, status: TestimonialStatus) {
 export async function createPrefillTestimonial(input: {
   category: TestimonialCategory;
   author_name?: string;
-  author_role?: string;
   author_email?: string;
   author_linkedin_url?: string;
-  author_company?: string;
+  author_affiliations?: Affiliation[];
   suggested_question_ids?: string[];
   admin_note?: string;
+  service_event_id?: string;
 }) {
   const userId = await assertAdmin();
   const t = await createIncompleteTestimonial({
@@ -104,4 +106,13 @@ export async function createPrefillTestimonial(input: {
   });
   afterWrite();
   redirect(`/admin/testimonials/${t.id}`);
+}
+
+export async function uploadAvatarAction(formData: FormData): Promise<{ url: string }> {
+  await assertAdmin();
+  const file = formData.get("file");
+  if (!(file instanceof File)) throw new Error("No file");
+  const url = await uploadTestimonialAvatar(file);
+  if (!url) throw new Error("Upload failed");
+  return { url };
 }

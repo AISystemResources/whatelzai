@@ -5,10 +5,14 @@ import {
   type Testimonial,
 } from "@/lib/testimonials";
 
+function formatAffiliations(t: Testimonial): string[] {
+  return (t.author_affiliations ?? [])
+    .map((a) => [a.role, a.company].filter(Boolean).join(", "))
+    .filter(Boolean);
+}
+
 function TestimonialCard({ t }: { t: Testimonial }) {
-  const authorLine = [t.author_role, t.author_company]
-    .filter(Boolean)
-    .join(" · ");
+  const affiliations = formatAffiliations(t);
 
   return (
     <article className="flex flex-col gap-6 border border-zinc-200 p-6 sm:p-8">
@@ -41,9 +45,11 @@ function TestimonialCard({ t }: { t: Testimonial }) {
         )}
         <div className="min-w-0">
           <p className="text-sm font-semibold text-zinc-900">{t.author_name}</p>
-          {authorLine && (
-            <p className="font-mono text-xs text-zinc-500">{authorLine}</p>
-          )}
+          {affiliations.map((a) => (
+            <p key={a} className="font-mono text-xs text-zinc-500">
+              {a}
+            </p>
+          ))}
         </div>
         <span className="ml-auto shrink-0 self-start font-mono text-[10px] tracking-widest text-zinc-400 uppercase">
           {CATEGORY_LABELS[t.category]}

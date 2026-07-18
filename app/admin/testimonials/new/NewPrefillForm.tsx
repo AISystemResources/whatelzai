@@ -6,9 +6,11 @@ import { createPrefillTestimonial } from "../actions";
 import {
   TESTIMONIAL_CATEGORIES,
   CATEGORY_LABELS,
+  type Affiliation,
   type TestimonialCategory,
 } from "@/lib/testimonials";
 import { TESTIMONIAL_QUESTIONS } from "@/lib/testimonial-questions";
+import type { ServiceEvent } from "@/lib/service-events";
 import {
   Button,
   Field,
@@ -18,15 +20,17 @@ import {
   TextInput,
 } from "@/app/admin/landing/forms/primitives";
 
-export function NewPrefillForm() {
+export function NewPrefillForm({ events }: { events: ServiceEvent[] }) {
   const [author_name, setName] = useState("");
-  const [author_role, setRole] = useState("");
-  const [author_company, setCompany] = useState("");
+  const [affiliations, setAffiliations] = useState<Affiliation[]>([
+    { role: "", company: "" },
+  ]);
   const [author_email, setEmail] = useState("");
   const [author_linkedin_url, setLinkedin] = useState("");
   const [category, setCategory] = useState<TestimonialCategory>("peer");
   const [suggested, setSuggested] = useState<Set<string>>(new Set());
   const [admin_note, setNote] = useState("");
+  const [service_event_id, setEventId] = useState("");
   const [status, setStatus] = useState<"idle" | "saving" | "error">("idle");
   const [pending, start] = useTransition();
 
@@ -39,21 +43,35 @@ export function NewPrefillForm() {
     setSuggested(next);
   }
 
+  function updateAffiliation(i: number, patch: Partial<Affiliation>) {
+    setAffiliations(affiliations.map((a, j) => (i === j ? { ...a, ...patch } : a)));
+  }
+  function addAffiliation() {
+    setAffiliations([...affiliations, { role: "", company: "" }]);
+  }
+  function removeAffiliation(i: number) {
+    if (affiliations.length === 1) {
+      setAffiliations([{ role: "", company: "" }]);
+      return;
+    }
+    setAffiliations(affiliations.filter((_, j) => j !== i));
+  }
+
   function create() {
     setStatus("saving");
     start(async () => {
       try {
+        const affs = affiliations.filter((a) => a.role.trim() || a.company.trim());
         await createPrefillTestimonial({
           category,
           author_name: author_name || undefined,
-          author_role: author_role || undefined,
-          author_company: author_company || undefined,
           author_email: author_email || undefined,
           author_linkedin_url: author_linkedin_url || undefined,
+          author_affiliations: affs.length ? affs : undefined,
           suggested_question_ids: Array.from(suggested),
           admin_note: admin_note || undefined,
+          service_event_id: service_event_id || undefined,
         });
-        // action redirects, no need to reset status
       } catch {
         setStatus("error");
       }
@@ -83,26 +101,50 @@ export function NewPrefillForm() {
       </div>
 
       <SectionCard title="Who is this for?" slug="anchor">
-        <Field label="Name">
+        <Field label="Display name">
           <TextInput
             value={author_name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Jane Doe"
+            placeholder="e.g. Sim Yee L."
           />
         </Field>
-        <Field label="Role">
-          <TextInput
-            value={author_role}
-            onChange={(e) => setRole(e.target.value)}
-            placeholder="Senior Engineer"
-          />
-        </Field>
-        <Field label="Company / team">
-          <TextInput
-            value={author_company}
-            onChange={(e) => setCompany(e.target.value)}
-          />
-        </Field>
+
+        <div>
+          <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+            Role & company (add more than one if needed)
+          </p>
+          <div className="mt-2 space-y-2">
+            {affiliations.map((aff, i) => (
+              <div key={i} className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
+                <TextInput
+                  placeholder="Role"
+                  value={aff.role}
+                  onChange={(e) => updateAffiliation(i, { role: e.target.value })}
+                />
+                <TextInput
+                  placeholder="Company / team"
+                  value={aff.company}
+                  onChange={(e) => updateAffiliation(i, { company: e.target.value })}
+                />
+                <button
+                  type="button"
+                  onClick={() => removeAffiliation(i)}
+                  className="self-center font-mono text-[10px] uppercase tracking-widest text-zinc-400 transition-colors hover:text-red-600"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={addAffiliation}
+            className="mt-2 font-mono text-[10px] uppercase tracking-widest text-zinc-500 transition-colors hover:text-zinc-900"
+          >
+            + Add another role
+          </button>
+        </div>
+
         <Field label="Email (anchor point — helps track them)">
           <TextInput
             type="email"
@@ -115,7 +157,6 @@ export function NewPrefillForm() {
             type="url"
             value={author_linkedin_url}
             onChange={(e) => setLinkedin(e.target.value)}
-            placeholder="https://www.linkedin.com/in/…"
           />
         </Field>
         <Field label="Category (defines which questions they see)">
@@ -134,12 +175,28 @@ export function NewPrefillForm() {
             ))}
           </select>
         </Field>
+
+        <Field label="Linked event (optional)">
+          <select
+            value={service_event_id}
+            onChange={(e) => setEventId(e.target.value)}
+            className="w-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none"
+          >
+            <option value="">— None —</option>
+            {events.map((e) => (
+              <option key={e.id} value={e.id}>
+                {e.name}
+              </option>
+            ))}
+          </select>
+        </Field>
       </SectionCard>
 
       <SectionCard title="Suggested questions" slug="what to nudge">
         <p className="text-xs text-zinc-500">
-          Tick the questions you&rsquo;d most like them to answer. They&rsquo;ll
-          see all questions but ticked ones get a yellow highlight.
+          The primary question shows by default. Tick any extras you&rsquo;d
+          especially like them to answer — those open by default too and get a
+          yellow highlight.
         </p>
         <div className="space-y-2">
           {questions.map((q) => (
@@ -157,7 +214,14 @@ export function NewPrefillForm() {
                 onChange={() => toggle(q.id)}
                 className="mt-1 h-4 w-4"
               />
-              <span className="text-sm text-zinc-800">{q.text}</span>
+              <span className="text-sm text-zinc-800">
+                {q.text}
+                {q.primary && (
+                  <span className="ml-2 font-mono text-[10px] uppercase tracking-widest text-zinc-400">
+                    primary
+                  </span>
+                )}
+              </span>
             </label>
           ))}
         </div>
@@ -169,7 +233,6 @@ export function NewPrefillForm() {
             rows={2}
             value={admin_note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="Sent via WhatsApp · deadline end of month"
           />
         </Field>
       </SectionCard>

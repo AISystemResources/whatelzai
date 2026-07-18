@@ -48,18 +48,23 @@ export interface QuoteAnswer {
   answer: string;
 }
 
+export interface Affiliation {
+  role: string;
+  company: string;
+}
+
 export interface Testimonial {
   id: string;
   quote: string;
   quote_answers: QuoteAnswer[] | null;
   author_name: string;
-  author_role: string | null;
-  author_company: string | null;
+  author_affiliations: Affiliation[] | null;
   author_avatar_url: string | null;
   author_email: string | null;
   author_linkedin_url: string | null;
   outcome_tag: string | null;
   category: TestimonialCategory;
+  service_event_id: string | null;
   status: TestimonialStatus;
   featured: boolean;
   published: boolean;
@@ -165,12 +170,12 @@ export async function deleteTestimonial(id: string): Promise<void> {
 export async function createIncompleteTestimonial(input: {
   category: TestimonialCategory;
   author_name?: string;
-  author_role?: string;
   author_email?: string;
   author_linkedin_url?: string;
-  author_company?: string;
+  author_affiliations?: Affiliation[];
   suggested_question_ids?: string[];
   admin_note?: string;
+  service_event_id?: string;
   created_by_clerk_id?: string;
 }): Promise<Testimonial> {
   const now = new Date().toISOString();
@@ -179,12 +184,12 @@ export async function createIncompleteTestimonial(input: {
     .insert({
       category: input.category,
       author_name: input.author_name ?? "",
-      author_role: input.author_role ?? null,
       author_email: input.author_email ?? null,
       author_linkedin_url: input.author_linkedin_url ?? null,
-      author_company: input.author_company ?? null,
+      author_affiliations: input.author_affiliations ?? null,
       suggested_question_ids: input.suggested_question_ids ?? null,
       admin_note: input.admin_note ?? null,
+      service_event_id: input.service_event_id ?? null,
       created_by_clerk_id: input.created_by_clerk_id ?? null,
       quote: "",
       status: "incomplete",
@@ -206,8 +211,7 @@ export async function completeTestimonial(
     quote: string;
     quote_answers: QuoteAnswer[];
     author_name: string;
-    author_role: string | null;
-    author_company: string | null;
+    author_affiliations: Affiliation[] | null;
     author_avatar_url: string | null;
     author_email: string;
     author_linkedin_url: string | null;
@@ -221,8 +225,7 @@ export async function completeTestimonial(
       quote: input.quote,
       quote_answers: input.quote_answers,
       author_name: input.author_name,
-      author_role: input.author_role,
-      author_company: input.author_company,
+      author_affiliations: input.author_affiliations,
       author_avatar_url: input.author_avatar_url,
       author_email: input.author_email,
       author_linkedin_url: input.author_linkedin_url,

@@ -31,7 +31,9 @@ function LinkedInIcon() {
 }
 
 function Card({ t }: { t: Testimonial }) {
-  const authorLine = [t.author_role, t.author_company].filter(Boolean).join(" · ");
+  const affiliations = (t.author_affiliations ?? [])
+    .map((a) => [a.role, a.company].filter(Boolean).join(", "))
+    .filter(Boolean);
   return (
     <article className="flex flex-col gap-5 border border-zinc-200 bg-white p-6">
       <p className="text-base leading-relaxed text-zinc-800 sm:text-lg">
@@ -76,9 +78,11 @@ function Card({ t }: { t: Testimonial }) {
               </a>
             )}
           </p>
-          {authorLine && (
-            <p className="font-mono text-[10px] text-zinc-500">{authorLine}</p>
-          )}
+          {affiliations.map((a) => (
+            <p key={a} className="font-mono text-[10px] text-zinc-500">
+              {a}
+            </p>
+          ))}
         </div>
       </div>
     </article>

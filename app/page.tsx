@@ -3,6 +3,7 @@ import { Intro } from "@/components/sections/intro";
 import { Provocation } from "@/components/sections/provocation";
 import { POV } from "@/components/sections/pov";
 import { TrackRecord } from "@/components/sections/track-record";
+import { Testimonials } from "@/components/sections/testimonials";
 import { TrainingOffer } from "@/components/sections/training-offer";
 import { getSiteIdentity } from "@/lib/site-identity";
 
@@ -16,6 +17,7 @@ export default async function Home() {
       <Provocation />
       <POV />
       <TrackRecord />
+      <Testimonials />
       <TrainingOffer />
     </main>
   );

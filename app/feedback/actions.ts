@@ -52,7 +52,7 @@ export async function startTestimonial(
   formData: FormData,
 ): Promise<{ error?: string }> {
   if (clean(formData.get("website"), 200)) {
-    redirect("/testimonials/thank-you");
+    redirect("/feedback/thank-you");
   }
 
   try {
@@ -72,7 +72,7 @@ export async function startTestimonial(
     author_email: email,
   });
 
-  redirect(`/testimonials/new?t=${t.completion_token}`);
+  redirect(`/feedback?t=${t.completion_token}`);
 }
 
 // STAGE 2: final submission
@@ -81,7 +81,7 @@ export async function submitPublicTestimonial(
   formData: FormData,
 ): Promise<{ error?: string }> {
   if (clean(formData.get("website"), 200)) {
-    redirect("/testimonials/thank-you");
+    redirect("/feedback/thank-you");
   }
 
   try {
@@ -97,6 +97,7 @@ export async function submitPublicTestimonial(
   const categoryRaw = clean(formData.get("category"), 50);
   const token = clean(formData.get("completion_token"), 40) || null;
   const author_affiliations = parseAffiliations(formData);
+  const improvement_note = clean(formData.get("improvement_note"), 2000) || null;
 
   const category = (TESTIMONIAL_CATEGORIES as readonly string[]).includes(
     categoryRaw,
@@ -160,6 +161,7 @@ export async function submitPublicTestimonial(
         author_email,
         author_linkedin_url,
         category,
+        improvement_note,
       });
     } else {
       const fresh = await createIncompleteTestimonial({
@@ -178,6 +180,7 @@ export async function submitPublicTestimonial(
         author_email,
         author_linkedin_url,
         category,
+        improvement_note,
       });
     }
   } catch {
@@ -185,5 +188,5 @@ export async function submitPublicTestimonial(
   }
 
   revalidatePath("/admin/testimonials");
-  redirect("/testimonials/thank-you");
+  redirect("/feedback/thank-you");
 }

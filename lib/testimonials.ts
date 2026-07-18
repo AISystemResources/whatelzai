@@ -72,6 +72,7 @@ export interface Testimonial {
   completion_token: string | null;
   suggested_question_ids: string[] | null;
   admin_note: string | null;
+  improvement_note: string | null;
   created_by_clerk_id: string | null;
   submitted_at: string | null;
   moderated_at: string | null;
@@ -216,6 +217,7 @@ export async function completeTestimonial(
     author_email: string;
     author_linkedin_url: string | null;
     category: TestimonialCategory;
+    improvement_note: string | null;
   },
 ): Promise<Testimonial> {
   const now = new Date().toISOString();
@@ -230,6 +232,7 @@ export async function completeTestimonial(
       author_email: input.author_email,
       author_linkedin_url: input.author_linkedin_url,
       category: input.category,
+      improvement_note: input.improvement_note,
       status: "pending",
       submitted_at: now,
       updated_at: now,

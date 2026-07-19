@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import {
   testimonialSlug,
   CATEGORY_LABELS,
@@ -77,88 +77,119 @@ function Card({ t }: { t: Testimonial }) {
   );
 }
 
-// Marquee UX:
-//   Desktop → CSS animation, ~45s per loop. Pauses on hover OR mousedown.
-//   Mobile  → animation disabled, container becomes a native horizontal
-//             scroll-snap carousel (touch-scrollable, one card per snap).
+// Marquee driven by scrollLeft on the container (not CSS translate) so the
+// browser's native horizontal scroll — trackpad two-finger swipe, drag on the
+// scrollbar, arrow keys — composes cleanly with the auto-advance. The track
+// duplicates the list; when scrollLeft crosses the seam we subtract half the
+// scroll width for a seamless loop.
+//
+// Auto-scroll pauses on: hover, mousedown/touch, a recent wheel event
+// (so user's two-finger scroll actually feels like scrolling, not fighting
+// the animation), reduced-motion preference, or the tab being backgrounded.
 export function TestimonialsMarquee({ items }: { items: Testimonial[] }) {
-  const [paused, setPaused] = useState(false);
-  const trackRef = useRef<HTMLDivElement>(null);
-
-  // Track duplicated so translate -50% looks seamless on desktop. On mobile
-  // the duplicate is harmless — user just gets a longer scroll ribbon.
+  const outerRef = useRef<HTMLDivElement>(null);
   const track = [...items, ...items];
 
   useEffect(() => {
-    if (!paused) return;
-    const release = () => setPaused(false);
-    window.addEventListener("mouseup", release);
-    window.addEventListener("pointerup", release);
-    window.addEventListener("touchend", release);
-    return () => {
-      window.removeEventListener("mouseup", release);
-      window.removeEventListener("pointerup", release);
-      window.removeEventListener("touchend", release);
+    const el = outerRef.current;
+    if (!el) return;
+
+    // Respect reduced-motion — no auto-scroll, user still gets manual scroll.
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (reduce.matches) return;
+
+    // Speed roughly matches the previous 45s-per-loop feel. Tuned to px/sec.
+    const PX_PER_SEC = 30;
+    const WHEEL_COOLDOWN_MS = 700;
+
+    let raf = 0;
+    let lastTs = performance.now();
+    let paused = false;
+    let lastWheelAt = 0;
+
+    const isHovered = () => el.matches(":hover");
+    const halfWidth = () => el.scrollWidth / 2;
+
+    const tick = (now: number) => {
+      const dt = Math.min(now - lastTs, 100); // clamp long frames
+      lastTs = now;
+
+      const wheelRecent = now - lastWheelAt < WHEEL_COOLDOWN_MS;
+      const shouldAdvance =
+        !paused && !isHovered() && !wheelRecent && !document.hidden;
+
+      if (shouldAdvance) {
+        el.scrollLeft += (PX_PER_SEC * dt) / 1000;
+      }
+
+      // Seamless loop: track is duplicated, so subtract halfWidth at the seam.
+      const half = halfWidth();
+      if (half > 0 && el.scrollLeft >= half) {
+        el.scrollLeft -= half;
+      } else if (el.scrollLeft < 0) {
+        el.scrollLeft += half;
+      }
+
+      raf = requestAnimationFrame(tick);
     };
-  }, [paused]);
+
+    raf = requestAnimationFrame(tick);
+
+    const onPointerDown = () => {
+      paused = true;
+    };
+    const onPointerUp = () => {
+      paused = false;
+    };
+    const onWheel = () => {
+      // Any wheel event (including horizontal deltaX from trackpad) counts.
+      lastWheelAt = performance.now();
+    };
+    const onVisibility = () => {
+      // Reset the timer so the marquee doesn't fast-forward on tab-return.
+      lastTs = performance.now();
+    };
+
+    el.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("pointerup", onPointerUp);
+    el.addEventListener("wheel", onWheel, { passive: true });
+    document.addEventListener("visibilitychange", onVisibility);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      el.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("pointerup", onPointerUp);
+      el.removeEventListener("wheel", onWheel);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, []);
 
   return (
     <div
-      className="marquee-outer relative mt-14"
+      ref={outerRef}
+      className="marquee-outer relative mt-14 overflow-x-auto overflow-y-hidden"
       style={{
         maskImage:
           "linear-gradient(to right, transparent, black 8%, black 92%, transparent)",
         WebkitMaskImage:
           "linear-gradient(to right, transparent, black 8%, black 92%, transparent)",
+        scrollbarWidth: "none",
       }}
     >
-      <div
-        ref={trackRef}
-        className={`marquee-track flex gap-6 px-6 will-change-transform${
-          paused ? " marquee-paused" : ""
-        }`}
-        onMouseDown={() => setPaused(true)}
-        onTouchStart={() => setPaused(true)}
-      >
+      <div className="flex w-max gap-6 px-6">
         {track.map((t, i) => (
           <Card key={`${t.id}-${i}`} t={t} />
         ))}
       </div>
 
       <style>{`
-        /* Desktop / tablet: animated marquee. */
-        @media (min-width: 768px) {
-          .marquee-outer { overflow: hidden; }
-          .marquee-track {
-            animation: marquee-scroll 45s linear infinite;
-            width: max-content;
-          }
-          .marquee-track:hover,
-          .marquee-track.marquee-paused {
-            animation-play-state: paused;
-          }
-        }
-
-        /* Mobile: native horizontal scroll with snap. Finger stops the ribbon
-           and lets user swipe to the next card. */
+        .marquee-outer::-webkit-scrollbar { display: none; }
+        /* Mobile: snap so finger swipes page through cards. */
         @media (max-width: 767px) {
-          .marquee-outer { overflow: visible; }
-          .marquee-track {
-            overflow-x: auto;
+          .marquee-outer {
             scroll-snap-type: x mandatory;
             -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
           }
-          .marquee-track::-webkit-scrollbar { display: none; }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .marquee-track { animation: none; }
-        }
-
-        @keyframes marquee-scroll {
-          from { transform: translateX(0); }
-          to   { transform: translateX(-50%); }
         }
       `}</style>
     </div>

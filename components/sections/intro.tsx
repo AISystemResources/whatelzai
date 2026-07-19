@@ -83,22 +83,26 @@ export function Intro({ site }: { site: SiteIdentity }) {
 
           <motion.div variants={slideUpVariants} className="min-w-0 flex-1">
             <p className="font-mono text-[10px] tracking-widest text-zinc-400 uppercase">
-              Hello
+              About
             </p>
 
             <h2 className="font-display-hero mt-4 text-5xl leading-[1.05] sm:text-6xl">
               <NameLines name={site.owner_name} />
             </h2>
 
-            {site.bio && (
-              <p className="mt-8 font-mono text-xs tracking-wide text-zinc-500 sm:text-sm whitespace-pre-line">
-                {site.bio}
-              </p>
-            )}
+            <p className="mt-8 text-base leading-relaxed text-zinc-700 sm:text-lg">
+              A Singapore-based AI engineer and co-founder at{" "}
+              <span className="font-semibold text-zinc-900">
+                AI System Resources
+              </span>
+              . ASEAN Scholar, and on the Provost&rsquo;s List at SIT two years
+              running.
+            </p>
 
-            <p className="mt-6 text-base leading-relaxed text-zinc-700 sm:text-lg">
-              I build production AI systems, and I train teams to build the same
-              kind of thing. Same person, both jobs.
+            <p className="mt-4 text-base leading-relaxed text-zinc-700 sm:text-lg">
+              He builds production AI systems for teams ready to ship, and
+              trains the teams that aren&rsquo;t there yet. Same person, both
+              jobs.
             </p>
 
             <div className="mt-10 flex flex-wrap gap-3">

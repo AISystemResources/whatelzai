@@ -14,10 +14,10 @@ export default async function Home() {
     <main>
       <Hero />
       <Intro site={site} />
+      <Testimonials />
       <Provocation />
       <POV />
       <TrackRecord />
-      <Testimonials />
       <TrainingOffer />
     </main>
   );

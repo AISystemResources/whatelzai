@@ -14,14 +14,12 @@ import {
   listRecentChanges,
   VALID_SLUGS,
 } from "@/lib/website-docs";
-import {
-  listDashboardCards,
-  upsertDashboardCard,
-} from "@/lib/dashboard-cards";
+import { listDashboardCards, upsertDashboardCard } from "@/lib/dashboard-cards";
 import {
   listPublicTestimonials,
   listAllTestimonials,
   getTestimonial,
+  setTestimonialHeadline,
 } from "@/lib/testimonials";
 import { listActiveOffers } from "@/lib/offers";
 import { listHackathons } from "@/lib/hackathons";
@@ -105,6 +103,8 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
   "testimonials.list_public": async () => listPublicTestimonials(),
   "testimonials.list_all": async () => listAllTestimonials(),
   "testimonials.get": (a) => getTestimonial(a.id as string),
+  "testimonials.set_headline": (a) =>
+    setTestimonialHeadline(a.id as string, a.headline as string),
 
   // Offers + hackathons + events — read-only surfaces for briefings.
   "offers.list_active": async () => listActiveOffers(),
@@ -313,6 +313,23 @@ const TOOL_SCHEMAS = [
       type: "object",
       required: ["id"],
       properties: { id: { type: "string" } },
+    },
+  },
+  {
+    name: "testimonials.set_headline",
+    description:
+      "Persist a one-liner editorial headline for a testimonial. Displayed as the card title on /testimonials. Never rewrites the raw quote or quote_answers — distill their voice, don't fabricate. Refuses rows with status='incomplete' (those have live email tokens tied to the raw prefill).",
+    inputSchema: {
+      type: "object",
+      required: ["id", "headline"],
+      properties: {
+        id: { type: "string" },
+        headline: {
+          type: "string",
+          description:
+            "Short summary, ideally 40-80 chars. Pass empty string to clear.",
+        },
+      },
     },
   },
   {

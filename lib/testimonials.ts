@@ -57,6 +57,7 @@ export interface Affiliation {
 
 export interface Testimonial {
   id: string;
+  headline: string | null;
   quote: string;
   quote_answers: QuoteAnswer[] | null;
   author_name: string;
@@ -184,6 +185,29 @@ export async function upsertTestimonial(
     : supabaseAdmin.from("testimonials").insert(payload).select().single();
   const { data, error } = await query;
   if (error) throw new Error(`upsertTestimonial: ${error.message}`);
+  return data as Testimonial;
+}
+
+// Editorial one-liner. Layered on top of the raw quote — never rewrites it.
+// Refuses `status=incomplete` rows to protect live email-invite tokens.
+export async function setTestimonialHeadline(
+  id: string,
+  headline: string,
+): Promise<Testimonial> {
+  const existing = await getTestimonial(id);
+  if (!existing) throw new Error("testimonial not found");
+  if (existing.status === "incomplete")
+    throw new Error(
+      "refusing to modify status=incomplete testimonial (live email token)",
+    );
+  const value = headline.trim() || null;
+  const { data, error } = await supabaseAdmin
+    .from("testimonials")
+    .update({ headline: value, updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .select()
+    .single();
+  if (error) throw new Error(`setTestimonialHeadline: ${error.message}`);
   return data as Testimonial;
 }
 

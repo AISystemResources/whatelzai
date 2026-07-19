@@ -55,7 +55,7 @@ function Card({ t }: { t: Testimonial }) {
     .filter(Boolean);
   const href = `/testimonials/${testimonialSlug(t)}`;
   return (
-    <article className="group relative flex flex-col gap-5 border border-zinc-200 bg-white p-6 transition-colors hover:border-zinc-400">
+    <article className="group relative flex min-h-[380px] flex-col gap-4 border border-zinc-200 bg-white p-6 transition-colors hover:border-zinc-400">
       <Link
         href={href}
         aria-label={`Read ${t.author_name}'s full testimonial`}
@@ -65,7 +65,12 @@ function Card({ t }: { t: Testimonial }) {
           Read {t.author_name}&rsquo;s testimonial
         </span>
       </Link>
-      <p className="text-base leading-relaxed text-zinc-800 sm:text-lg">
+      {t.headline && (
+        <h3 className="text-lg font-semibold leading-snug text-zinc-900">
+          {t.headline}
+        </h3>
+      )}
+      <p className="line-clamp-6 text-sm leading-relaxed text-zinc-600">
         &ldquo;{t.quote}&rdquo;
       </p>
 
@@ -119,7 +124,7 @@ function Card({ t }: { t: Testimonial }) {
           ))}
         </div>
         <span className="shrink-0 self-start font-mono text-[10px] uppercase tracking-widest text-zinc-300 transition-colors group-hover:text-zinc-900">
-          Read →
+          Read more →
         </span>
       </div>
     </article>

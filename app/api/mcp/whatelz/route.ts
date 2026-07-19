@@ -18,6 +18,14 @@ import {
   listDashboardCards,
   upsertDashboardCard,
 } from "@/lib/dashboard-cards";
+import {
+  listPublicTestimonials,
+  listAllTestimonials,
+  getTestimonial,
+} from "@/lib/testimonials";
+import { listActiveOffers } from "@/lib/offers";
+import { listHackathons } from "@/lib/hackathons";
+import { listServiceEvents } from "@/lib/service-events";
 
 type ToolArgs = Record<string, unknown>;
 
@@ -92,6 +100,17 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
       source: a.source as string | undefined,
       expected_cadence_hours: a.expected_cadence_hours as number | undefined,
     }),
+
+  // Testimonials — pure-data reads. Server never summarises or drafts.
+  "testimonials.list_public": async () => listPublicTestimonials(),
+  "testimonials.list_all": async () => listAllTestimonials(),
+  "testimonials.get": (a) => getTestimonial(a.id as string),
+
+  // Offers + hackathons + events — read-only surfaces for briefings.
+  "offers.list_active": async () => listActiveOffers(),
+  "hackathons.list": async (a) =>
+    listHackathons((a.published_only as boolean | undefined) ?? true),
+  "service_events.list": async () => listServiceEvents(),
 
   describe_tools: async () => ({ tools: TOOL_SCHEMAS }),
 };
@@ -273,6 +292,55 @@ const TOOL_SCHEMAS = [
         },
       },
     },
+  },
+  {
+    name: "testimonials.list_public",
+    description:
+      "Read all published + approved testimonials (the ones live on the site). Includes quote, author info, category, socials, outcome tag.",
+    inputSchema: { type: "object", properties: {} },
+  },
+  {
+    name: "testimonials.list_all",
+    description:
+      "Read every testimonial regardless of status (incomplete/pending/approved/rejected). Includes draft and moderation state — use for briefings on what needs Edmund's attention.",
+    inputSchema: { type: "object", properties: {} },
+  },
+  {
+    name: "testimonials.get",
+    description:
+      "Read one testimonial by id — returns full context including all quote_answers and admin/improvement notes.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: { id: { type: "string" } },
+    },
+  },
+  {
+    name: "offers.list_active",
+    description:
+      "Read all active stripe_offers rows — the catalog of things for sale (memberships, cohorts, one-offs). Read-only.",
+    inputSchema: { type: "object", properties: {} },
+  },
+  {
+    name: "hackathons.list",
+    description:
+      "Read hackathons. By default only published rows. Use for building briefings about competition activity.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        published_only: {
+          type: "boolean",
+          default: true,
+          description: "If false, include unpublished/draft hackathons.",
+        },
+      },
+    },
+  },
+  {
+    name: "service_events.list",
+    description:
+      "Read the training / mentorship / hackathon events that testimonials can attribute to. Read-only.",
+    inputSchema: { type: "object", properties: {} },
   },
   {
     name: "describe_tools",

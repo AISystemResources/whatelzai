@@ -29,7 +29,7 @@ export const CATEGORY_LABELS: Record<TestimonialCategory, string> = {
   trainer: "Training client",
   mentor: "Mentee",
   peer: "Peer / manager",
-  academic: "Professor",
+  academic: "Professor / school staff",
   friend: "Friend",
   hackathon: "Hackathon teammate",
 };
@@ -38,7 +38,8 @@ export const SUBMITTER_ROLE_LABELS: Record<TestimonialCategory, string> = {
   trainer: "I attended a training / workshop with Edmund",
   mentor: "Edmund mentored me (junior / mentee)",
   peer: "I've worked with Edmund as a peer / colleague / manager",
-  academic: "I taught Edmund (professor / TA)",
+  academic:
+    "I taught or supported Edmund at school (professor / TA / career coach / student experience staff)",
   friend: "I know Edmund personally (friend)",
   hackathon: "We hacked together (hackathon teammate)",
 };
@@ -97,20 +98,23 @@ async function baseQuery(): Promise<Testimonial[]> {
     .select("*")
     .order("sort_order", { ascending: true, nullsFirst: false });
   if (error) {
-    if (error.code === "42P01" || /schema cache/i.test(error.message)) return [];
+    if (error.code === "42P01" || /schema cache/i.test(error.message))
+      return [];
     throw new Error(`testimonials: ${error.message}`);
   }
   return (data ?? []) as Testimonial[];
 }
 
-export const listAllTestimonials = cache(async (): Promise<Testimonial[]> =>
-  baseQuery(),
+export const listAllTestimonials = cache(
+  async (): Promise<Testimonial[]> => baseQuery(),
 );
 
-export const listPublicTestimonials = cache(async (): Promise<Testimonial[]> => {
-  const rows = await baseQuery();
-  return rows.filter((r) => r.published && r.status === "approved");
-});
+export const listPublicTestimonials = cache(
+  async (): Promise<Testimonial[]> => {
+    const rows = await baseQuery();
+    return rows.filter((r) => r.published && r.status === "approved");
+  },
+);
 
 export const listFeaturedTestimonials = cache(
   async (): Promise<Testimonial[]> => {
@@ -130,7 +134,9 @@ export async function getTestimonial(id: string): Promise<Testimonial | null> {
 }
 
 // URL slug is `<kebab-name>-<first-8-of-id>`. Deterministic per row without a migration.
-export function testimonialSlug(t: Pick<Testimonial, "id" | "author_name">): string {
+export function testimonialSlug(
+  t: Pick<Testimonial, "id" | "author_name">,
+): string {
   const name = slugify(t.author_name || "", 60) || "voice";
   return `${name}-${t.id.slice(0, 8)}`;
 }
@@ -181,7 +187,10 @@ export async function upsertTestimonial(
 }
 
 export async function deleteTestimonial(id: string): Promise<void> {
-  const { error } = await supabaseAdmin.from("testimonials").delete().eq("id", id);
+  const { error } = await supabaseAdmin
+    .from("testimonials")
+    .delete()
+    .eq("id", id);
   if (error) throw new Error(`deleteTestimonial: ${error.message}`);
 }
 

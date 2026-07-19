@@ -9,7 +9,7 @@ import {
   type Testimonial,
   type TestimonialCategory,
 } from "@/lib/testimonials";
-import { detectSocialPlatform } from "@/lib/social-link";
+import { mergeSocials } from "@/lib/social-link";
 
 export const metadata: Metadata = {
   title: "Testimonials",
@@ -95,21 +95,22 @@ function Card({ t }: { t: Testimonial }) {
         <div className="min-w-0 flex-1">
           <p className="flex items-center gap-2 text-sm font-semibold text-zinc-900">
             {t.author_name}
-            {t.author_linkedin_url && (
+            {mergeSocials(t.author_linkedin_url, t.author_socials).map((s) => (
               <a
-                href={t.author_linkedin_url}
+                key={s.url}
+                href={s.url}
                 target="_blank"
                 rel="noopener noreferrer me"
-                aria-label={`${t.author_name} on ${detectSocialPlatform(t.author_linkedin_url)}`}
+                aria-label={`${t.author_name} on ${s.platform}`}
                 className="relative z-20 text-zinc-400 transition-colors hover:text-zinc-900"
               >
-                {detectSocialPlatform(t.author_linkedin_url) === "LinkedIn" ? (
+                {s.platform === "LinkedIn" ? (
                   <LinkedInIcon />
                 ) : (
                   <ExternalArrowIcon />
                 )}
               </a>
-            )}
+            ))}
           </p>
           {affiliations.map((a) => (
             <p key={a} className="font-mono text-[10px] text-zinc-500">

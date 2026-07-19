@@ -87,17 +87,36 @@ export async function submitPublicTestimonial(
   try {
     await requireRateLimit();
   } catch {
-    return bad("Too many submissions from this network. Please try again later.");
+    return bad(
+      "Too many submissions from this network. Please try again later.",
+    );
   }
 
   const author_name = clean(formData.get("author_name"), 200);
   const author_email = clean(formData.get("author_email"), 200);
-  const author_linkedin_url =
-    clean(formData.get("author_linkedin_url"), 500) || null;
+
+  // Collect all social URLs from the repeatable rows. First non-empty entry
+  // populates the legacy author_linkedin_url column (kept for backward compat
+  // + so the existing display code still finds a URL); the full deduped list
+  // goes into author_socials as { url }[].
+  const rawSocials = formData
+    .getAll("author_socials[]")
+    .map((v) => clean(v, 500))
+    .filter((s) => s.length > 0);
+  const seen = new Set<string>();
+  const author_socials: { url: string }[] = [];
+  for (const url of rawSocials) {
+    const key = url.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    author_socials.push({ url });
+  }
+  const author_linkedin_url = author_socials[0]?.url ?? null;
   const categoryRaw = clean(formData.get("category"), 50);
   const token = clean(formData.get("completion_token"), 40) || null;
   const author_affiliations = parseAffiliations(formData);
-  const improvement_note = clean(formData.get("improvement_note"), 2000) || null;
+  const improvement_note =
+    clean(formData.get("improvement_note"), 2000) || null;
   const service_event_id = clean(formData.get("service_event_id"), 40) || null;
 
   const category = (TESTIMONIAL_CATEGORIES as readonly string[]).includes(
@@ -111,7 +130,11 @@ export async function submitPublicTestimonial(
   for (const q of questions) {
     const a = clean(formData.get(`answer_${q.id}`), 2000);
     if (a.length >= 5) {
-      quote_answers.push({ question_id: q.id, question_text: q.text, answer: a });
+      quote_answers.push({
+        question_id: q.id,
+        question_text: q.text,
+        answer: a,
+      });
     }
   }
 
@@ -120,8 +143,10 @@ export async function submitPublicTestimonial(
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(author_email)) {
     return bad("That doesn't look like a valid email.");
   }
-  if (author_linkedin_url && !/^https?:\/\//i.test(author_linkedin_url)) {
-    return bad("LinkedIn URL must start with https://");
+  for (const s of author_socials) {
+    if (!/^https?:\/\//i.test(s.url)) {
+      return bad("Social profile URLs must start with https://");
+    }
   }
   if (quote_answers.length === 0) {
     return bad("Please write at least a sentence in one of the questions.");
@@ -150,7 +175,9 @@ export async function submitPublicTestimonial(
       }
     }
 
-    const affiliations = author_affiliations.length ? author_affiliations : null;
+    const affiliations = author_affiliations.length
+      ? author_affiliations
+      : null;
 
     if (targetId) {
       await completeTestimonial(targetId, {
@@ -161,6 +188,7 @@ export async function submitPublicTestimonial(
         author_avatar_url,
         author_email,
         author_linkedin_url,
+        author_socials: author_socials.length ? author_socials : null,
         category,
         improvement_note,
         service_event_id,
@@ -181,13 +209,16 @@ export async function submitPublicTestimonial(
         author_avatar_url,
         author_email,
         author_linkedin_url,
+        author_socials: author_socials.length ? author_socials : null,
         category,
         improvement_note,
         service_event_id,
       });
     }
   } catch {
-    return bad("Something went wrong saving your testimonial. Please try again.");
+    return bad(
+      "Something went wrong saving your testimonial. Please try again.",
+    );
   }
 
   revalidatePath("/admin/testimonials");

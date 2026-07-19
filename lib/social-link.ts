@@ -25,3 +25,24 @@ export function detectSocialPlatform(url: string): SocialPlatform {
   if (u.includes("tiktok.com")) return "TikTok";
   return "Website";
 }
+
+// Merges the legacy single-URL field (`author_linkedin_url`) with the newer
+// `author_socials` array, deduping by URL. Legacy field is preserved first
+// (so older testimonials keep their existing display order); array entries
+// follow in their declared order.
+export function mergeSocials(
+  legacyUrl: string | null | undefined,
+  socials: { url: string }[] | null | undefined,
+): { url: string; platform: SocialPlatform }[] {
+  const out: { url: string; platform: SocialPlatform }[] = [];
+  const seen = new Set<string>();
+  const push = (url: string) => {
+    const key = url.trim().toLowerCase();
+    if (!key || seen.has(key)) return;
+    seen.add(key);
+    out.push({ url: url.trim(), platform: detectSocialPlatform(url) });
+  };
+  if (legacyUrl) push(legacyUrl);
+  for (const s of socials ?? []) if (s?.url) push(s.url);
+  return out;
+}

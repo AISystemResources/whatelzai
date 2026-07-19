@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { toggleFeatured, togglePublished, setStatus } from "./actions";
 import type { Testimonial } from "@/lib/testimonials";
-import { detectSocialPlatform } from "@/lib/social-link";
+import { mergeSocials } from "@/lib/social-link";
 
 const PUBLIC_ORIGIN =
   typeof window === "undefined" ? "https://whatelz.ai" : window.location.origin;
@@ -84,16 +84,17 @@ export function ListRow({
             </span>
           ))}
           {t.author_email && <span>{t.author_email}</span>}
-          {t.author_linkedin_url && (
+          {mergeSocials(t.author_linkedin_url, t.author_socials).map((s) => (
             <a
-              href={t.author_linkedin_url}
+              key={s.url}
+              href={s.url}
               target="_blank"
               rel="noopener noreferrer"
               className="underline underline-offset-2 hover:text-zinc-700"
             >
-              {detectSocialPlatform(t.author_linkedin_url)} ↗
+              {s.platform} ↗
             </a>
-          )}
+          ))}
         </div>
         {isIncomplete && completionUrl && (
           <p className="mt-2 break-all font-mono text-[10px] text-zinc-400">

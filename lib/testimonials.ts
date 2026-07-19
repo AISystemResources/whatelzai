@@ -64,6 +64,7 @@ export interface Testimonial {
   author_avatar_url: string | null;
   author_email: string | null;
   author_linkedin_url: string | null;
+  author_socials: { url: string }[] | null;
   outcome_tag: string | null;
   category: TestimonialCategory;
   service_event_id: string | null;
@@ -244,6 +245,7 @@ export async function completeTestimonial(
     author_avatar_url: string | null;
     author_email: string;
     author_linkedin_url: string | null;
+    author_socials: { url: string }[] | null;
     category: TestimonialCategory;
     improvement_note: string | null;
     service_event_id: string | null;
@@ -260,6 +262,7 @@ export async function completeTestimonial(
       author_avatar_url: input.author_avatar_url,
       author_email: input.author_email,
       author_linkedin_url: input.author_linkedin_url,
+      author_socials: input.author_socials,
       category: input.category,
       improvement_note: input.improvement_note,
       service_event_id: input.service_event_id,

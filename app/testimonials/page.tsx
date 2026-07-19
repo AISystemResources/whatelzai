@@ -9,6 +9,7 @@ import {
   type Testimonial,
   type TestimonialCategory,
 } from "@/lib/testimonials";
+import { detectSocialPlatform } from "@/lib/social-link";
 
 export const metadata: Metadata = {
   title: "Testimonials",
@@ -17,6 +18,23 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-dynamic";
+
+function ExternalArrowIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-3.5 w-3.5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M7 17L17 7M8 7h9v9" />
+    </svg>
+  );
+}
 
 function LinkedInIcon() {
   return (
@@ -43,7 +61,9 @@ function Card({ t }: { t: Testimonial }) {
         aria-label={`Read ${t.author_name}'s full testimonial`}
         className="absolute inset-0 z-10"
       >
-        <span className="sr-only">Read {t.author_name}&rsquo;s testimonial</span>
+        <span className="sr-only">
+          Read {t.author_name}&rsquo;s testimonial
+        </span>
       </Link>
       <p className="text-base leading-relaxed text-zinc-800 sm:text-lg">
         &ldquo;{t.quote}&rdquo;
@@ -80,10 +100,14 @@ function Card({ t }: { t: Testimonial }) {
                 href={t.author_linkedin_url}
                 target="_blank"
                 rel="noopener noreferrer me"
-                aria-label={`${t.author_name} on LinkedIn`}
+                aria-label={`${t.author_name} on ${detectSocialPlatform(t.author_linkedin_url)}`}
                 className="relative z-20 text-zinc-400 transition-colors hover:text-zinc-900"
               >
-                <LinkedInIcon />
+                {detectSocialPlatform(t.author_linkedin_url) === "LinkedIn" ? (
+                  <LinkedInIcon />
+                ) : (
+                  <ExternalArrowIcon />
+                )}
               </a>
             )}
           </p>

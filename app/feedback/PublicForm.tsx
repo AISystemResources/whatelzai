@@ -41,10 +41,19 @@ export function PublicForm({
   prefill: Testimonial;
   events: ServiceEvent[];
 }) {
-  const [state, action, pending] = useActionState(submitPublicTestimonial, null);
-  const [category, setCategory] = useState<TestimonialCategory>(prefill.category);
-  const [eventId, setEventId] = useState<string>(prefill.service_event_id ?? "");
-  const [preview, setPreview] = useState<string | null>(prefill.author_avatar_url);
+  const [state, action, pending] = useActionState(
+    submitPublicTestimonial,
+    null,
+  );
+  const [category, setCategory] = useState<TestimonialCategory>(
+    prefill.category,
+  );
+  const [eventId, setEventId] = useState<string>(
+    prefill.service_event_id ?? "",
+  );
+  const [preview, setPreview] = useState<string | null>(
+    prefill.author_avatar_url,
+  );
   const [affiliations, setAffiliations] = useState<Affiliation[]>(
     prefill.author_affiliations && prefill.author_affiliations.length > 0
       ? prefill.author_affiliations
@@ -71,7 +80,9 @@ export function PublicForm({
   function onCategoryChange(next: TestimonialCategory) {
     setCategory(next);
     setEventId(""); // reset — old event kind may not match new category
-    setOpenedIds(initialOpenedIds(next, prefill.suggested_question_ids ?? [], []));
+    setOpenedIds(
+      initialOpenedIds(next, prefill.suggested_question_ids ?? [], []),
+    );
   }
 
   const eventKinds = CATEGORY_EVENT_KINDS[category] ?? [];
@@ -117,7 +128,9 @@ export function PublicForm({
   }
 
   function updateAffiliation(i: number, patch: Partial<Affiliation>) {
-    setAffiliations(affiliations.map((a, j) => (i === j ? { ...a, ...patch } : a)));
+    setAffiliations(
+      affiliations.map((a, j) => (i === j ? { ...a, ...patch } : a)),
+    );
   }
   function addAffiliation() {
     setAffiliations([...affiliations, { role: "", company: "" }]);
@@ -196,7 +209,9 @@ export function PublicForm({
         <select
           name="category"
           value={category}
-          onChange={(e) => onCategoryChange(e.target.value as TestimonialCategory)}
+          onChange={(e) =>
+            onCategoryChange(e.target.value as TestimonialCategory)
+          }
           className="mt-3 w-full border border-zinc-200 bg-white px-4 py-3 text-base text-zinc-900 focus:border-zinc-900 focus:outline-none"
         >
           {TESTIMONIAL_CATEGORIES.map((c) => (
@@ -320,7 +335,7 @@ export function PublicForm({
         </div>
         <div>
           <label className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
-            LinkedIn URL
+            Social profile URL
           </label>
           <input
             name="author_linkedin_url"
@@ -328,10 +343,10 @@ export function PublicForm({
             defaultValue={prefill.author_linkedin_url ?? ""}
             maxLength={500}
             className={inputCls}
-            placeholder="https://www.linkedin.com/in/…"
+            placeholder="LinkedIn, Instagram, YouTube, X, Facebook…"
           />
           <p className="mt-1 font-mono text-[10px] text-zinc-400">
-            Public — proof of authority.
+            Optional. Public — proof of authority.
           </p>
         </div>
       </div>

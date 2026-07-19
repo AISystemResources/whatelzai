@@ -34,7 +34,13 @@ function Card({ t }: { t: Testimonial }) {
 
       <Stars />
 
-      <p className="line-clamp-6 text-base leading-relaxed text-zinc-800 sm:text-lg">
+      {t.headline && (
+        <h3 className="text-lg leading-snug font-semibold text-zinc-900 sm:text-xl">
+          {t.headline}
+        </h3>
+      )}
+
+      <p className="line-clamp-5 text-sm leading-relaxed text-zinc-600 sm:text-base">
         &ldquo;{t.quote}&rdquo;
       </p>
 

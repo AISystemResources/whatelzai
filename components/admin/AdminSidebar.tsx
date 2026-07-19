@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SignOutButton } from "@clerk/nextjs";
+import { MCPConnectHint } from "./MCPConnectHint";
 
 type NavItem = { href: string; label: string; exact?: boolean };
 
@@ -108,7 +109,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         </ul>
       </nav>
 
-      <div className="border-t border-zinc-200 px-5 py-4">
+      <div className="space-y-3 border-t border-zinc-200 px-5 py-4">
+        <MCPConnectHint />
         <SignOutButton>
           <button className="font-mono text-[10px] uppercase tracking-widest text-zinc-500 transition-colors hover:text-zinc-900">
             ← Sign out

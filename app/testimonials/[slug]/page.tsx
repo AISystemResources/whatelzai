@@ -8,7 +8,7 @@ import {
   testimonialSlug,
   CATEGORY_LABELS,
 } from "@/lib/testimonials";
-import { detectSocialPlatform } from "@/lib/social-link";
+import { mergeSocials } from "@/lib/social-link";
 
 export const dynamic = "force-dynamic";
 
@@ -76,7 +76,12 @@ export default async function TestimonialDetailPage({
     author: {
       "@type": "Person",
       name: t.author_name,
-      ...(t.author_linkedin_url && { sameAs: [t.author_linkedin_url] }),
+      ...(() => {
+        const urls = mergeSocials(t.author_linkedin_url, t.author_socials).map(
+          (s) => s.url,
+        );
+        return urls.length ? { sameAs: urls } : {};
+      })(),
       ...(affiliations[0] && { jobTitle: affiliations[0] }),
     },
     datePublished: t.submitted_at ?? t.created_at,
@@ -137,15 +142,18 @@ export default async function TestimonialDetailPage({
           <div className="min-w-0">
             <p className="text-base font-semibold text-zinc-900">
               {t.author_name}
-              {t.author_linkedin_url && (
-                <a
-                  href={t.author_linkedin_url}
-                  target="_blank"
-                  rel="noopener noreferrer me"
-                  className="ml-2 font-mono text-[10px] uppercase tracking-widest text-zinc-400 underline underline-offset-4 hover:text-zinc-900"
-                >
-                  {detectSocialPlatform(t.author_linkedin_url)} ↗
-                </a>
+              {mergeSocials(t.author_linkedin_url, t.author_socials).map(
+                (s) => (
+                  <a
+                    key={s.url}
+                    href={s.url}
+                    target="_blank"
+                    rel="noopener noreferrer me"
+                    className="ml-2 font-mono text-[10px] uppercase tracking-widest text-zinc-400 underline underline-offset-4 hover:text-zinc-900"
+                  >
+                    {s.platform} ↗
+                  </a>
+                ),
               )}
             </p>
             {affiliations.map((a) => (

@@ -59,6 +59,20 @@ export function PublicForm({
       ? prefill.author_affiliations
       : [{ role: "", company: "" }],
   );
+  const [socials, setSocials] = useState<{ url: string }[]>(() => {
+    // Seed with legacy linkedin + new author_socials, deduped.
+    const seen = new Set<string>();
+    const arr: { url: string }[] = [];
+    const push = (u: string) => {
+      const k = u.trim().toLowerCase();
+      if (!k || seen.has(k)) return;
+      seen.add(k);
+      arr.push({ url: u.trim() });
+    };
+    if (prefill.author_linkedin_url) push(prefill.author_linkedin_url);
+    for (const s of prefill.author_socials ?? []) if (s?.url) push(s.url);
+    return arr.length > 0 ? arr : [{ url: "" }];
+  });
   const [openedIds, setOpenedIds] = useState<Set<string>>(
     initialOpenedIds(
       prefill.category,
@@ -141,6 +155,20 @@ export function PublicForm({
       return;
     }
     setAffiliations(affiliations.filter((_, j) => j !== i));
+  }
+
+  function updateSocial(i: number, url: string) {
+    setSocials(socials.map((s, j) => (i === j ? { url } : s)));
+  }
+  function addSocial() {
+    setSocials([...socials, { url: "" }]);
+  }
+  function removeSocial(i: number) {
+    if (socials.length === 1) {
+      setSocials([{ url: "" }]);
+      return;
+    }
+    setSocials(socials.filter((_, j) => j !== i));
   }
 
   const inputCls =
@@ -314,41 +342,69 @@ export function PublicForm({
         </button>
       </div>
 
-      {/* Email + LinkedIn */}
-      <div className="grid gap-6 sm:grid-cols-2">
-        <div>
-          <label className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
-            Email *
-          </label>
-          <input
-            name="author_email"
-            type="email"
-            required
-            defaultValue={prefill.author_email ?? ""}
-            maxLength={200}
-            className={inputCls}
-            placeholder="you@example.com"
-          />
-          <p className="mt-1 font-mono text-[10px] text-zinc-400">
-            Private. Never displayed.
-          </p>
+      {/* Email */}
+      <div>
+        <label className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+          Email *
+        </label>
+        <input
+          name="author_email"
+          type="email"
+          required
+          defaultValue={prefill.author_email ?? ""}
+          maxLength={200}
+          className={inputCls}
+          placeholder="you@example.com"
+        />
+        <p className="mt-1 font-mono text-[10px] text-zinc-400">
+          Private. Never displayed.
+        </p>
+      </div>
+
+      {/* Social profile URLs — repeatable */}
+      <div>
+        <label className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+          Social profile URLs
+        </label>
+        <p className="mt-1 mb-4 font-mono text-[10px] text-zinc-400">
+          Optional. Public — proof of authority. Add as many as you want:
+          LinkedIn, Instagram, YouTube, X, Facebook, GitHub, TikTok, personal
+          site.
+        </p>
+        <div className="space-y-3">
+          {socials.map((s, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <input
+                name="author_socials[]"
+                type="url"
+                value={s.url}
+                onChange={(e) => updateSocial(i, e.target.value)}
+                maxLength={500}
+                className={inputCls}
+                placeholder={
+                  i === 0
+                    ? "https://www.linkedin.com/in/…"
+                    : "https://…"
+                }
+              />
+              <button
+                type="button"
+                onClick={() => removeSocial(i)}
+                aria-label={`Remove social ${i + 1}`}
+                className="shrink-0 border border-zinc-200 px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-zinc-500 transition-colors hover:border-zinc-900 hover:text-zinc-900"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
         </div>
-        <div>
-          <label className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
-            Social profile URL
-          </label>
-          <input
-            name="author_linkedin_url"
-            type="url"
-            defaultValue={prefill.author_linkedin_url ?? ""}
-            maxLength={500}
-            className={inputCls}
-            placeholder="LinkedIn, Instagram, YouTube, X, Facebook…"
-          />
-          <p className="mt-1 font-mono text-[10px] text-zinc-400">
-            Optional. Public — proof of authority.
-          </p>
-        </div>
+        <button
+          type="button"
+          onClick={addSocial}
+          className="mt-3 font-mono text-[10px] uppercase tracking-widest text-zinc-500 transition-colors hover:text-zinc-900"
+        >
+          + Add another social
+        </button>
       </div>
 
       {/* Questions */}

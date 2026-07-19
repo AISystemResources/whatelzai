@@ -39,7 +39,7 @@ export const SUBMITTER_ROLE_LABELS: Record<TestimonialCategory, string> = {
   mentor: "Edmund mentored me (junior / mentee)",
   peer: "I've worked with Edmund as a peer / colleague / manager",
   academic:
-    "I taught or supported Edmund at school (professor / TA / career coach / student experience staff)",
+    "I taught or supported Edmund at school (professor / career coach / staff)",
   friend: "I know Edmund personally (friend)",
   hackathon: "We hacked together (hackathon teammate)",
 };

@@ -4,6 +4,7 @@ import { SignOutButton } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { ensureUserRow, isAdminRole } from "@/lib/users";
+import { BriefingCards } from "@/components/admin/BriefingCards";
 
 export const metadata: Metadata = { title: "Dashboard — whatelz.ai" };
 
@@ -89,6 +90,9 @@ export default async function DashboardPage() {
           <span className="font-mono text-xs text-zinc-400">{email}</span>
         </div>
       </div>
+
+      {/* Briefings — dashboard_cards written by Claude Schedule / MCP clients. */}
+      <BriefingCards />
 
       {/* Site health stats */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">

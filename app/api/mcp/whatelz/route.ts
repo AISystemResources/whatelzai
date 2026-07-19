@@ -14,6 +14,10 @@ import {
   listRecentChanges,
   VALID_SLUGS,
 } from "@/lib/website-docs";
+import {
+  listDashboardCards,
+  upsertDashboardCard,
+} from "@/lib/dashboard-cards";
 
 type ToolArgs = Record<string, unknown>;
 
@@ -74,6 +78,21 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
       a.doc_slug as (typeof VALID_SLUGS)[number] | undefined,
       (a.limit as number | undefined) ?? 20,
     ),
+
+  // Dashboard cards — briefing write-back surface for Claude Schedule runs.
+  // Pure data verbs: server never generates body_markdown. Claude in the
+  // client produces the body; this just persists + reads.
+  "dashboard.list_cards": async () => listDashboardCards(),
+  "dashboard.upsert_card": (a) =>
+    upsertDashboardCard({
+      key: a.key as string,
+      title: a.title as string,
+      body_markdown: a.body_markdown as string,
+      meta: a.meta as Record<string, unknown> | undefined,
+      source: a.source as string | undefined,
+      expected_cadence_hours: a.expected_cadence_hours as number | undefined,
+    }),
+
   describe_tools: async () => ({ tools: TOOL_SCHEMAS }),
 };
 
@@ -214,6 +233,48 @@ const TOOL_SCHEMAS = [
     },
   },
   {
+    name: "dashboard.list_cards",
+    description:
+      "List all dashboard briefing cards, most recently updated first. Read-only.",
+    inputSchema: { type: "object", properties: {} },
+  },
+  {
+    name: "dashboard.upsert_card",
+    description:
+      "Write or overwrite a briefing card by key. Body markdown is produced by Claude in the client; this verb never generates content — it only persists what it receives. Set expected_cadence_hours so the UI can flag the card stale if the next update doesn't arrive on time.",
+    inputSchema: {
+      type: "object",
+      required: ["key", "title", "body_markdown"],
+      properties: {
+        key: {
+          type: "string",
+          description:
+            "Stable identifier, e.g. 'morning-briefing' or 'doublelead-dau'. Upserts overwrite.",
+        },
+        title: { type: "string" },
+        body_markdown: {
+          type: "string",
+          description: "Markdown body. Rendered on /admin.",
+        },
+        meta: {
+          type: "object",
+          description: "Free-form structured payload. Opaque to the UI.",
+        },
+        source: {
+          type: "string",
+          description:
+            "Which agent/schedule wrote this card. Helps trace bad briefings.",
+        },
+        expected_cadence_hours: {
+          type: "integer",
+          minimum: 1,
+          description:
+            "Cadence the writer promises. UI flags stale when now() > updated_at + this. Omit for cards that don't have a cadence.",
+        },
+      },
+    },
+  },
+  {
     name: "describe_tools",
     description:
       "Return the full tool catalogue (same shape as tools/list, plus descriptions) for callers without MCP introspection.",
@@ -222,7 +283,7 @@ const TOOL_SCHEMAS = [
 ];
 
 async function checkAuth(req: NextRequest) {
-  const auth  = req.headers.get("authorization") ?? "";
+  const auth = req.headers.get("authorization") ?? "";
   const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
   const { data } = await supabaseAdmin
     .from("system_config")

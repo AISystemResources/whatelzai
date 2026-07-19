@@ -4,11 +4,10 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { toggleFeatured, togglePublished, setStatus } from "./actions";
 import type { Testimonial } from "@/lib/testimonials";
+import { detectSocialPlatform } from "@/lib/social-link";
 
 const PUBLIC_ORIGIN =
-  typeof window === "undefined"
-    ? "https://whatelz.ai"
-    : window.location.origin;
+  typeof window === "undefined" ? "https://whatelz.ai" : window.location.origin;
 
 export function ListRow({
   t,
@@ -92,7 +91,7 @@ export function ListRow({
               rel="noopener noreferrer"
               className="underline underline-offset-2 hover:text-zinc-700"
             >
-              LinkedIn ↗
+              {detectSocialPlatform(t.author_linkedin_url)} ↗
             </a>
           )}
         </div>
@@ -143,14 +142,18 @@ export function ListRow({
           <>
             <button
               disabled={pending}
-              onClick={() => start(async () => toggleFeatured(t.id, !t.featured))}
+              onClick={() =>
+                start(async () => toggleFeatured(t.id, !t.featured))
+              }
               className="font-mono text-[10px] uppercase tracking-widest text-zinc-500 transition-colors hover:text-amber-600 disabled:opacity-50"
             >
               {t.featured ? "Unfeature" : "Feature"}
             </button>
             <button
               disabled={pending}
-              onClick={() => start(async () => togglePublished(t.id, !t.published))}
+              onClick={() =>
+                start(async () => togglePublished(t.id, !t.published))
+              }
               className="font-mono text-[10px] uppercase tracking-widest text-zinc-500 transition-colors hover:text-zinc-900 disabled:opacity-50"
             >
               {t.published ? "Unpublish" : "Publish"}

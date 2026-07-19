@@ -8,6 +8,7 @@ import {
   testimonialSlug,
   CATEGORY_LABELS,
 } from "@/lib/testimonials";
+import { detectSocialPlatform } from "@/lib/social-link";
 
 export const dynamic = "force-dynamic";
 
@@ -103,7 +104,10 @@ export default async function TestimonialDetailPage({
           {CATEGORY_LABELS[t.category]}
         </p>
 
-        <blockquote className="font-display mt-8 text-[1.75rem] font-normal leading-[1.35] tracking-tight text-zinc-900 sm:text-[2rem] sm:leading-[1.35]" style={{ fontVariationSettings: '"opsz" 96, "SOFT" 60' }}>
+        <blockquote
+          className="font-display mt-8 text-[1.75rem] font-normal leading-[1.35] tracking-tight text-zinc-900 sm:text-[2rem] sm:leading-[1.35]"
+          style={{ fontVariationSettings: '"opsz" 96, "SOFT" 60' }}
+        >
           &ldquo;{t.quote}&rdquo;
         </blockquote>
 
@@ -140,7 +144,7 @@ export default async function TestimonialDetailPage({
                   rel="noopener noreferrer me"
                   className="ml-2 font-mono text-[10px] uppercase tracking-widest text-zinc-400 underline underline-offset-4 hover:text-zinc-900"
                 >
-                  LinkedIn ↗
+                  {detectSocialPlatform(t.author_linkedin_url)} ↗
                 </a>
               )}
             </p>

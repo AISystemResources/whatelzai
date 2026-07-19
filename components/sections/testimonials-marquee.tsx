@@ -1,12 +1,12 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import {
-  listFeaturedTestimonials,
   testimonialSlug,
   CATEGORY_LABELS,
   type Testimonial,
 } from "@/lib/testimonials";
-import { TestimonialsMarquee } from "./testimonials-marquee";
 
 function formatAffiliations(t: Testimonial): string[] {
   return (t.author_affiliations ?? [])
@@ -14,12 +14,12 @@ function formatAffiliations(t: Testimonial): string[] {
     .filter(Boolean);
 }
 
-function TestimonialCard({ t }: { t: Testimonial }) {
+function Card({ t }: { t: Testimonial }) {
   const affiliations = formatAffiliations(t);
   const href = `/testimonials/${testimonialSlug(t)}`;
 
   return (
-    <article className="group relative flex flex-col gap-6 border border-zinc-200 p-6 transition-colors hover:border-zinc-400 sm:p-8">
+    <article className="group relative flex w-[340px] shrink-0 flex-col gap-6 border border-zinc-200 bg-white p-6 transition-colors hover:border-zinc-400 sm:w-[420px] sm:p-8">
       <Link
         href={href}
         aria-label={`Read ${t.author_name}'s full testimonial`}
@@ -29,7 +29,7 @@ function TestimonialCard({ t }: { t: Testimonial }) {
           Read {t.author_name}&rsquo;s testimonial
         </span>
       </Link>
-      <p className="text-lg leading-relaxed text-zinc-800 sm:text-xl">
+      <p className="line-clamp-6 text-base leading-relaxed text-zinc-800 sm:text-lg">
         &ldquo;{t.quote}&rdquo;
       </p>
 
@@ -59,7 +59,7 @@ function TestimonialCard({ t }: { t: Testimonial }) {
         <div className="min-w-0">
           <p className="text-sm font-semibold text-zinc-900">{t.author_name}</p>
           {affiliations.map((a) => (
-            <p key={a} className="font-mono text-xs text-zinc-500">
+            <p key={a} className="truncate font-mono text-xs text-zinc-500">
               {a}
             </p>
           ))}
@@ -72,35 +72,43 @@ function TestimonialCard({ t }: { t: Testimonial }) {
   );
 }
 
-export async function Testimonials() {
-  const items = await listFeaturedTestimonials();
-  if (items.length === 0) return null;
+export function TestimonialsMarquee({ items }: { items: Testimonial[] }) {
+  // Duplicate the list so the translate loop appears seamless.
+  const track = [...items, ...items];
 
   return (
-    <section
-      id="testimonials"
-      data-section="What people say"
-      className="border-b border-zinc-200 px-6 py-24 sm:px-8 sm:py-32"
+    <div
+      className="relative mt-14 overflow-hidden"
+      style={{
+        maskImage:
+          "linear-gradient(to right, transparent, black 8%, black 92%, transparent)",
+        WebkitMaskImage:
+          "linear-gradient(to right, transparent, black 8%, black 92%, transparent)",
+      }}
     >
-      <div className="mx-auto max-w-6xl">
-        <p className="font-mono text-[10px] tracking-widest text-zinc-400 uppercase">
-          What people say
-        </p>
-
-        <h2 className="mt-8 max-w-3xl pb-2 text-3xl font-semibold leading-[1.15] tracking-tight text-zinc-900 sm:text-5xl">
-          The people I&rsquo;ve trained, taught, or shipped with.
-        </h2>
-
-        {items.length > 3 ? (
-          <TestimonialsMarquee items={items} />
-        ) : (
-          <div className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-2">
-            {items.map((t) => (
-              <TestimonialCard key={t.id} t={t} />
-            ))}
-          </div>
-        )}
+      <div className="marquee-track flex gap-6 will-change-transform">
+        {track.map((t, i) => (
+          <Card key={`${t.id}-${i}`} t={t} />
+        ))}
       </div>
-    </section>
+      <style>{`
+        .marquee-track {
+          animation: marquee-scroll 60s linear infinite;
+          width: max-content;
+        }
+        .marquee-track:hover {
+          animation-play-state: paused;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .marquee-track {
+            animation: none;
+          }
+        }
+        @keyframes marquee-scroll {
+          from { transform: translateX(0); }
+          to   { transform: translateX(-50%); }
+        }
+      `}</style>
+    </div>
   );
 }

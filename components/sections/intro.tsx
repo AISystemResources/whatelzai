@@ -90,30 +90,15 @@ export function Intro({ site }: { site: SiteIdentity }) {
               <NameLines name={site.owner_name} />
             </h2>
 
-            {site.owner_initials && (
-              <p className="mt-8 text-lg text-zinc-700 sm:text-xl">
-                The domain is a wordplay.{" "}
-                <span className="font-mono">
-                  what
-                  <span style={{ color: "var(--accent-text)" }}>
-                    {site.owner_initials}
-                  </span>
-                  .ai
-                </span>{" "}
-                — <em>what else with AI</em>, and the letters that make it a
-                question are the letters that spell my name.
-              </p>
-            )}
-
             {site.bio && (
-              <p className="mt-4 font-mono text-xs tracking-wide text-zinc-500 sm:text-sm whitespace-pre-line">
+              <p className="mt-8 font-mono text-xs tracking-wide text-zinc-500 sm:text-sm whitespace-pre-line">
                 {site.bio}
               </p>
             )}
 
             <p className="mt-6 text-base leading-relaxed text-zinc-700 sm:text-lg">
-              I build production AI systems, and I train teams to build the
-              same kind of thing. Same person, both jobs.
+              I build production AI systems, and I train teams to build the same
+              kind of thing. Same person, both jobs.
             </p>
 
             <div className="mt-10 flex flex-wrap gap-3">

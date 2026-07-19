@@ -22,6 +22,7 @@ export interface PovContent {
 export interface TrackRecordStat {
   value: string;
   label: string;
+  caption?: string;
 }
 
 export interface TrackRecordLink {

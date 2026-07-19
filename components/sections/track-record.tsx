@@ -22,36 +22,50 @@ export async function TrackRecord() {
 
         <dl className="mt-14 grid grid-cols-1 gap-10 sm:grid-cols-3">
           {c.stats.map((s) => (
-            <div key={s.label}>
+            <div key={s.label} className="flex flex-col gap-3">
               <dt
-                className="font-mono text-4xl font-medium tabular-nums tracking-tight sm:text-5xl"
+                className="font-mono text-5xl font-medium tabular-nums tracking-tight sm:text-6xl"
                 style={{ color: "var(--accent-text)" }}
               >
                 {s.value}
               </dt>
-              <dd className="mt-2 text-sm text-zinc-600">{s.label}</dd>
+              <dd>
+                <span className="inline-block bg-zinc-900 px-2 py-1 text-xs font-semibold tracking-wide text-white uppercase">
+                  {s.label}
+                </span>
+                {s.caption && (
+                  <p className="mt-3 text-sm leading-relaxed text-zinc-600">
+                    {s.caption}
+                  </p>
+                )}
+              </dd>
             </div>
           ))}
         </dl>
 
         {c.links.length > 0 && (
-          <div className="mt-14 border-t border-zinc-100 pt-8">
-            <p className="font-mono text-[10px] tracking-widest text-zinc-400 uppercase">
-              {c.links_heading}
-            </p>
-            <ul className="mt-4 flex flex-wrap gap-x-8 gap-y-3">
+          <aside className="mt-20 flex flex-col gap-4 border-t border-zinc-200 pt-10 sm:flex-row sm:items-start sm:justify-between sm:gap-10">
+            <div className="sm:max-w-xs">
+              <p className="font-mono text-[10px] tracking-widest text-zinc-400 uppercase">
+                {c.links_heading}
+              </p>
+              <p className="mt-2 text-sm text-zinc-500">
+                Prefer to browse the receipts yourself?
+              </p>
+            </div>
+            <ul className="flex flex-wrap gap-x-6 gap-y-2 sm:justify-end">
               {c.links.map((l) => (
                 <li key={l.href}>
                   <Link
                     href={l.href}
-                    className="font-mono text-sm text-zinc-600 underline underline-offset-4 transition-colors hover:text-zinc-900"
+                    className="font-mono text-sm text-zinc-700 underline underline-offset-4 transition-colors hover:text-zinc-900"
                   >
                     {l.label} →
                   </Link>
                 </li>
               ))}
             </ul>
-          </div>
+          </aside>
         )}
       </div>
     </section>

@@ -1,7 +1,9 @@
 <!-- BEGIN:nextjs-agent-rules -->
+
 # This is NOT the Next.js you know
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
+
 <!-- END:nextjs-agent-rules -->
 
 ---
@@ -12,11 +14,11 @@ Instructions for any AI coding agent (Claude Code, Cursor, Aider, ...) working o
 
 ## Source of truth — two layers, kept in sync
 
-| Layer | What it holds | Where it lives |
-|---|---|---|
+| Layer                                                                            | What it holds                            | Where it lives |
+| -------------------------------------------------------------------------------- | ---------------------------------------- | -------------- |
 | **Process** — agent protocols, sprint workflow, doc registry, writing discipline | EMDEE vault under `projects/WHATELZ-AI/` |
-| **Code behaviour** — stack, commands, structure, what runs where | This repo |
-| **Bridge** — repo specifics + pointers into EMDEE for process | This file |
+| **Code behaviour** — stack, commands, structure, what runs where                 | This repo                                |
+| **Bridge** — repo specifics + pointers into EMDEE for process                    | This file                                |
 
 **Rule:** this file never duplicates EMDEE protocol — it references it. Code-side mirror of `projects/WHATELZ-AI/INSTRUCTIONS.md`. When repo behaviour changes, update both in the same commit.
 
@@ -27,11 +29,11 @@ Instructions for any AI coding agent (Claude Code, Cursor, Aider, ...) working o
 ## Stack
 
 - **Framework:** Next.js 16.2.4 (App Router), React 19.2.4, TypeScript 5 (strict)
-- **Styling:** Tailwind CSS v4 (`@tailwindcss/postcss`) — *light mode only, see Hard Rule 5*
+- **Styling:** Tailwind CSS v4 (`@tailwindcss/postcss`) — _light mode only, see Hard Rule 5_
 - **Auth:** Clerk (`@clerk/nextjs`)
 - **Data:** Supabase (Postgres) — `@supabase/supabase-js`
 - **Jobs:** Inngest 4 (`inngest/client.ts`, `inngest/functions/`)
-- **AI runtime:** Groq SDK (`@ai-sdk/groq`) + Vercel AI SDK (`ai`, `@ai-sdk/react`) — installed but currently **not called from `lib/`**. Reserved for backend jobs (scoring, summarisation, classification) once migrated off Anthropic. There is no user-facing chat widget in the codebase. Claude is **MCP-only**, not a runtime provider (see Hard Rule 4).
+- **AI runtime:** none. Zero server-side inference — not Groq, not Anthropic, not any Vercel AI SDK provider. All LLM reasoning happens client-side in Claude Chat / Claude Code, hitting the MCP surface at `/api/mcp/whatelz` (or the future CLI). MCP verbs are pure data — read verbs return structured context, write verbs persist a body Claude produced client-side. Groq/Vercel AI SDK deps are still in `package.json` from prior policy but are unused and slated for removal. Any surviving server-side Anthropic call sites (`inngest/functions/score_job`, `inngest/functions/draft_cover_letter`) are technical debt to be *deleted*, not migrated (see Hard Rule 4).
 - **PDF:** Puppeteer (`puppeteer-core` + `@sparticuz/chromium-min`) — resume + cover letter renderer
 - **Email:** Resend
 - **Package manager:** npm (lockfile: `package-lock.json`)
@@ -40,17 +42,17 @@ Dev port is **3100**, not 3000 (`npm run dev` → `next dev -p 3100`). Single Ve
 
 ## Commands
 
-| Purpose | Command |
-|---|---|
-| Dev server | `npm run dev` (http://localhost:3100) |
-| Production build | `npm run build` |
-| Start built app | `npm run start` |
-| Lint | `npm run lint` (eslint) |
-| Format (write) | `npm run format` |
-| Format check | `npm run format:check` |
-| Typecheck | `npx tsc --noEmit` <!-- TODO: no `typecheck` script in package.json — convention is bare `npx tsc --noEmit`. Consider adding `"typecheck": "tsc --noEmit"` for autonomous-run uniformity. --> |
-| Seed website docs | `npm run seed` |
-| Migrate sqlite→Supabase | `npm run migrate:sqlite` (one-shot historical) |
+| Purpose                 | Command                                                                                                                                                                                       |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dev server              | `npm run dev` (http://localhost:3100)                                                                                                                                                         |
+| Production build        | `npm run build`                                                                                                                                                                               |
+| Start built app         | `npm run start`                                                                                                                                                                               |
+| Lint                    | `npm run lint` (eslint)                                                                                                                                                                       |
+| Format (write)          | `npm run format`                                                                                                                                                                              |
+| Format check            | `npm run format:check`                                                                                                                                                                        |
+| Typecheck               | `npx tsc --noEmit` <!-- TODO: no `typecheck` script in package.json — convention is bare `npx tsc --noEmit`. Consider adding `"typecheck": "tsc --noEmit"` for autonomous-run uniformity. --> |
+| Seed website docs       | `npm run seed`                                                                                                                                                                                |
+| Migrate sqlite→Supabase | `npm run migrate:sqlite` (one-shot historical)                                                                                                                                                |
 
 <!-- TODO (critical for autonomous runs): no test runner is configured. No vitest, jest, or Playwright. No `__tests__/` or `e2e/` directories. Acceptance criteria in sprint specs cannot rely on `npm run test` until a test stack lands. -->
 
@@ -69,7 +71,7 @@ The standardized model (identical across all four EMDEE-tracked repos):
 
 Verified 2026-05-28 by pushing `feat/zzz-ceiling-test`: Vercel created a Preview deploy with `target: null`; the prior direct push to `main` was rejected with `GH006`.
 
-**Inngest interaction:** Inngest is registered only against the production URL (`whatelz.ai`). Preview deploys at ephemeral URLs are not auto-registered. If a feat/* preview ever tries to handle Inngest events (it shouldn't), Edmund should remove the stray registration from the Inngest dashboard.
+**Inngest interaction:** Inngest is registered only against the production URL (`whatelz.ai`). Preview deploys at ephemeral URLs are not auto-registered. If a feat/\* preview ever tries to handle Inngest events (it shouldn't), Edmund should remove the stray registration from the Inngest dashboard.
 
 ### 2. Never commit secrets
 
@@ -88,11 +90,12 @@ Full list: `.env.example`. Generate with `openssl rand -hex 32` where the commen
 
 When proposing a new `supabase/migrations/*.sql`, **apply it immediately** in the same session via Supabase Studio or CLI. Do not hand off "user, please apply this." The Supabase MCP in `.mcp.json` is currently **read-only** (no write tool exposed), so application happens via Studio/CLI for now. Re-enable write access by removing `--read-only` from the Supabase MCP config when ready.
 
-### 4. AI provider lock-in: Groq at runtime, Claude via MCP only
+### 4. No server-side LLM. Ever.
 
-- Runtime AI calls (scoring, summarisation, classification, etc.) go through Groq via the Vercel AI SDK. There is currently **no user-facing chat widget** on the site — earlier iterations were removed.
-- Claude is accessed by the user through MCP (Claude Desktop / Claude.ai / Code) hitting `/api/mcp` — it is not a runtime dependency of the deployed app.
-- **Do not suggest adding `ANTHROPIC_API_KEY`.** Any Anthropic call sites that resurface (e.g. `score_job`, `draft_cover_letter`) belong on the Groq-migration list — extend that list, don't add new callers.
+- **Zero server inference.** Not Groq, not Anthropic, not OpenAI, not any Vercel AI SDK provider. All LLM reasoning happens client-side in Claude Chat / Claude Code, invoked by Edmund, hitting the MCP at `/api/mcp/whatelz` (or the future CLI) for data.
+- **MCP verbs are pure data.** Read verbs return raw or lightly-shaped structured context. Write verbs persist a body that arrives fully-formed from the client. If a tool feels like it needs server inference to be useful, split it into a read verb + a write verb and let Claude bridge them client-side.
+- **Do not suggest** `ANTHROPIC_API_KEY`, `GROQ_API_KEY`, `OPENAI_API_KEY`, or any similar env var as a pending action, prerequisite, or blocker.
+- Any surviving server-side Anthropic call sites (`inngest/functions/score_job`, `inngest/functions/draft_cover_letter`) are technical debt to be *deleted*, not migrated to Groq. Flag them for rip-out sprints.
 
 ### 5. Light mode only
 
@@ -109,7 +112,7 @@ If you find existing `dark:` classes during a refactor, leave them — removal i
 EMDEE INSTRUCTIONS (`projects/WHATELZ-AI/INSTRUCTIONS.md`) defines two agent lanes:
 
 - **Claude Chat** writes CONTEXT / INSTRUCTIONS / IDEAS / BUILD specs. Never writes BUILD close-outs.
-- **Claude Code** flips sprint `queued → in-progress` *before* writing code; appends close-out to the same sprint section on ship; flips to `blocked` if stuck.
+- **Claude Code** flips sprint `queued → in-progress` _before_ writing code; appends close-out to the same sprint section on ship; flips to `blocked` if stuck.
 
 Do not write to docs you don't own (BRAND, LOGS, LEARNINGS — see Doc Registry). Do not promote IDEAS or INBOX entries on your own; humans commit.
 
@@ -134,7 +137,7 @@ Two `worktree-agent-*` branches exist locally — the pattern is active. Concurr
 - **Production:** `main` → `whatelz.ai` via Vercel auto-deploy on push. Protected: PR required, force-push disabled, deletion disabled, admin enforcement on.
 - **Feature branches:** `feat/<sprint-id>-<slug>` (e.g. `feat/062-resume-bugfixes`). Branched from `main`, merged back to `main` via PR. Each gets its own Vercel Preview URL.
 - **No long-lived non-main branches.** No `dev`, no `uat`, no `agents`, no `worktree-agent-*`. If you see one, it's stale — flag it.
-- **Commit messages:** conventional + scope. Recent examples: `feat(admin/resume): ...`, `fix(admin/resume): ...`, `chore: ...`. Two-line minimum: short subject, blank, prose paragraph explaining *why*. Co-author trailer for Claude-Code-driven commits.
+- **Commit messages:** conventional + scope. Recent examples: `feat(admin/resume): ...`, `fix(admin/resume): ...`, `chore: ...`. Two-line minimum: short subject, blank, prose paragraph explaining _why_. Co-author trailer for Claude-Code-driven commits.
 - **Push discipline:** Hard Rule 8 — commit + push in the same step. For agent work that's a `git push -u origin feat/...` then `gh pr create`.
 
 ## Sprint workflow — POINT, don't duplicate
@@ -162,7 +165,7 @@ Rules for unattended runs (overnight, batch, long-running). Tighter than interac
 ### Preconditions — refuse to start without
 
 1. **A written spec** at `projects/WHATELZ-AI/sprints/SPRINT-NNN.md` with `Status: queued`.
-2. **Explicit, testable acceptance criteria** in the spec. Since there is no test runner (see Commands TODO), "testable" here means *manually verifiable* — the spec must list the commands or visual checks that prove acceptance.
+2. **Explicit, testable acceptance criteria** in the spec. Since there is no test runner (see Commands TODO), "testable" here means _manually verifiable_ — the spec must list the commands or visual checks that prove acceptance.
 3. **A single named module** in scope. Cross-module sprints need human chunking first.
 4. **Target branch declared** in the spec: always `feat/<sprint-id>-<slug>`, branched from `main`. Never `main` directly (Hard Rule 1 blocks this at the wire).
 5. **Migration plan** if `supabase/migrations/` is touched: which migration is added, applied how (Studio/CLI), rollback noted.

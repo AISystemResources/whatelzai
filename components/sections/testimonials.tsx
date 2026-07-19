@@ -7,6 +7,7 @@ import {
   type Testimonial,
 } from "@/lib/testimonials";
 import { TestimonialsMarquee } from "./testimonials-marquee";
+import { Stars } from "./stars";
 
 function formatAffiliations(t: Testimonial): string[] {
   return (t.author_affiliations ?? [])
@@ -29,6 +30,7 @@ function TestimonialCard({ t }: { t: Testimonial }) {
           Read {t.author_name}&rsquo;s testimonial
         </span>
       </Link>
+      <Stars />
       <p className="text-lg leading-relaxed text-zinc-800 sm:text-xl">
         &ldquo;{t.quote}&rdquo;
       </p>

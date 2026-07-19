@@ -31,6 +31,7 @@ import {
 
 type FormState = {
   id: string;
+  headline: string;
   author_name: string;
   author_avatar_url: string;
   author_email: string;
@@ -53,6 +54,7 @@ type FormState = {
 function toState(t: Testimonial): FormState {
   return {
     id: t.id,
+    headline: t.headline ?? "",
     author_name: t.author_name ?? "",
     author_avatar_url: t.author_avatar_url ?? "",
     author_email: t.author_email ?? "",
@@ -71,7 +73,9 @@ function toState(t: Testimonial): FormState {
     improvement_note: t.improvement_note ?? "",
     service_event_id: t.service_event_id ?? "",
     suggested_question_ids: new Set(t.suggested_question_ids ?? []),
-    answers: new Map((t.quote_answers ?? []).map((a) => [a.question_id, a.answer])),
+    answers: new Map(
+      (t.quote_answers ?? []).map((a) => [a.question_id, a.answer]),
+    ),
     extra_ids: new Set(),
   };
 }
@@ -141,14 +145,20 @@ export function TestimonialForm({
     });
   }
   function addAffiliation() {
-    setState({ ...state, affiliations: [...state.affiliations, { role: "", company: "" }] });
+    setState({
+      ...state,
+      affiliations: [...state.affiliations, { role: "", company: "" }],
+    });
   }
   function removeAffiliation(i: number) {
     if (state.affiliations.length === 1) {
       setState({ ...state, affiliations: [{ role: "", company: "" }] });
       return;
     }
-    setState({ ...state, affiliations: state.affiliations.filter((_, j) => j !== i) });
+    setState({
+      ...state,
+      affiliations: state.affiliations.filter((_, j) => j !== i),
+    });
   }
 
   function copyLink() {
@@ -194,6 +204,7 @@ export function TestimonialForm({
         await saveTestimonial({
           id: state.id,
           category: state.category,
+          headline: state.headline.trim() || null,
           quote,
           quote_answers,
           author_name: state.author_name,
@@ -274,7 +285,9 @@ export function TestimonialForm({
         <Field label="Display name">
           <TextInput
             value={state.author_name}
-            onChange={(e) => setState({ ...state, author_name: e.target.value })}
+            onChange={(e) =>
+              setState({ ...state, author_name: e.target.value })
+            }
             placeholder="e.g. Sim Yee L."
           />
         </Field>
@@ -290,12 +303,16 @@ export function TestimonialForm({
                 <TextInput
                   placeholder="Role (e.g. Co-founder)"
                   value={aff.role}
-                  onChange={(e) => updateAffiliation(i, { role: e.target.value })}
+                  onChange={(e) =>
+                    updateAffiliation(i, { role: e.target.value })
+                  }
                 />
                 <TextInput
                   placeholder="Company / team"
                   value={aff.company}
-                  onChange={(e) => updateAffiliation(i, { company: e.target.value })}
+                  onChange={(e) =>
+                    updateAffiliation(i, { company: e.target.value })
+                  }
                 />
                 <button
                   type="button"
@@ -321,14 +338,18 @@ export function TestimonialForm({
           <TextInput
             type="email"
             value={state.author_email}
-            onChange={(e) => setState({ ...state, author_email: e.target.value })}
+            onChange={(e) =>
+              setState({ ...state, author_email: e.target.value })
+            }
           />
         </Field>
         <Field label="LinkedIn URL (public — proof of authority)">
           <TextInput
             type="url"
             value={state.author_linkedin_url}
-            onChange={(e) => setState({ ...state, author_linkedin_url: e.target.value })}
+            onChange={(e) =>
+              setState({ ...state, author_linkedin_url: e.target.value })
+            }
           />
         </Field>
 
@@ -382,6 +403,16 @@ export function TestimonialForm({
         </div>
       </SectionCard>
 
+      <SectionCard title="Headline" slug="editorial one-liner">
+        <Field label="One-line summary (displayed as card title — safe to distill their voice, do not fabricate)">
+          <TextInput
+            value={state.headline}
+            onChange={(e) => setState({ ...state, headline: e.target.value })}
+            placeholder="e.g. Imposter syndrome isn't entirely a bad thing"
+          />
+        </Field>
+      </SectionCard>
+
       <SectionCard title="Their answers" slug="the testimonial">
         {shownQuestions.length === 0 ? (
           <p className="text-xs text-zinc-500">
@@ -393,7 +424,9 @@ export function TestimonialForm({
             {shownQuestions.map((q) => (
               <div key={q.id} className="rounded border border-zinc-100 p-4">
                 <div className="flex items-start justify-between gap-3">
-                  <p className="text-sm font-semibold text-zinc-900">{q.text}</p>
+                  <p className="text-sm font-semibold text-zinc-900">
+                    {q.text}
+                  </p>
                   <label className="flex shrink-0 items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-zinc-500">
                     <input
                       type="checkbox"
@@ -441,7 +474,9 @@ export function TestimonialForm({
         <Field label="Outcome tag (e.g. → Shipped 3 workflows in 30 days)">
           <TextInput
             value={state.outcome_tag}
-            onChange={(e) => setState({ ...state, outcome_tag: e.target.value })}
+            onChange={(e) =>
+              setState({ ...state, outcome_tag: e.target.value })
+            }
           />
         </Field>
         <Field label="Private admin note (your own tracking, not from them)">
@@ -453,10 +488,13 @@ export function TestimonialForm({
         </Field>
       </SectionCard>
 
-      <SectionCard title="What could be improved" slug="private feedback from them">
+      <SectionCard
+        title="What could be improved"
+        slug="private feedback from them"
+      >
         <p className="text-xs text-zinc-500">
-          What they wrote in the &ldquo;could be improved&rdquo; box.
-          Never shown publicly. You can edit this if you need to.
+          What they wrote in the &ldquo;could be improved&rdquo; box. Never
+          shown publicly. You can edit this if you need to.
         </p>
         <TextArea
           rows={4}

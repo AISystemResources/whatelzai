@@ -21,7 +21,7 @@ export const dynamic = "force-dynamic";
 export default async function TestimonialsPage() {
   const [items, topKeywords] = await Promise.all([
     listPublicTestimonials(),
-    getAggregateKeywords(3),
+    getAggregateKeywords(5),
   ]);
   const byCategory = new Map<TestimonialCategory, Testimonial[]>();
   for (const t of items) {

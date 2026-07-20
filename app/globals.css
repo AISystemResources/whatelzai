@@ -21,7 +21,9 @@
 /* ── Tier-1 display treatment (Fraunces variable axes) ────────────── */
 .font-display-hero {
   font-family: var(--font-display);
-  font-variation-settings: "opsz" 144, "SOFT" 50;
+  font-variation-settings:
+    "opsz" 144,
+    "SOFT" 50;
   font-weight: 500;
   letter-spacing: -0.02em;
 }
@@ -32,9 +34,19 @@ body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
-/* ── Custom cursor — hide default on pointer devices ─────────────── */
+/* ── Custom cursor — hide default only when the JS custom cursor is
+   actually rendering. The `.has-custom-cursor` class is added by
+   `<CustomCursor />` on mount (client-only, framer-motion required).
+   If JS fails to load (IE11, disabled JS, framer-motion incompatibility,
+   corporate lock-downs), the class is never added and the native cursor
+   stays visible — no "invisible cursor" bug for edge browsers. ─────── */
 @media (pointer: fine) {
-  *, *::before, *::after { cursor: none !important; }
+  html.has-custom-cursor,
+  html.has-custom-cursor *,
+  html.has-custom-cursor *::before,
+  html.has-custom-cursor *::after {
+    cursor: none !important;
+  }
 }
 
 /* ── Hero gradient blobs ──────────────────────────────────────────── */
@@ -64,11 +76,17 @@ body {
   animation-delay: -10s;
 }
 @keyframes hero-blob-drift {
-  from { transform: translate(0, 0) scale(1); }
-  to   { transform: translate(50px, -35px) scale(1.1); }
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(50px, -35px) scale(1.1);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hero-blob { animation: none; }
+  .hero-blob {
+    animation: none;
+  }
 }
 
 /* ── Social logo — tilt + wiggle + hover-straighten-glow ─────────── */
@@ -97,12 +115,19 @@ body {
   will-change: transform;
 }
 @keyframes social-wiggle {
-  0%, 100% { transform: rotate(-1.2deg); }
-  50% { transform: rotate(1.2deg); }
+  0%,
+  100% {
+    transform: rotate(-1.2deg);
+  }
+  50% {
+    transform: rotate(1.2deg);
+  }
 }
 .social-logo:hover {
   transform: rotate(0deg) scale(1.12);
-  filter: drop-shadow(0 8px 20px color-mix(in srgb, var(--glow) 55%, transparent));
+  filter: drop-shadow(
+    0 8px 20px color-mix(in srgb, var(--glow) 55%, transparent)
+  );
 }
 .social-logo:hover .social-logo-icon {
   color: var(--glow);
@@ -113,23 +138,30 @@ body {
   animation: none;
 }
 
-
 /* ── Scroll cue bounce ───────────────────────────────────────────── */
 .scroll-bounce {
   display: inline-block;
   animation: scroll-bounce 1.6s ease-in-out infinite;
 }
 @keyframes scroll-bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(4px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(4px);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .social-logo-icon, .scroll-bounce { animation: none; }
+  .social-logo-icon,
+  .scroll-bounce {
+    animation: none;
+  }
 }
 
 /* ── Grain noise overlay ──────────────────────────────────────────── */
 body::after {
-  content: '';
+  content: "";
   position: fixed;
   inset: 0;
   z-index: 9999;

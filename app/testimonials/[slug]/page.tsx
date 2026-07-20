@@ -10,6 +10,7 @@ import {
 } from "@/lib/testimonials";
 import { mergeSocials } from "@/lib/social-link";
 import { AvatarFallback } from "@/components/sections/avatar-fallback";
+import { KeywordChips } from "@/components/testimonials/keyword-chips";
 
 export const dynamic = "force-dynamic";
 
@@ -117,17 +118,9 @@ export default async function TestimonialDetailPage({
         )}
 
         {t.keywords && t.keywords.length > 0 && (
-          <ul className="mt-8 flex flex-wrap gap-2">
-            {t.keywords.slice(0, 3).map((k) => (
-              <li
-                key={k}
-                className="px-2.5 py-1 font-mono text-[10px] uppercase tracking-widest text-zinc-900"
-                style={{ backgroundColor: "var(--accent)" }}
-              >
-                {k}
-              </li>
-            ))}
-          </ul>
+          <div className="mt-8">
+            <KeywordChips keywords={t.keywords} />
+          </div>
         )}
 
         <blockquote className="mt-10 border-l-2 border-zinc-200 pl-6 text-lg leading-relaxed text-zinc-700 sm:text-xl">

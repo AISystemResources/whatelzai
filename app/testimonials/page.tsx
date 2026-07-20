@@ -10,7 +10,11 @@ import {
 } from "@/lib/testimonials";
 import { TestimonialsMarquee } from "@/components/sections/testimonials-marquee";
 import { KeywordCards } from "@/components/testimonials/keyword-cards";
-import { keywordLabel } from "@/components/testimonials/keyword-meta";
+import {
+  keywordLabel,
+  getKeywordMeta,
+} from "@/components/testimonials/keyword-meta";
+import { ClearFilterLink } from "@/components/testimonials/clear-filter-link";
 
 export const metadata: Metadata = {
   title: "Testimonials",
@@ -86,16 +90,24 @@ export default async function TestimonialsPage({
             </Link>
           </section>
         ) : activeFilter ? (
-          // Filter mode: one flat marquee, no category grouping.
+          // Filter mode: narrative header + one flat marquee, no category
+          // grouping. Adjective is yellow-highlighted; description below.
           <section className="border-b border-zinc-100 py-14">
-            <div className="mx-6 flex items-baseline justify-between sm:mx-0">
-              <h2 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl">
-                “{keywordLabel(activeFilter)}”
-              </h2>
-              <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
+            <div className="mx-6 sm:mx-0">
+              <h2 className="text-2xl font-semibold leading-tight tracking-tight text-zinc-900 sm:text-3xl">
                 {filteredItems.length}{" "}
-                {filteredItems.length === 1 ? "voice" : "voices"}
-              </span>
+                {filteredItems.length === 1 ? "person says" : "people say"} I am{" "}
+                <span
+                  className="px-2 py-0.5"
+                  style={{ backgroundColor: "var(--accent)" }}
+                >
+                  {keywordLabel(activeFilter)}
+                </span>
+              </h2>
+              <p className="mt-3 text-base text-zinc-600 sm:text-lg">
+                {getKeywordMeta(activeFilter).description}.{" "}
+                <ClearFilterLink />
+              </p>
             </div>
             {filteredItems.length === 0 ? (
               <p className="mt-8 text-sm text-zinc-500">

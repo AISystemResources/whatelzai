@@ -9,6 +9,7 @@ import {
   CATEGORY_LABELS,
 } from "@/lib/testimonials";
 import { mergeSocials } from "@/lib/social-link";
+import { AvatarFallback } from "@/components/sections/avatar-fallback";
 
 export const dynamic = "force-dynamic";
 
@@ -135,9 +136,10 @@ export default async function TestimonialDetailPage({
               className="h-14 w-14 shrink-0 rounded-full object-cover"
             />
           ) : (
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-zinc-100 font-mono text-sm text-zinc-500">
-              {t.author_name.slice(0, 1)}
-            </div>
+            <AvatarFallback
+              className="h-14 w-14"
+              ariaLabel={`${t.author_name} avatar placeholder`}
+            />
           )}
           <div className="min-w-0">
             <p className="text-base font-semibold text-zinc-900">

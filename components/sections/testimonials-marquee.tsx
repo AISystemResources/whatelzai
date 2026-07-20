@@ -9,6 +9,7 @@ import {
   type Testimonial,
 } from "@/lib/testimonials";
 import { Stars } from "./stars";
+import { AvatarFallback } from "./avatar-fallback";
 
 function formatAffiliations(t: Testimonial): string[] {
   return (t.author_affiliations ?? [])
@@ -66,9 +67,10 @@ function Card({ t }: { t: Testimonial }) {
             className="h-11 w-11 shrink-0 rounded-full object-cover"
           />
         ) : (
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-zinc-100 font-mono text-xs text-zinc-500">
-            {t.author_name.slice(0, 1)}
-          </div>
+          <AvatarFallback
+            className="h-11 w-11"
+            ariaLabel={`${t.author_name} avatar placeholder`}
+          />
         )}
         <div className="min-w-0">
           <p className="text-sm font-semibold text-zinc-900">{t.author_name}</p>

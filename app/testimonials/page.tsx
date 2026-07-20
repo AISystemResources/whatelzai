@@ -96,7 +96,7 @@ export default async function TestimonialsPage({
             <div className="mx-6 sm:mx-0">
               <h2 className="text-2xl font-semibold leading-tight tracking-tight text-zinc-900 sm:text-3xl">
                 {filteredItems.length}{" "}
-                {filteredItems.length === 1 ? "person says" : "people say"} I am{" "}
+                {filteredItems.length === 1 ? "person says" : "people say"}{" "}
                 <span
                   className="px-2 py-0.5"
                   style={{ backgroundColor: "var(--accent)" }}

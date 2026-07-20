@@ -188,6 +188,30 @@ export async function upsertTestimonial(
   return data as Testimonial;
 }
 
+// Toggle whether a testimonial appears on the homepage marquee.
+// Unfeatured rows still appear on /testimonials — only the homepage set shrinks.
+// Refuses `status=incomplete` rows so admin curation can't accidentally
+// invalidate an outstanding email prefill.
+export async function setTestimonialFeatured(
+  id: string,
+  featured: boolean,
+): Promise<Testimonial> {
+  const existing = await getTestimonial(id);
+  if (!existing) throw new Error("testimonial not found");
+  if (existing.status === "incomplete")
+    throw new Error(
+      "refusing to modify status=incomplete testimonial (live email token)",
+    );
+  const { data, error } = await supabaseAdmin
+    .from("testimonials")
+    .update({ featured, updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .select()
+    .single();
+  if (error) throw new Error(`setTestimonialFeatured: ${error.message}`);
+  return data as Testimonial;
+}
+
 // Editorial one-liner. Layered on top of the raw quote — never rewrites it.
 // Refuses `status=incomplete` rows to protect live email-invite tokens.
 export async function setTestimonialHeadline(

@@ -24,6 +24,7 @@ import {
   listAllTestimonials,
   getTestimonial,
   setTestimonialHeadline,
+  setTestimonialFeatured,
 } from "@/lib/testimonials";
 import { listActiveOffers } from "@/lib/offers";
 import { listHackathons } from "@/lib/hackathons";
@@ -110,6 +111,8 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
   "testimonials.get": (a) => getTestimonial(a.id as string),
   "testimonials.set_headline": (a) =>
     setTestimonialHeadline(a.id as string, a.headline as string),
+  "testimonials.set_featured": (a) =>
+    setTestimonialFeatured(a.id as string, a.featured as boolean),
 
   // Offers + hackathons + events — read-only surfaces for briefings.
   "offers.list_active": async () => listActiveOffers(),
@@ -349,6 +352,19 @@ const TOOL_SCHEMAS = [
           description:
             "Short summary, ideally 40-80 chars. Pass empty string to clear.",
         },
+      },
+    },
+  },
+  {
+    name: "testimonials.set_featured",
+    description:
+      "Toggle whether a testimonial appears on the homepage marquee. Unfeatured rows still appear on /testimonials — only the homepage set shrinks. Use for editorial curation. Refuses rows with status='incomplete'.",
+    inputSchema: {
+      type: "object",
+      required: ["id", "featured"],
+      properties: {
+        id: { type: "string" },
+        featured: { type: "boolean" },
       },
     },
   },

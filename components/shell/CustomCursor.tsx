@@ -1,7 +1,12 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { motion, useMotionValue, useSpring, useReducedMotion } from 'framer-motion';
+import { useEffect, useState } from "react";
+import {
+  motion,
+  useMotionValue,
+  useSpring,
+  useReducedMotion,
+} from "framer-motion";
 
 export function CustomCursor() {
   const reduced = useReducedMotion();
@@ -23,7 +28,14 @@ export function CustomCursor() {
 
   useEffect(() => {
     if (!mounted) return;
-    if (!window.matchMedia('(pointer: fine)').matches) return;
+    if (reduced) return;
+    if (!window.matchMedia("(pointer: fine)").matches) return;
+
+    // Signal to globals.css that the JS custom cursor is live — safe to
+    // hide the native cursor. If we never reach this line (JS disabled,
+    // framer-motion errors on old browsers, touch device), the class
+    // never gets added and the native cursor stays visible.
+    document.documentElement.classList.add("has-custom-cursor");
 
     function onMove(e: MouseEvent) {
       x.set(e.clientX);
@@ -33,7 +45,9 @@ export function CustomCursor() {
 
     function onOver(e: MouseEvent) {
       const t = e.target as Element;
-      if (t.closest('a, button, [role="button"], label, input, textarea, select')) {
+      if (
+        t.closest('a, button, [role="button"], label, input, textarea, select')
+      ) {
         setHovering(true);
       } else {
         setHovering(false);
@@ -44,15 +58,16 @@ export function CustomCursor() {
       setVisible(false);
     }
 
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseover', onOver);
-    document.documentElement.addEventListener('mouseleave', onLeave);
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseover", onOver);
+    document.documentElement.addEventListener("mouseleave", onLeave);
     return () => {
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseover', onOver);
-      document.documentElement.removeEventListener('mouseleave', onLeave);
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseover", onOver);
+      document.documentElement.removeEventListener("mouseleave", onLeave);
+      document.documentElement.classList.remove("has-custom-cursor");
     };
-  }, [mounted, x, y]);
+  }, [mounted, reduced, x, y]);
 
   if (!mounted || reduced) return null;
 
@@ -61,24 +76,24 @@ export function CustomCursor() {
       {/* Trailing ring */}
       <motion.div
         className="pointer-events-none fixed top-0 left-0 z-[9997] rounded-full"
-        style={{ x: ringX, y: ringY, translateX: '-50%', translateY: '-50%' }}
+        style={{ x: ringX, y: ringY, translateX: "-50%", translateY: "-50%" }}
         animate={{
           width: hovering ? 44 : 28,
           height: hovering ? 44 : 28,
           borderWidth: hovering ? 1.5 : 1,
-          borderColor: hovering ? '#f59e0b' : '#d4d4d8',
+          borderColor: hovering ? "#f59e0b" : "#d4d4d8",
           opacity: visible ? 1 : 0,
         }}
-        transition={{ duration: 0.18, ease: 'easeOut' }}
+        transition={{ duration: 0.18, ease: "easeOut" }}
       />
       {/* Dot */}
       <motion.div
         className="pointer-events-none fixed top-0 left-0 z-[9998] rounded-full bg-zinc-900"
-        style={{ x: dotX, y: dotY, translateX: '-50%', translateY: '-50%' }}
+        style={{ x: dotX, y: dotY, translateX: "-50%", translateY: "-50%" }}
         animate={{
           width: hovering ? 5 : 5,
           height: hovering ? 5 : 5,
-          backgroundColor: hovering ? '#f59e0b' : '#171717',
+          backgroundColor: hovering ? "#f59e0b" : "#171717",
           opacity: visible ? 1 : 0,
         }}
         transition={{ duration: 0.15 }}

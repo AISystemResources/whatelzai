@@ -2,7 +2,10 @@ import Link from "next/link";
 import { AccentText } from "@/components/shell/AccentText";
 import { getSiteIdentity } from "@/lib/site-identity";
 import { getTrainingOfferContent } from "@/lib/landing-content";
-import { Countdown } from "./countdown";
+
+// NOTE: This component is now the coaching + founding-cohort offer despite
+// the "TrainingOffer" name. Renaming ripples through admin/landing/actions.ts,
+// TrainingOfferForm, DB section_key, and TS type. Leave rename for its own PR.
 
 export async function TrainingOffer() {
   const [site, c] = await Promise.all([
@@ -18,7 +21,7 @@ export async function TrainingOffer() {
   return (
     <section
       id="offer"
-      data-section="The offer"
+      data-section="Work with me"
       className="px-6 py-32 sm:px-8 sm:py-40"
     >
       <div className="mx-auto max-w-6xl">
@@ -51,13 +54,13 @@ export async function TrainingOffer() {
                   className="inline-block px-2 py-1 font-mono text-[10px] tracking-widest uppercase"
                   style={{
                     backgroundColor: "var(--accent)",
-                    color: "var(--accent-text)",
+                    color: "#09090b",
                   }}
                 >
-                  Founding rate
+                  7 founding spots
                 </span>
                 <span className="font-mono text-[10px] tracking-widest text-zinc-400 uppercase">
-                  Limited
+                  Lifetime access
                 </span>
               </div>
 
@@ -67,13 +70,11 @@ export async function TrainingOffer() {
                     {c.pricing_note}
                   </p>
                   <p className="mt-3 text-sm text-zinc-500">
-                    Locked for founding clients. Rate goes up when the timer
-                    hits zero.
+                    One-time. Lifetime membership. Founders grandfathered
+                    forever — regular rate opens after these 7 close.
                   </p>
                 </div>
               )}
-
-              <Countdown label="Founding rate ends in" />
 
               <a
                 href={primaryHref}

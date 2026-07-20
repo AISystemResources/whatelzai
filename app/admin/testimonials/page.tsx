@@ -29,10 +29,9 @@ const SORTS: { id: Sort; label: string }[] = [
   { id: "type", label: "By type" },
 ];
 
-const CATEGORY_ORDER: Record<TestimonialCategory, number> =
-  Object.fromEntries(
-    TESTIMONIAL_CATEGORIES.map((c, i) => [c, i]),
-  ) as Record<TestimonialCategory, number>;
+const CATEGORY_ORDER: Record<TestimonialCategory, number> = Object.fromEntries(
+  TESTIMONIAL_CATEGORIES.map((c, i) => [c, i]),
+) as Record<TestimonialCategory, number>;
 
 function sortRows(rows: Testimonial[], sort: Sort): Testimonial[] {
   const byName = (a: Testimonial, b: Testimonial) =>
@@ -103,6 +102,15 @@ export default async function AdminTestimonialsPage({
           <p className="mt-1 text-sm text-zinc-500">
             Create a prefill → send the link → they complete it → approve to
             publish.
+          </p>
+          <p className="mt-3 font-mono text-[10px] uppercase tracking-widest text-zinc-400">
+            Attribution source ·{" "}
+            <Link
+              href="/admin/events"
+              className="underline underline-offset-4 hover:text-zinc-900"
+            >
+              Manage events →
+            </Link>
           </p>
         </div>
         <Link

@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { listServiceEvents, SERVICE_EVENT_KIND_LABELS } from "@/lib/service-events";
+import {
+  listServiceEvents,
+  SERVICE_EVENT_KIND_LABELS,
+} from "@/lib/service-events";
 
 export const metadata: Metadata = {
   title: "Events — whatelz.ai Admin",
@@ -22,10 +25,18 @@ export default async function AdminEventsPage() {
 
   return (
     <div className="space-y-6">
+      <nav className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
+        <Link
+          href="/admin/testimonials"
+          className="hover:text-zinc-900"
+        >
+          ← Testimonials
+        </Link>
+      </nav>
       <div className="flex items-start justify-between border-b border-zinc-200 pb-6">
         <div>
           <p className="font-mono text-xs uppercase tracking-widest text-zinc-400">
-            Services
+            Testimonials · Attribution
           </p>
           <h1 className="mt-2 text-2xl font-semibold tracking-tight text-zinc-900">
             Events
@@ -58,7 +69,9 @@ export default async function AdminEventsPage() {
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-sm font-semibold text-zinc-900">{e.name}</p>
+                    <p className="text-sm font-semibold text-zinc-900">
+                      {e.name}
+                    </p>
                     <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
                       {SERVICE_EVENT_KIND_LABELS[e.kind]}
                     </span>

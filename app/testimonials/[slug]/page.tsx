@@ -118,7 +118,7 @@ export default async function TestimonialDetailPage({
 
         {t.keywords && t.keywords.length > 0 && (
           <ul className="mt-8 flex flex-wrap gap-2">
-            {t.keywords.slice(0, 5).map((k) => (
+            {t.keywords.slice(0, 3).map((k) => (
               <li
                 key={k}
                 className="px-2.5 py-1 font-mono text-[10px] uppercase tracking-widest text-zinc-900"

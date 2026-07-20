@@ -115,9 +115,18 @@ function ServiceBlock({
           <div className="flex-1 border-t border-zinc-100" />
         </div>
 
-        <h2 className="mt-6 text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">
+        <Link
+          href={`/services/${s.slug}`}
+          className="group/name mt-6 inline-flex items-baseline gap-3 text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl"
+        >
           {s.name}
-        </h2>
+          <span
+            aria-hidden
+            className="text-2xl text-zinc-300 transition-all group-hover/name:translate-x-1 group-hover/name:text-zinc-900 sm:text-3xl"
+          >
+            →
+          </span>
+        </Link>
         {s.tagline && (
           <p className="mt-3 max-w-2xl font-mono text-xs tracking-wide text-zinc-500 sm:text-sm">
             {s.tagline}

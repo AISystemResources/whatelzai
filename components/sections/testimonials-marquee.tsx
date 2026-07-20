@@ -23,7 +23,7 @@ function Card({ t }: { t: Testimonial }) {
 
   return (
     <article
-      className="group relative flex w-[340px] shrink-0 snap-start scroll-ml-6 flex-col gap-5 border border-zinc-200 bg-white p-6 transition-all sm:w-[420px] sm:p-8"
+      className="group relative flex w-[340px] shrink-0 flex-col gap-5 border border-zinc-200 bg-white p-6 transition-all sm:w-[420px] sm:p-8"
       style={{ borderLeft: "3px solid var(--accent)" }}
     >
       <Link
@@ -198,13 +198,11 @@ export function TestimonialsMarquee({ items }: { items: Testimonial[] }) {
 
       <style>{`
         .marquee-outer::-webkit-scrollbar { display: none; }
-        /* Mobile: snap so finger swipes page through cards. */
-        @media (max-width: 767px) {
-          .marquee-outer {
-            scroll-snap-type: x mandatory;
-            -webkit-overflow-scrolling: touch;
-          }
-        }
+        /* Momentum scrolling on iOS. No scroll-snap: it fights the rAF
+           auto-advance (browser snaps back to current card every frame,
+           making the marquee appear frozen). Finger swipe still works
+           via native overflow-x-auto — just without snap points. */
+        .marquee-outer { -webkit-overflow-scrolling: touch; }
       `}</style>
     </div>
   );

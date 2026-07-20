@@ -14,7 +14,11 @@ import {
   listRecentChanges,
   VALID_SLUGS,
 } from "@/lib/website-docs";
-import { listDashboardCards, upsertDashboardCard } from "@/lib/dashboard-cards";
+import {
+  listDashboardCards,
+  upsertDashboardCard,
+  deleteDashboardCard,
+} from "@/lib/dashboard-cards";
 import {
   listPublicTestimonials,
   listAllTestimonials,
@@ -98,6 +102,7 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
       source: a.source as string | undefined,
       expected_cadence_hours: a.expected_cadence_hours as number | undefined,
     }),
+  "dashboard.delete_card": (a) => deleteDashboardCard(a.key as string),
 
   // Testimonials — pure-data reads. Server never summarises or drafts.
   "testimonials.list_public": async () => listPublicTestimonials(),
@@ -289,6 +294,21 @@ const TOOL_SCHEMAS = [
           minimum: 1,
           description:
             "Cadence the writer promises. UI flags stale when now() > updated_at + this. Omit for cards that don't have a cadence.",
+        },
+      },
+    },
+  },
+  {
+    name: "dashboard.delete_card",
+    description:
+      "Prune a briefing card by key. Returns { deleted: boolean } — false if no card matched. Use to kill experiments that aren't earning their spot on /admin.",
+    inputSchema: {
+      type: "object",
+      required: ["key"],
+      properties: {
+        key: {
+          type: "string",
+          description: "Stable identifier of the card to remove.",
         },
       },
     },

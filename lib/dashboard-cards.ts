@@ -51,6 +51,18 @@ export async function upsertDashboardCard(
   return data as DashboardCard;
 }
 
+export async function deleteDashboardCard(
+  key: string,
+): Promise<{ deleted: boolean }> {
+  const { data, error } = await supabaseAdmin
+    .from("dashboard_cards")
+    .delete()
+    .eq("key", key)
+    .select("key");
+  if (error) throw new Error(`deleteDashboardCard: ${error.message}`);
+  return { deleted: (data?.length ?? 0) > 0 };
+}
+
 // A card is "stale" when the writer promised a cadence and we're past it.
 // Null cadence = no promise, never stale. This is the immune system: absence
 // of a fresh briefing becomes visible instead of silently missing.

@@ -1,0 +1,27 @@
+{
+  "name": "whatelz",
+  "version": "0.1.0",
+  "description": "CLI for whatelz.ai — token-efficient companion to the HTTP MCP",
+  "type": "module",
+  "bin": {
+    "whatelz": "dist/index.js"
+  },
+  "files": ["dist"],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "open": "^10.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.4",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.3"
+  }
+}

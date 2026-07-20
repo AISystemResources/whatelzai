@@ -58,6 +58,7 @@ export interface Affiliation {
 export interface Testimonial {
   id: string;
   headline: string | null;
+  keywords: string[];
   quote: string;
   quote_answers: QuoteAnswer[] | null;
   author_name: string;
@@ -211,6 +212,51 @@ export async function setTestimonialFeatured(
   if (error) throw new Error(`setTestimonialFeatured: ${error.message}`);
   return data as Testimonial;
 }
+
+// Curated keyword tags (character / capability / impact) for aggregate display.
+// Same incomplete-row guard as headlines.
+export async function setTestimonialKeywords(
+  id: string,
+  keywords: string[],
+): Promise<Testimonial> {
+  const existing = await getTestimonial(id);
+  if (!existing) throw new Error("testimonial not found");
+  if (existing.status === "incomplete")
+    throw new Error(
+      "refusing to modify status=incomplete testimonial (live email token)",
+    );
+  const cleaned = Array.from(
+    new Set(keywords.map((k) => k.trim()).filter((k) => k.length > 0)),
+  );
+  const { data, error } = await supabaseAdmin
+    .from("testimonials")
+    .update({ keywords: cleaned, updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .select()
+    .single();
+  if (error) throw new Error(`setTestimonialKeywords: ${error.message}`);
+  return data as Testimonial;
+}
+
+// Aggregate keyword frequencies across published+approved testimonials.
+// Used on /testimonials header ("The words people use most about Edmund").
+// In-memory aggregation — the corpus is small (dozens of rows) and this
+// keeps the read path DB-portable (no RPC dependency).
+export const getAggregateKeywords = cache(
+  async (limit = 5): Promise<{ word: string; count: number }[]> => {
+    const rows = await listPublicTestimonials();
+    const counts = new Map<string, number>();
+    for (const r of rows) {
+      for (const k of r.keywords ?? []) {
+        counts.set(k, (counts.get(k) ?? 0) + 1);
+      }
+    }
+    return Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, limit)
+      .map(([word, count]) => ({ word, count }));
+  },
+);
 
 // Editorial one-liner. Layered on top of the raw quote — never rewrites it.
 // Refuses `status=incomplete` rows to protect live email-invite tokens.

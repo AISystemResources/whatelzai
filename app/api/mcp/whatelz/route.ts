@@ -37,6 +37,13 @@ import {
   upsertLandingSection,
   type SectionKey,
 } from "@/lib/landing-content";
+import {
+  listServices,
+  getServiceBySlug,
+  upsertService,
+  deleteService,
+  type Service,
+} from "@/lib/services";
 
 type ToolArgs = Record<string, unknown>;
 
@@ -125,6 +132,21 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
     setTestimonialKeywords(a.id as string, a.keywords as string[]),
   "testimonials.aggregate_keywords": (a) =>
     getAggregateKeywords((a.limit as number | undefined) ?? 5),
+
+  // Services catalogue — the /services surface. `services.upsert` is the
+  // primary way to edit complex nested pricing (founding block, tiers).
+  "services.list_all": async () => listServices(false),
+  "services.get_by_slug": (a) => getServiceBySlug(a.slug as string),
+  "services.upsert": (a) =>
+    upsertService(a.fields as Partial<Service> & {
+      slug: string;
+      name: string;
+      category: string;
+    }),
+  "services.delete": async (a) => {
+    await deleteService(a.id as string);
+    return { ok: true };
+  },
 
   // Homepage landing sections — chat-driven text edits. Section keys:
   // 'provocation', 'pov', 'track_record', 'training_offer' (which is now
@@ -417,6 +439,71 @@ const TOOL_SCHEMAS = [
       properties: {
         limit: { type: "integer", minimum: 1, maximum: 20, default: 5 },
       },
+    },
+  },
+  {
+    name: "services.list_all",
+    description:
+      "List every service (published + unpublished). Includes full pricing + founding block + deliverables + status. Sort by sort_order ascending, nullsFirst=false.",
+    inputSchema: { type: "object", properties: {} },
+  },
+  {
+    name: "services.get_by_slug",
+    description:
+      "Fetch one service by slug (e.g. 'ai-mentor-1-1'). Returns null if not found.",
+    inputSchema: {
+      type: "object",
+      required: ["slug"],
+      properties: { slug: { type: "string" } },
+    },
+  },
+  {
+    name: "services.upsert",
+    description:
+      "Create or replace a service row (upsert on slug). Pass the full fields object — id, slug, name, category are required (upsertService throws otherwise). Nested pricing shape: { currency, tiers: [{id,label,amount,unit,note?}], founding?: { expires_after_engagements?, trade?, public?, tiers: [...] } }. Use for complex pricing edits that the admin form doesn't handle well.",
+    inputSchema: {
+      type: "object",
+      required: ["fields"],
+      properties: {
+        fields: {
+          type: "object",
+          required: ["slug", "name", "category"],
+          properties: {
+            id: { type: "string" },
+            slug: { type: "string" },
+            name: { type: "string" },
+            category: { type: "string" },
+            tagline: { type: "string" },
+            description: { type: "string" },
+            audience: { type: "string" },
+            pricing_model: { type: "string" },
+            pricing: { type: "object" },
+            deliverables: { type: "array", items: { type: "string" } },
+            terms: { type: "object" },
+            cta_label: { type: "string" },
+            cta_url: { type: "string" },
+            proof: { type: "string" },
+            status: {
+              type: "string",
+              enum: ["live", "coming_soon", "private", "retired"],
+            },
+            featured: { type: "boolean" },
+            published: { type: "boolean" },
+            sort_order: { type: "integer" },
+            content: { type: "string" },
+          },
+        },
+      },
+    },
+  },
+  {
+    name: "services.delete",
+    description:
+      "Permanently remove a service row. Pass the UUID id (not slug). Irreversible — no soft-delete.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: { id: { type: "string" } },
     },
   },
   {

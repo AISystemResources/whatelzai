@@ -82,11 +82,15 @@ export function KeywordCards({
                 </div>
 
                 {/* Description — hidden by default, fades in on desktop hover.
-                    On mobile there's no hover; the filtered-section header
-                    below the cards carries the description instead. */}
+                    When the card is active (filtered), the description locks
+                    open regardless of hover, so the user knows why this card
+                    is currently affecting the view below. Mobile: hidden
+                    unless active. */}
                 <p
-                  className={`hidden text-xs leading-relaxed opacity-0 transition-opacity duration-200 group-hover:opacity-100 sm:block ${
-                    isActive ? "text-zinc-800" : "text-zinc-600"
+                  className={`text-xs leading-relaxed transition-opacity duration-200 ${
+                    isActive
+                      ? "text-zinc-800 opacity-100"
+                      : "hidden opacity-0 group-hover:opacity-100 sm:block"
                   }`}
                   aria-hidden
                 >

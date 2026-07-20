@@ -102,9 +102,14 @@ function Card({ t }: { t: Testimonial }) {
 // the animation), reduced-motion preference, or the tab being backgrounded.
 export function TestimonialsMarquee({ items }: { items: Testimonial[] }) {
   const outerRef = useRef<HTMLDivElement>(null);
-  const track = [...items, ...items];
+  // Only duplicate the track when there are enough voices for a real loop.
+  // With 1-2 items the "duplicated seam" renders as visible duplicate cards.
+  const shouldLoop = items.length >= 3;
+  const track = shouldLoop ? [...items, ...items] : items;
 
   useEffect(() => {
+    // No loop = no rAF auto-advance needed.
+    if (!shouldLoop) return;
     const el = outerRef.current;
     if (!el) return;
 
@@ -176,7 +181,7 @@ export function TestimonialsMarquee({ items }: { items: Testimonial[] }) {
       el.removeEventListener("wheel", onWheel);
       document.removeEventListener("visibilitychange", onVisibility);
     };
-  }, []);
+  }, [shouldLoop]);
 
   return (
     <div

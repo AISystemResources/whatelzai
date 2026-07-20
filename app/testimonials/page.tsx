@@ -1,15 +1,13 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import {
   listPublicTestimonials,
-  testimonialSlug,
   CATEGORY_LABELS,
   TESTIMONIAL_CATEGORIES,
   type Testimonial,
   type TestimonialCategory,
 } from "@/lib/testimonials";
-import { mergeSocials } from "@/lib/social-link";
+import { TestimonialsMarquee } from "@/components/sections/testimonials-marquee";
 
 export const metadata: Metadata = {
   title: "Testimonials",
@@ -18,118 +16,6 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-dynamic";
-
-function ExternalArrowIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="h-3.5 w-3.5"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M7 17L17 7M8 7h9v9" />
-    </svg>
-  );
-}
-
-function LinkedInIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="h-3.5 w-3.5"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-    </svg>
-  );
-}
-
-function Card({ t }: { t: Testimonial }) {
-  const affiliations = (t.author_affiliations ?? [])
-    .map((a) => [a.role, a.company].filter(Boolean).join(", "))
-    .filter(Boolean);
-  const href = `/testimonials/${testimonialSlug(t)}`;
-  return (
-    <article className="group relative flex min-h-[380px] flex-col gap-4 border border-zinc-200 bg-white p-6 transition-colors hover:border-zinc-400">
-      <Link
-        href={href}
-        aria-label={`Read ${t.author_name}'s full testimonial`}
-        className="absolute inset-0 z-10"
-      >
-        <span className="sr-only">
-          Read {t.author_name}&rsquo;s testimonial
-        </span>
-      </Link>
-      {t.headline && (
-        <h3 className="text-lg font-semibold leading-snug text-zinc-900">
-          {t.headline}
-        </h3>
-      )}
-      <p className="line-clamp-6 text-sm leading-relaxed text-zinc-600">
-        &ldquo;{t.quote}&rdquo;
-      </p>
-
-      {t.outcome_tag && (
-        <p
-          className="font-mono text-xs tracking-wide"
-          style={{ color: "var(--accent-text)" }}
-        >
-          {t.outcome_tag}
-        </p>
-      )}
-
-      <div className="mt-auto flex items-center gap-3 border-t border-zinc-100 pt-4">
-        {t.author_avatar_url ? (
-          <Image
-            src={t.author_avatar_url}
-            alt={t.author_name}
-            width={40}
-            height={40}
-            className="h-10 w-10 shrink-0 rounded-full object-cover"
-          />
-        ) : (
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-100 font-mono text-xs text-zinc-500">
-            {t.author_name.slice(0, 1)}
-          </div>
-        )}
-        <div className="min-w-0 flex-1">
-          <p className="flex items-center gap-2 text-sm font-semibold text-zinc-900">
-            {t.author_name}
-            {mergeSocials(t.author_linkedin_url, t.author_socials).map((s) => (
-              <a
-                key={s.url}
-                href={s.url}
-                target="_blank"
-                rel="noopener noreferrer me"
-                aria-label={`${t.author_name} on ${s.platform}`}
-                className="relative z-20 text-zinc-400 transition-colors hover:text-zinc-900"
-              >
-                {s.platform === "LinkedIn" ? (
-                  <LinkedInIcon />
-                ) : (
-                  <ExternalArrowIcon />
-                )}
-              </a>
-            ))}
-          </p>
-          {affiliations.map((a) => (
-            <p key={a} className="font-mono text-[10px] text-zinc-500">
-              {a}
-            </p>
-          ))}
-        </div>
-        <span className="shrink-0 self-start font-mono text-[10px] uppercase tracking-widest text-zinc-300 transition-colors group-hover:text-zinc-900">
-          Read more →
-        </span>
-      </div>
-    </article>
-  );
-}
 
 export default async function TestimonialsPage() {
   const items = await listPublicTestimonials();
@@ -178,7 +64,7 @@ export default async function TestimonialsPage() {
             if (rows.length === 0) return null;
             return (
               <section key={cat} className="border-b border-zinc-100 py-14">
-                <div className="mb-8 flex items-baseline justify-between">
+                <div className="mx-6 flex items-baseline justify-between sm:mx-0">
                   <h2 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl">
                     {CATEGORY_LABELS[cat]}
                   </h2>
@@ -186,11 +72,7 @@ export default async function TestimonialsPage() {
                     {rows.length} {rows.length === 1 ? "voice" : "voices"}
                   </span>
                 </div>
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {rows.map((t) => (
-                    <Card key={t.id} t={t} />
-                  ))}
-                </div>
+                <TestimonialsMarquee items={rows} />
               </section>
             );
           })

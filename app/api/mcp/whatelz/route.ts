@@ -31,6 +31,12 @@ import {
 import { listActiveOffers } from "@/lib/offers";
 import { listHackathons } from "@/lib/hackathons";
 import { listServiceEvents } from "@/lib/service-events";
+import {
+  listLandingSections,
+  getLandingSection,
+  upsertLandingSection,
+  type SectionKey,
+} from "@/lib/landing-content";
 
 type ToolArgs = Record<string, unknown>;
 
@@ -119,6 +125,16 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
     setTestimonialKeywords(a.id as string, a.keywords as string[]),
   "testimonials.aggregate_keywords": (a) =>
     getAggregateKeywords((a.limit as number | undefined) ?? 5),
+
+  // Homepage landing sections — chat-driven text edits. Section keys:
+  // 'provocation', 'pov', 'track_record', 'training_offer' (which is now
+  // the coaching + founding cohort section despite the legacy name).
+  "landing.list_sections": async () => listLandingSections(),
+  "landing.get_section": (a) => getLandingSection(a.key as SectionKey),
+  "landing.update_section": async (a) => {
+    await upsertLandingSection(a.key as SectionKey, a.body);
+    return { ok: true };
+  },
 
   // Offers + hackathons + events — read-only surfaces for briefings.
   "offers.list_active": async () => listActiveOffers(),
@@ -400,6 +416,46 @@ const TOOL_SCHEMAS = [
       type: "object",
       properties: {
         limit: { type: "integer", minimum: 1, maximum: 20, default: 5 },
+      },
+    },
+  },
+  {
+    name: "landing.list_sections",
+    description:
+      "List every landing_content row (homepage section keys + current bodies + published state). Section keys today: 'provocation', 'pov', 'track_record', 'training_offer' (which is now the coaching + founding cohort section despite the legacy name).",
+    inputSchema: { type: "object", properties: {} },
+  },
+  {
+    name: "landing.get_section",
+    description:
+      "Read one landing_content section by key — returns the current DB body regardless of published state (for editing).",
+    inputSchema: {
+      type: "object",
+      required: ["key"],
+      properties: {
+        key: {
+          type: "string",
+          enum: ["provocation", "pov", "track_record", "training_offer"],
+        },
+      },
+    },
+  },
+  {
+    name: "landing.update_section",
+    description:
+      "Upsert the JSON body for a landing_content section. Pass the full new body — this is a replace, not a merge. Use `landing.get_section` first to see the current shape.",
+    inputSchema: {
+      type: "object",
+      required: ["key", "body"],
+      properties: {
+        key: {
+          type: "string",
+          enum: ["provocation", "pov", "track_record", "training_offer"],
+        },
+        body: {
+          type: "object",
+          description: "Full section body — see each section's TS interface in lib/landing-content.ts",
+        },
       },
     },
   },

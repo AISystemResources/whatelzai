@@ -92,7 +92,7 @@ const FALLBACKS: {
   },
 };
 
-// Cached per-request read of a single section.
+// Cached per-request read of a single published section (for display).
 async function readSection(key: SectionKey): Promise<unknown> {
   const { data, error } = await supabaseAdmin
     .from("landing_content")
@@ -108,6 +108,46 @@ async function readSection(key: SectionKey): Promise<unknown> {
     throw new Error(`landing_content(${key}): ${error.message}`);
   }
   return data?.body ?? null;
+}
+
+// Editor-facing read: returns the current DB body regardless of published
+// state. Used by MCP `landing.get_section` for chat-driven edits.
+export async function getLandingSection(
+  key: SectionKey,
+): Promise<{ key: SectionKey; body: unknown; published: boolean } | null> {
+  const { data, error } = await supabaseAdmin
+    .from("landing_content")
+    .select("body, published")
+    .eq("section_key", key)
+    .maybeSingle();
+  if (error) {
+    if (error.code === "42P01" || /schema cache/i.test(error.message))
+      return null;
+    throw new Error(`getLandingSection(${key}): ${error.message}`);
+  }
+  if (!data) return null;
+  return { key, body: data.body, published: data.published };
+}
+
+// Return every landing_content row for the admin/MCP overview.
+export async function listLandingSections(): Promise<
+  { key: string; body: unknown; published: boolean; updated_at: string | null }[]
+> {
+  const { data, error } = await supabaseAdmin
+    .from("landing_content")
+    .select("section_key, body, published, updated_at")
+    .order("section_key");
+  if (error) {
+    if (error.code === "42P01" || /schema cache/i.test(error.message))
+      return [];
+    throw new Error(`listLandingSections: ${error.message}`);
+  }
+  return (data ?? []).map((r) => ({
+    key: r.section_key,
+    body: r.body,
+    published: r.published,
+    updated_at: r.updated_at,
+  }));
 }
 
 export const getProvocationContent = cache(

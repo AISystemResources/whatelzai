@@ -10,18 +10,24 @@ type NavItem = { href: string; label: string; exact?: boolean };
 
 const NAV: readonly NavItem[] = [
   { href: "/admin", label: "Dashboard", exact: true },
+  { href: "/admin/profile", label: "My Profile" },
+  { href: "/admin/services", label: "Services" },
   { href: "/admin/testimonials", label: "Testimonials" },
-  { href: "/admin/events", label: "Events" },
-  { href: "/admin/landing", label: "Edit homepage" },
+  { href: "/admin/blog", label: "Blog" },
 ];
 
-const CONTENT_NAV: readonly NavItem[] = [
+// Kept so mobile top bar can still resolve section labels for the pages
+// that live outside the primary sidebar (Events, Developer, per-section
+// content pages nested under My Profile).
+const SECONDARY_NAV: readonly NavItem[] = [
   { href: "/admin/projects", label: "Projects" },
-  { href: "/admin/blog", label: "Blog" },
   { href: "/admin/career", label: "Career" },
   { href: "/admin/hackathons", label: "Hackathons" },
   { href: "/admin/leadership", label: "Leadership" },
   { href: "/admin/mentorship", label: "Mentorship" },
+  { href: "/admin/events", label: "Events" },
+  { href: "/admin/developer", label: "Developer" },
+  { href: "/admin/landing", label: "Edit homepage" },
 ];
 
 function isActive(pathname: string, href: string, exact?: boolean): boolean {
@@ -30,7 +36,7 @@ function isActive(pathname: string, href: string, exact?: boolean): boolean {
 }
 
 function currentSectionLabel(pathname: string): string {
-  const all = [...NAV, ...CONTENT_NAV];
+  const all = [...NAV, ...SECONDARY_NAV];
   const match = all.find((n) => isActive(pathname, n.href, n.exact));
   return match?.label ?? "Admin";
 }
@@ -91,31 +97,24 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             </li>
           ))}
         </ul>
-
-        <div className="mt-6 px-3 pb-2 font-mono text-[10px] uppercase tracking-widest text-zinc-400">
-          Content
-        </div>
-        <ul className="space-y-0.5">
-          {CONTENT_NAV.map((item) => (
-            <li key={item.href}>
-              <NavLink
-                href={item.href}
-                label={item.label}
-                active={isActive(pathname, item.href)}
-                onNavigate={onNavigate}
-              />
-            </li>
-          ))}
-        </ul>
       </nav>
 
-      <div className="space-y-3 border-t border-zinc-200 px-5 py-4">
+      <div className="space-y-4 border-t border-zinc-200 px-5 py-4">
         <MCPConnectHint />
-        <SignOutButton>
-          <button className="font-mono text-[10px] uppercase tracking-widest text-zinc-500 transition-colors hover:text-zinc-900">
-            ← Sign out
-          </button>
-        </SignOutButton>
+        <div className="flex items-center justify-between gap-3">
+          <Link
+            href="/admin/developer"
+            onClick={onNavigate}
+            className="font-mono text-[10px] uppercase tracking-widest text-zinc-400 transition-colors hover:text-zinc-900"
+          >
+            Developer
+          </Link>
+          <SignOutButton>
+            <button className="font-mono text-[10px] uppercase tracking-widest text-zinc-500 transition-colors hover:text-zinc-900">
+              ← Sign out
+            </button>
+          </SignOutButton>
+        </div>
       </div>
     </>
   );

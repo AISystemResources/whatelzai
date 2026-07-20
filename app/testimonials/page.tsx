@@ -24,6 +24,12 @@ export default async function TestimonialsPage() {
     if (!byCategory.has(t.category)) byCategory.set(t.category, []);
     byCategory.get(t.category)!.push(t);
   }
+  // Prioritize testimonials with real avatars — stronger social proof up front.
+  for (const rows of byCategory.values()) {
+    rows.sort(
+      (a, b) => (b.author_avatar_url ? 1 : 0) - (a.author_avatar_url ? 1 : 0),
+    );
+  }
 
   return (
     <main className="px-6 py-16 sm:px-8 sm:py-24">

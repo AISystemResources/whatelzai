@@ -110,10 +110,27 @@ export default async function TestimonialDetailPage({
           {CATEGORY_LABELS[t.category]}
         </p>
 
-        <blockquote
-          className="font-display mt-8 text-[1.75rem] font-normal leading-[1.35] tracking-tight text-zinc-900 sm:text-[2rem] sm:leading-[1.35]"
-          style={{ fontVariationSettings: '"opsz" 96, "SOFT" 60' }}
-        >
+        {t.headline && (
+          <h1 className="mt-6 text-3xl font-bold leading-tight tracking-tight text-zinc-900 sm:text-4xl">
+            {t.headline}
+          </h1>
+        )}
+
+        {t.keywords && t.keywords.length > 0 && (
+          <ul className="mt-8 flex flex-wrap gap-2">
+            {t.keywords.slice(0, 5).map((k) => (
+              <li
+                key={k}
+                className="px-2.5 py-1 font-mono text-[10px] uppercase tracking-widest text-zinc-900"
+                style={{ backgroundColor: "var(--accent)" }}
+              >
+                {k}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <blockquote className="mt-10 border-l-2 border-zinc-200 pl-6 text-lg leading-relaxed text-zinc-700 sm:text-xl">
           &ldquo;{t.quote}&rdquo;
         </blockquote>
 

@@ -25,6 +25,8 @@ import {
   getTestimonial,
   setTestimonialHeadline,
   setTestimonialFeatured,
+  setTestimonialKeywords,
+  getAggregateKeywords,
 } from "@/lib/testimonials";
 import { listActiveOffers } from "@/lib/offers";
 import { listHackathons } from "@/lib/hackathons";
@@ -113,6 +115,10 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
     setTestimonialHeadline(a.id as string, a.headline as string),
   "testimonials.set_featured": (a) =>
     setTestimonialFeatured(a.id as string, a.featured as boolean),
+  "testimonials.set_keywords": (a) =>
+    setTestimonialKeywords(a.id as string, a.keywords as string[]),
+  "testimonials.aggregate_keywords": (a) =>
+    getAggregateKeywords((a.limit as number | undefined) ?? 5),
 
   // Offers + hackathons + events — read-only surfaces for briefings.
   "offers.list_active": async () => listActiveOffers(),
@@ -365,6 +371,35 @@ const TOOL_SCHEMAS = [
       properties: {
         id: { type: "string" },
         featured: { type: "boolean" },
+      },
+    },
+  },
+  {
+    name: "testimonials.set_keywords",
+    description:
+      "Curate the keyword tags (character / capability / impact) for one testimonial. Displayed as pill tags on the individual testimonial page, aggregated across published rows for the /testimonials header. Stopwords to avoid: 'AI', 'Edmund', framing verbs ('work', 'workshop', 'session', 'training', 'mentor'), filler adjectives ('great', 'nice', 'good'). Keep: character traits ('perseverance', 'curious', 'patient'), capabilities ('teaches', 'ships', 'AI-native'), impact ('clarity', 'confidence', 'momentum'). Aim for 3-5 keywords per testimonial. Refuses rows with status='incomplete'.",
+    inputSchema: {
+      type: "object",
+      required: ["id", "keywords"],
+      properties: {
+        id: { type: "string" },
+        keywords: {
+          type: "array",
+          items: { type: "string" },
+          minItems: 0,
+          maxItems: 10,
+        },
+      },
+    },
+  },
+  {
+    name: "testimonials.aggregate_keywords",
+    description:
+      "Return the most-frequent keywords across all published testimonials. Powers the /testimonials header 'words people use most about Edmund' display. Read-only.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        limit: { type: "integer", minimum: 1, maximum: 20, default: 5 },
       },
     },
   },

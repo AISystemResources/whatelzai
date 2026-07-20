@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   listPublicTestimonials,
+  getAggregateKeywords,
   CATEGORY_LABELS,
   TESTIMONIAL_CATEGORIES,
   type Testimonial,
@@ -18,7 +19,10 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function TestimonialsPage() {
-  const items = await listPublicTestimonials();
+  const [items, topKeywords] = await Promise.all([
+    listPublicTestimonials(),
+    getAggregateKeywords(3),
+  ]);
   const byCategory = new Map<TestimonialCategory, Testimonial[]>();
   for (const t of items) {
     if (!byCategory.has(t.category)) byCategory.set(t.category, []);
@@ -52,6 +56,24 @@ export default async function TestimonialsPage() {
             </Link>
             .
           </p>
+
+          {topKeywords.length > 0 && (
+            <div className="mt-10 flex flex-wrap items-center gap-3">
+              <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
+                What people say most:
+              </span>
+              {topKeywords.map((k) => (
+                <span
+                  key={k.word}
+                  className="inline-flex items-baseline gap-1.5 px-2.5 py-1 font-mono text-xs uppercase tracking-widest text-zinc-900"
+                  style={{ backgroundColor: "var(--accent)" }}
+                >
+                  {k.word}
+                  <span className="text-[10px] opacity-60">×{k.count}</span>
+                </span>
+              ))}
+            </div>
+          )}
         </section>
 
         {items.length === 0 ? (

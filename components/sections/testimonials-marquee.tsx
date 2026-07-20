@@ -21,7 +21,10 @@ function Card({ t }: { t: Testimonial }) {
   const href = `/testimonials/${testimonialSlug(t)}`;
 
   return (
-    <article className="group relative flex w-[340px] shrink-0 snap-start scroll-ml-6 flex-col gap-5 border border-zinc-200 bg-white p-6 transition-colors hover:border-zinc-400 sm:w-[420px] sm:p-8">
+    <article
+      className="group relative flex w-[340px] shrink-0 snap-start scroll-ml-6 flex-col gap-5 border border-zinc-200 bg-white p-6 transition-all sm:w-[420px] sm:p-8"
+      style={{ borderLeft: "3px solid var(--accent)" }}
+    >
       <Link
         href={href}
         aria-label={`Read ${t.author_name}'s full testimonial`}
@@ -75,7 +78,10 @@ function Card({ t }: { t: Testimonial }) {
             </p>
           ))}
         </div>
-        <span className="ml-auto shrink-0 self-start font-mono text-[10px] tracking-widest text-zinc-400 uppercase">
+        <span
+          className="ml-auto shrink-0 self-start px-2 py-0.5 font-mono text-[10px] tracking-widest text-zinc-900 uppercase"
+          style={{ backgroundColor: "var(--accent)" }}
+        >
           {CATEGORY_LABELS[t.category]}
         </span>
       </div>

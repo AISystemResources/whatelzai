@@ -9,6 +9,8 @@ import {
   type TestimonialCategory,
 } from "@/lib/testimonials";
 import { TestimonialsMarquee } from "@/components/sections/testimonials-marquee";
+import { KeywordCards } from "@/components/testimonials/keyword-cards";
+import { keywordLabel } from "@/components/testimonials/keyword-meta";
 
 export const metadata: Metadata = {
   title: "Testimonials",
@@ -18,13 +20,26 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function TestimonialsPage() {
-  const [items, topKeywords] = await Promise.all([
+export default async function TestimonialsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ filter?: string }>;
+}) {
+  const [items, topKeywords, { filter }] = await Promise.all([
     listPublicTestimonials(),
     getAggregateKeywords(5),
+    searchParams,
   ]);
+
+  // Filter mode: flat list of testimonials matching the keyword, no category
+  // grouping. Cleared by clicking the same card again on the client side.
+  const activeFilter = filter?.trim() || null;
+  const filteredItems = activeFilter
+    ? items.filter((t) => (t.keywords ?? []).includes(activeFilter))
+    : items;
+
   const byCategory = new Map<TestimonialCategory, Testimonial[]>();
-  for (const t of items) {
+  for (const t of filteredItems) {
     if (!byCategory.has(t.category)) byCategory.set(t.category, []);
     byCategory.get(t.category)!.push(t);
   }
@@ -57,23 +72,7 @@ export default async function TestimonialsPage() {
             .
           </p>
 
-          {topKeywords.length > 0 && (
-            <div className="mt-10 flex flex-wrap items-center gap-3">
-              <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
-                What people say most:
-              </span>
-              {topKeywords.map((k) => (
-                <span
-                  key={k.word}
-                  className="inline-flex items-baseline gap-1.5 px-2.5 py-1 font-mono text-xs uppercase tracking-widest text-zinc-900"
-                  style={{ backgroundColor: "var(--accent)" }}
-                >
-                  {k.word}
-                  <span className="text-[10px] opacity-60">×{k.count}</span>
-                </span>
-              ))}
-            </div>
-          )}
+          <KeywordCards keywords={topKeywords} />
         </section>
 
         {items.length === 0 ? (
@@ -85,6 +84,26 @@ export default async function TestimonialsPage() {
             >
               Be the first →
             </Link>
+          </section>
+        ) : activeFilter ? (
+          // Filter mode: one flat marquee, no category grouping.
+          <section className="border-b border-zinc-100 py-14">
+            <div className="mx-6 flex items-baseline justify-between sm:mx-0">
+              <h2 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl">
+                “{keywordLabel(activeFilter)}”
+              </h2>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
+                {filteredItems.length}{" "}
+                {filteredItems.length === 1 ? "voice" : "voices"}
+              </span>
+            </div>
+            {filteredItems.length === 0 ? (
+              <p className="mt-8 text-sm text-zinc-500">
+                No testimonials tagged with this keyword yet.
+              </p>
+            ) : (
+              <TestimonialsMarquee items={filteredItems} />
+            )}
           </section>
         ) : (
           TESTIMONIAL_CATEGORIES.map((cat) => {

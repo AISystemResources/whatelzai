@@ -16,6 +16,11 @@ import {
   CATEGORY_LABELS,
   type TestimonialCategory,
 } from "@/lib/testimonials";
+import {
+  CATEGORY_EVENT_KINDS,
+  CATEGORY_EVENT_LABEL,
+  type ServiceEvent,
+} from "@/lib/service-events";
 import { removeTemplate, saveTemplate } from "./actions";
 import type { TestimonialTemplate } from "@/lib/testimonial-templates";
 
@@ -38,9 +43,11 @@ const EMPTY: Partial<TestimonialTemplate> = {
 export function TemplateForm({
   initial,
   isNew,
+  events,
 }: {
   initial?: TestimonialTemplate;
   isNew?: boolean;
+  events: ServiceEvent[];
 }) {
   const router = useRouter();
   const t = initial ?? (EMPTY as TestimonialTemplate);
@@ -165,13 +172,42 @@ export function TemplateForm({
             placeholder="e.g. Software Engineer"
           />
         </Field>
-        <Field label="Service event UUID (optional — links testimonials to a specific event)">
-          <TextInput
-            value={serviceEventId}
-            onChange={(e) => setServiceEventId(e.target.value)}
-            placeholder="e.g. 8f43dc5e-564a-491b-8ada-ac20e2858043"
-          />
-        </Field>
+        {(() => {
+          const kinds = CATEGORY_EVENT_KINDS[category] ?? [];
+          const relevant = kinds.length
+            ? events.filter((e) => kinds.includes(e.kind))
+            : [];
+          const label =
+            CATEGORY_EVENT_LABEL[category] ??
+            "Linked event (only shown for training/mentorship/hackathon)";
+          const disabled = kinds.length === 0;
+          return (
+            <Field
+              label={`${label} (optional — pre-selects "${CATEGORY_EVENT_LABEL[category] ?? "event"}" on the form)`}
+            >
+              <select
+                value={serviceEventId}
+                onChange={(e) => setServiceEventId(e.target.value)}
+                disabled={disabled}
+                className="w-full border border-zinc-300 bg-white px-3 py-2 font-mono text-sm disabled:cursor-not-allowed disabled:bg-zinc-50 disabled:text-zinc-400"
+              >
+                <option value="">
+                  {disabled
+                    ? "— This category has no linked events —"
+                    : "— None —"}
+                </option>
+                {relevant.map((e) => (
+                  <option key={e.id} value={e.id}>
+                    {e.name}
+                    {e.event_date
+                      ? ` — ${new Date(e.event_date).toLocaleDateString("en-SG", { day: "numeric", month: "short", year: "numeric" })}`
+                      : ""}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          );
+        })()}
         <Field label="Suggested question IDs (one per line — matches lib/testimonial-questions)">
           <TextArea
             value={suggestedIds}

@@ -9,6 +9,7 @@ import {
 } from "@/lib/testimonial-templates";
 import { qrPngDataUri } from "@/lib/qr";
 import { getSiteIdentity } from "@/lib/site-identity";
+import { listServiceEvents } from "@/lib/service-events";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { TemplateForm } from "../TemplateForm";
 import { CopyButton } from "./CopyButton";
@@ -42,9 +43,10 @@ export default async function TemplateDetailPage({
   params: Promise<Params>;
 }) {
   const { id } = await params;
-  const [t, site] = await Promise.all([
+  const [t, site, events] = await Promise.all([
     getTemplateById(id),
     getSiteIdentity(),
+    listServiceEvents(),
   ]);
   if (!t) notFound();
 
@@ -139,7 +141,7 @@ export default async function TemplateDetailPage({
         <h2 className="mb-4 font-mono text-[10px] uppercase tracking-widest text-zinc-400">
           Edit template
         </h2>
-        <TemplateForm initial={t} />
+        <TemplateForm initial={t} events={events} />
       </div>
 
       {/* Submissions */}

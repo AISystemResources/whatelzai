@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import { TemplateForm } from "../TemplateForm";
+import { listServiceEvents } from "@/lib/service-events";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "New template — whatelz.ai Admin",
 };
 
-export default function NewTemplatePage() {
+export default async function NewTemplatePage() {
+  const events = await listServiceEvents();
   return (
     <div className="space-y-6">
       <div>
@@ -19,7 +23,7 @@ export default function NewTemplatePage() {
           Save to generate the QR code + shareable link.
         </p>
       </div>
-      <TemplateForm isNew />
+      <TemplateForm isNew events={events} />
     </div>
   );
 }

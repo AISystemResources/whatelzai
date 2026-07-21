@@ -111,6 +111,13 @@ export default async function AdminTestimonialsPage({
             >
               Manage events →
             </Link>
+            {"   "}Group prefill ·{" "}
+            <Link
+              href="/admin/testimonials/templates"
+              className="underline underline-offset-4 hover:text-zinc-900"
+            >
+              QR templates →
+            </Link>
           </p>
         </div>
         <Link

@@ -301,6 +301,7 @@ export async function createIncompleteTestimonial(input: {
   admin_note?: string;
   service_event_id?: string;
   created_by_clerk_id?: string;
+  template_id?: string;
 }): Promise<Testimonial> {
   const now = new Date().toISOString();
   const { data, error } = await supabaseAdmin
@@ -315,6 +316,7 @@ export async function createIncompleteTestimonial(input: {
       admin_note: input.admin_note ?? null,
       service_event_id: input.service_event_id ?? null,
       created_by_clerk_id: input.created_by_clerk_id ?? null,
+      template_id: input.template_id ?? null,
       quote: "",
       status: "incomplete",
       published: false,

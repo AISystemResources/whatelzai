@@ -24,6 +24,16 @@ const nextConfig: NextConfig = {
         source: "/.well-known/:path*",
         destination: "/api/well-known/:path*",
       },
+      {
+        source: "/cv",
+        destination:
+          "https://tnjujbkpepchhgyqwmtb.supabase.co/storage/v1/object/public/resumes/public/LinZhenming_Resume.pdf",
+      },
+      {
+        source: "/resume",
+        destination:
+          "https://tnjujbkpepchhgyqwmtb.supabase.co/storage/v1/object/public/resumes/public/LinZhenming_Resume.pdf",
+      },
     ];
   },
 };

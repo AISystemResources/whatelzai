@@ -116,11 +116,12 @@ export function Intro({ site }: { site: SiteIdentity }) {
               {site.resume_url && (
                 <a
                   href={site.resume_url}
-                  download
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 border border-zinc-300 px-5 py-3 font-mono text-xs tracking-widest uppercase text-zinc-600 transition-colors hover:border-zinc-900 hover:text-zinc-900"
                 >
-                  Download CV
-                  <span aria-hidden="true">↓</span>
+                  View resume
+                  <span aria-hidden="true">↗</span>
                 </a>
               )}
             </div>

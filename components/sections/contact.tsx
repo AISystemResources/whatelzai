@@ -40,10 +40,11 @@ export async function Contact() {
           {s.resume_url && (
             <a
               href={s.resume_url}
-              download
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 underline underline-offset-2 hover:text-zinc-900"
             >
-              Download CV ↓
+              View resume ↗
             </a>
           )}
         </div>

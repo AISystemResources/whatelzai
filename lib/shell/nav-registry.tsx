@@ -1,11 +1,21 @@
-'use client';
+"use client";
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  type ReactNode,
+} from "react";
 
 export type NavItem =
-  | { type: 'link'; href: string; label: string }
-  | { type: 'section'; id: string; label: string }
-  | { type: 'group'; label: string; children: Array<{ href: string; label: string }> };
+  | { type: "link"; href: string; label: string }
+  | { type: "section"; id: string; label: string }
+  | {
+      type: "group";
+      label: string;
+      children: Array<{ href: string; label: string }>;
+    };
 
 type NavCtx = {
   navItems: NavItem[];
@@ -18,7 +28,9 @@ const Ctx = createContext<NavCtx | null>(null);
 export function NavRegistryProvider({ children }: { children: ReactNode }) {
   const [navItems, setNavItems] = useState<NavItem[]>([]);
   return (
-    <Ctx.Provider value={{ navItems, setNavItems, clearNavItems: () => setNavItems([]) }}>
+    <Ctx.Provider
+      value={{ navItems, setNavItems, clearNavItems: () => setNavItems([]) }}
+    >
       {children}
     </Ctx.Provider>
   );
@@ -26,7 +38,8 @@ export function NavRegistryProvider({ children }: { children: ReactNode }) {
 
 export function useNavRegistry(): NavCtx {
   const ctx = useContext(Ctx);
-  if (!ctx) throw new Error('useNavRegistry must be inside NavRegistryProvider');
+  if (!ctx)
+    throw new Error("useNavRegistry must be inside NavRegistryProvider");
   return ctx;
 }
 

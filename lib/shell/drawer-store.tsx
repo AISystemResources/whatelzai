@@ -1,29 +1,32 @@
-'use client';
+"use client";
 
-import { createContext, useContext, useReducer, type ReactNode } from 'react';
+import { createContext, useContext, useReducer, type ReactNode } from "react";
 
 type State = { left: boolean; right: boolean };
 
 export type Action =
-  | { type: 'TOGGLE_LEFT';  mobile?: boolean }
-  | { type: 'TOGGLE_RIGHT'; mobile?: boolean }
-  | { type: 'OPEN_RIGHT' }
-  | { type: 'CLOSE_LEFT' }
-  | { type: 'CLOSE_RIGHT' };
+  | { type: "TOGGLE_LEFT"; mobile?: boolean }
+  | { type: "TOGGLE_RIGHT"; mobile?: boolean }
+  | { type: "OPEN_RIGHT" }
+  | { type: "CLOSE_LEFT" }
+  | { type: "CLOSE_RIGHT" };
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
-    case 'TOGGLE_LEFT': {
+    case "TOGGLE_LEFT": {
       const next = !state.left;
       return { left: next, right: action.mobile && next ? false : state.right };
     }
-    case 'TOGGLE_RIGHT': {
+    case "TOGGLE_RIGHT": {
       const next = !state.right;
       return { right: next, left: action.mobile && next ? false : state.left };
     }
-    case 'OPEN_RIGHT':   return { ...state, right: true };
-    case 'CLOSE_LEFT':   return { ...state, left: false };
-    case 'CLOSE_RIGHT':  return { ...state, right: false };
+    case "OPEN_RIGHT":
+      return { ...state, right: true };
+    case "CLOSE_LEFT":
+      return { ...state, left: false };
+    case "CLOSE_RIGHT":
+      return { ...state, right: false };
   }
 }
 
@@ -37,6 +40,7 @@ export function DrawerStoreProvider({ children }: { children: ReactNode }) {
 
 export function useDrawerStore(): DrawerCtx {
   const ctx = useContext(Ctx);
-  if (!ctx) throw new Error('useDrawerStore must be inside DrawerStoreProvider');
+  if (!ctx)
+    throw new Error("useDrawerStore must be inside DrawerStoreProvider");
   return ctx;
 }

@@ -166,8 +166,8 @@ export default async function AboutPage() {
               </p>
               <p className="mt-4 text-base leading-relaxed text-zinc-600 sm:text-lg">
                 He builds AI systems that replace his own effort — so ambitious
-                founders can own their AI, not be owned by it. Same person,
-                both jobs.
+                founders can own their AI, not be owned by it. Same person, both
+                jobs.
               </p>
 
               <div className="mt-10 flex flex-wrap gap-3">
@@ -212,27 +212,37 @@ export default async function AboutPage() {
             <p>
               Most people build tools and become dependent on them. Edmund
               builds systems and then walks away — and the systems keep working.
-              EMDEE, DoubleLead, ATLAS aren&rsquo;t demos. They are
-              production infrastructure he runs daily, and the reason he can
-              spend time on the next pattern instead of the last one.
+              EMDEE, DoubleLead, ATLAS aren&rsquo;t demos. They are production
+              infrastructure he runs daily, and the reason he can spend time on
+              the next pattern instead of the last one.
             </p>
             <p>
-              The archetype behind the work is <em>The Infrastructure
-              Evangelist</em> — a force multiplier who sees the repeating
-              pattern before anyone else, extracts it into infrastructure, and
-              installs it in the people around him. AI isn&rsquo;t the
-              product. The freedom compounding from owning your own systems is
-              the product.
+              The archetype behind the work is{" "}
+              <em>The Infrastructure Evangelist</em> — a force multiplier who
+              sees the repeating pattern before anyone else, extracts it into
+              infrastructure, and installs it in the people around him. AI
+              isn&rsquo;t the product. The freedom compounding from owning your
+              own systems is the product.
             </p>
             <p>
-              The people he builds for: ambitious solopreneurs and lean
-              startup founders in Southeast Asia who know they need AI but
-              can&rsquo;t figure out how to make it compound without them. If
-              that&rsquo;s you, the way in is <Link href="/services" className="underline underline-offset-4 hover:text-zinc-900">Services</Link>.
+              The people he builds for: ambitious solopreneurs and lean startup
+              founders in Southeast Asia who know they need AI but can&rsquo;t
+              figure out how to make it compound without them. If that&rsquo;s
+              you, the way in is{" "}
+              <Link
+                href="/services"
+                className="underline underline-offset-4 hover:text-zinc-900"
+              >
+                Services
+              </Link>
+              .
             </p>
           </div>
 
-          <figure className="mt-16 border-l-2 pl-6" style={{ borderColor: "var(--accent-text)" }}>
+          <figure
+            className="mt-16 border-l-2 pl-6"
+            style={{ borderColor: "var(--accent-text)" }}
+          >
             <blockquote className="text-2xl leading-relaxed text-zinc-900 sm:text-3xl">
               &ldquo;I own the AI. The AI doesn&rsquo;t own me.&rdquo;
             </blockquote>

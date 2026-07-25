@@ -1,23 +1,28 @@
-import type { CareerEntry } from '@/lib/career';
+import type { CareerEntry } from "@/lib/career";
 
 interface Props {
   entries: CareerEntry[];
 }
 
 function formatPeriod(start: string, end: string | null): string {
-  const fmt = (d: string) => new Date(d).toLocaleDateString('en-SG', { month: 'short', year: 'numeric' });
+  const fmt = (d: string) =>
+    new Date(d).toLocaleDateString("en-SG", {
+      month: "short",
+      year: "numeric",
+    });
   return end ? `${fmt(start)} – ${fmt(end)}` : `${fmt(start)} – Present`;
 }
 
 function firstBullet(description: string | null): string {
-  if (!description) return '';
-  const line = description.split('\n').find(l => l.trim().length > 0) ?? '';
-  return line.replace(/^[-*•]\s*/, '').trim();
+  if (!description) return "";
+  const line = description.split("\n").find((l) => l.trim().length > 0) ?? "";
+  return line.replace(/^[-*•]\s*/, "").trim();
 }
 
 export function Arc({ entries }: Props) {
   const sorted = [...entries].sort(
-    (a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
+    (a, b) =>
+      new Date(b.start_date).getTime() - new Date(a.start_date).getTime(),
   );
 
   return (
@@ -29,7 +34,10 @@ export function Arc({ entries }: Props) {
     >
       <div className="mx-auto max-w-6xl">
         <header className="mb-12 flex items-baseline justify-between">
-          <h2 id="career-heading" className="text-2xl font-semibold text-zinc-900">
+          <h2
+            id="career-heading"
+            className="text-2xl font-semibold text-zinc-900"
+          >
             Career
           </h2>
           <p className="hidden font-mono text-[10px] tracking-widest text-zinc-400 uppercase sm:block">
@@ -43,9 +51,9 @@ export function Arc({ entries }: Props) {
               <div className="mb-4 flex items-center gap-3">
                 <span
                   className="font-mono text-[10px] tracking-widest uppercase"
-                  style={{ color: 'var(--accent-text)' }}
+                  style={{ color: "var(--accent-text)" }}
                 >
-                  {String(i + 1).padStart(2, '0')}
+                  {String(i + 1).padStart(2, "0")}
                 </span>
                 <span className="h-px flex-1 bg-zinc-300" aria-hidden="true" />
               </div>

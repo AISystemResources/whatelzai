@@ -6,9 +6,7 @@ import { callVerb } from "./mcp.js";
 const program = new Command();
 program
   .name("whatelz")
-  .description(
-    "CLI for whatelz.ai — token-efficient companion to the HTTP MCP",
-  )
+  .description("CLI for whatelz.ai — token-efficient companion to the HTTP MCP")
   .version("0.1.0");
 
 program

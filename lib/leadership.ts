@@ -1,4 +1,4 @@
-import { supabaseAdmin } from './supabase-server';
+import { supabaseAdmin } from "./supabase-server";
 
 export type Leadership = {
   id: string;
@@ -16,20 +16,24 @@ export type Leadership = {
   updated_at: string;
 };
 
-export async function listLeadership(publishedOnly = false): Promise<Leadership[]> {
-  let q = supabaseAdmin.from('leadership').select('*');
-  if (publishedOnly) q = q.eq('published', true);
-  const { data, error } = await q.order('start_date', { ascending: false });
+export async function listLeadership(
+  publishedOnly = false,
+): Promise<Leadership[]> {
+  let q = supabaseAdmin.from("leadership").select("*");
+  if (publishedOnly) q = q.eq("published", true);
+  const { data, error } = await q.order("start_date", { ascending: false });
   if (error) throw new Error(`listLeadership: ${error.message}`);
   return (data ?? []) as Leadership[];
 }
 
-export async function getLeadershipBySlug(slug: string): Promise<Leadership | null> {
+export async function getLeadershipBySlug(
+  slug: string,
+): Promise<Leadership | null> {
   const { data, error } = await supabaseAdmin
-    .from('leadership')
-    .select('*')
-    .eq('slug', slug)
-    .eq('published', true)
+    .from("leadership")
+    .select("*")
+    .eq("slug", slug)
+    .eq("published", true)
     .maybeSingle();
   if (error) throw new Error(`getLeadershipBySlug: ${error.message}`);
   return data as Leadership | null;
@@ -37,22 +41,31 @@ export async function getLeadershipBySlug(slug: string): Promise<Leadership | nu
 
 export async function getLeadership(id: string): Promise<Leadership | null> {
   const { data, error } = await supabaseAdmin
-    .from('leadership')
-    .select('*')
-    .eq('id', id)
+    .from("leadership")
+    .select("*")
+    .eq("id", id)
     .maybeSingle();
   if (error) throw new Error(`getLeadership: ${error.message}`);
   return data as Leadership | null;
 }
 
 export async function upsertLeadership(
-  fields: Partial<Leadership> & { slug: string; organisation: string; role: string; start_date: string },
+  fields: Partial<Leadership> & {
+    slug: string;
+    organisation: string;
+    role: string;
+    start_date: string;
+  },
   id?: string,
 ): Promise<Leadership> {
-  const payload = { ...fields, updated_at: new Date().toISOString(), ...(id ? { id } : {}) };
+  const payload = {
+    ...fields,
+    updated_at: new Date().toISOString(),
+    ...(id ? { id } : {}),
+  };
   const { data, error } = await supabaseAdmin
-    .from('leadership')
-    .upsert(payload, { onConflict: 'id' })
+    .from("leadership")
+    .upsert(payload, { onConflict: "id" })
     .select()
     .single();
   if (error) throw new Error(`upsertLeadership: ${error.message}`);
@@ -60,6 +73,9 @@ export async function upsertLeadership(
 }
 
 export async function deleteLeadership(id: string): Promise<void> {
-  const { error } = await supabaseAdmin.from('leadership').delete().eq('id', id);
+  const { error } = await supabaseAdmin
+    .from("leadership")
+    .delete()
+    .eq("id", id);
   if (error) throw new Error(`deleteLeadership: ${error.message}`);
 }

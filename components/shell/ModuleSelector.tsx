@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { PILLS, pillForPath, type Pill } from '@/lib/pill-access';
+import { useEffect, useRef } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { PILLS, pillForPath, type Pill } from "@/lib/pill-access";
 
 interface Props {
   isAdmin: boolean;
@@ -19,16 +19,16 @@ export function ModuleSelector({ isAdmin, onClose }: Props) {
 
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose();
+      if (e.key === "Escape") onClose();
     }
     function handleClick(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) onClose();
     }
-    document.addEventListener('keydown', handleKey);
-    document.addEventListener('mousedown', handleClick);
+    document.addEventListener("keydown", handleKey);
+    document.addEventListener("mousedown", handleClick);
     return () => {
-      document.removeEventListener('keydown', handleKey);
-      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener("keydown", handleKey);
+      document.removeEventListener("mousedown", handleClick);
     };
   }, [onClose]);
 
@@ -46,8 +46,8 @@ export function ModuleSelector({ isAdmin, onClose }: Props) {
           role="menuitem"
           className={`flex items-center gap-2 px-4 py-2.5 text-sm transition-colors hover:bg-zinc-50 ${
             active === pill.key
-              ? 'font-semibold text-zinc-900 bg-zinc-50'
-              : 'text-zinc-600'
+              ? "font-semibold text-zinc-900 bg-zinc-50"
+              : "text-zinc-600"
           }`}
         >
           {active === pill.key && (

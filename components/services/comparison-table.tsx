@@ -43,7 +43,9 @@ function Cell({
     );
   }
   return (
-    <span className={emphasized ? "font-medium text-zinc-900" : "text-zinc-500"}>
+    <span
+      className={emphasized ? "font-medium text-zinc-900" : "text-zinc-500"}
+    >
       {value}
     </span>
   );
@@ -101,7 +103,10 @@ export function ComparisonTable({
 
         <ul className="mt-8 space-y-4 border-t border-zinc-100 pt-6">
           {rows.map((r) => (
-            <li key={r.label} className="flex items-start justify-between gap-4">
+            <li
+              key={r.label}
+              className="flex items-start justify-between gap-4"
+            >
               <span
                 className={`text-sm ${r.highlight ? "font-medium text-zinc-900" : "text-zinc-700"}`}
               >
@@ -144,7 +149,10 @@ export function ComparisonTable({
 
         <ul className="mt-8 space-y-4 border-t border-zinc-100 pt-6">
           {rows.map((r) => (
-            <li key={r.label} className="flex items-start justify-between gap-4">
+            <li
+              key={r.label}
+              className="flex items-start justify-between gap-4"
+            >
               <span className="text-sm text-zinc-500">{r.label}</span>
               <div className="shrink-0">
                 <Cell value={r.regular} emphasized={false} />

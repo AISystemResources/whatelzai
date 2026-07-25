@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition } from "react";
 
 interface PATTokenCardProps {
   token: string;
@@ -8,8 +8,12 @@ interface PATTokenCardProps {
   rotateAction: () => Promise<void>;
 }
 
-export function PATTokenCard({ token, masked, rotateAction }: PATTokenCardProps) {
-  const [copied, setCopied]        = useState(false);
+export function PATTokenCard({
+  token,
+  masked,
+  rotateAction,
+}: PATTokenCardProps) {
+  const [copied, setCopied] = useState(false);
   const [pending, startTransition] = useTransition();
 
   function handleCopy() {
@@ -19,7 +23,10 @@ export function PATTokenCard({ token, masked, rotateAction }: PATTokenCardProps)
   }
 
   function handleRotate() {
-    if (!confirm('Rotate token? The current token will stop working immediately.')) return;
+    if (
+      !confirm("Rotate token? The current token will stop working immediately.")
+    )
+      return;
     startTransition(() => rotateAction());
   }
 
@@ -31,7 +38,7 @@ export function PATTokenCard({ token, masked, rotateAction }: PATTokenCardProps)
           onClick={handleCopy}
           className="font-mono text-xs text-zinc-400 hover:text-zinc-900 transition-colors px-2"
         >
-          {copied ? 'copied' : 'copy'}
+          {copied ? "copied" : "copy"}
         </button>
         <div className="w-px h-4 bg-zinc-200" />
         <button
@@ -39,11 +46,12 @@ export function PATTokenCard({ token, masked, rotateAction }: PATTokenCardProps)
           disabled={pending}
           className="font-mono text-xs text-zinc-400 hover:text-red-500 transition-colors px-2 disabled:opacity-40"
         >
-          {pending ? 'rotating…' : 'rotate'}
+          {pending ? "rotating…" : "rotate"}
         </button>
       </div>
       <p className="font-mono text-xs text-zinc-400">
-        Copy and paste into the Claude.ai MCP connector when prompted. Rotate to invalidate the old token.
+        Copy and paste into the Claude.ai MCP connector when prompted. Rotate to
+        invalidate the old token.
       </p>
     </div>
   );

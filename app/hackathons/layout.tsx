@@ -1,5 +1,9 @@
-import type { ReactNode } from 'react';
+import type { ReactNode } from "react";
 
-export default function HackathonsLayout({ children }: { children: ReactNode }) {
+export default function HackathonsLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   return <>{children}</>;
 }

@@ -44,7 +44,8 @@ async function baseQuery(): Promise<TestimonialTemplate[]> {
     .select("*")
     .order("created_at", { ascending: false });
   if (error) {
-    if (error.code === "42P01" || /schema cache/i.test(error.message)) return [];
+    if (error.code === "42P01" || /schema cache/i.test(error.message))
+      return [];
     throw new Error(`testimonial_templates list: ${error.message}`);
   }
   return (data ?? []) as TestimonialTemplate[];
@@ -86,10 +87,7 @@ export function canAcceptSubmission(t: TestimonialTemplate): {
   if (!t.is_active) return { ok: false, reason: "inactive" };
   if (t.expires_at && new Date(t.expires_at) < new Date())
     return { ok: false, reason: "expired" };
-  if (
-    t.max_submissions !== null &&
-    t.submissions_count >= t.max_submissions
-  )
+  if (t.max_submissions !== null && t.submissions_count >= t.max_submissions)
     return { ok: false, reason: "full" };
   return { ok: true, reason: null };
 }

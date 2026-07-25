@@ -5,7 +5,9 @@ import {
   DocSlug,
 } from "../lib/website-docs";
 
-const SEED: Partial<Record<DocSlug, Array<{ heading: string; content: string }>>> = {
+const SEED: Partial<
+  Record<DocSlug, Array<{ heading: string; content: string }>>
+> = {
   INSTRUCTIONS: [
     {
       heading: "Preamble",

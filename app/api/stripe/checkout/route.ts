@@ -6,8 +6,7 @@ import { findCustomerIdForClerkUser } from "@/lib/subscription";
 
 export const dynamic = "force-dynamic";
 
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://whatelz.ai";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://whatelz.ai";
 
 export async function POST(req: Request) {
   if (!isStripeConfigured()) {
@@ -20,7 +19,10 @@ export async function POST(req: Request) {
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json(
-      { error: "Sign in required", signInUrl: "/sign-in?redirect_url=/services" },
+      {
+        error: "Sign in required",
+        signInUrl: "/sign-in?redirect_url=/services",
+      },
       { status: 401 },
     );
   }

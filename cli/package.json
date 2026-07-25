@@ -6,7 +6,9 @@
   "bin": {
     "whatelz": "dist/index.js"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "engines": {
     "node": ">=20"
   },

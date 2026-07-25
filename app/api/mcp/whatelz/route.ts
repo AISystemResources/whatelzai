@@ -138,11 +138,13 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
   "services.list_all": async () => listServices(false),
   "services.get_by_slug": (a) => getServiceBySlug(a.slug as string),
   "services.upsert": (a) =>
-    upsertService(a.fields as Partial<Service> & {
-      slug: string;
-      name: string;
-      category: string;
-    }),
+    upsertService(
+      a.fields as Partial<Service> & {
+        slug: string;
+        name: string;
+        category: string;
+      },
+    ),
   "services.delete": async (a) => {
     await deleteService(a.id as string);
     return { ok: true };
@@ -541,7 +543,8 @@ const TOOL_SCHEMAS = [
         },
         body: {
           type: "object",
-          description: "Full section body — see each section's TS interface in lib/landing-content.ts",
+          description:
+            "Full section body — see each section's TS interface in lib/landing-content.ts",
         },
       },
     },

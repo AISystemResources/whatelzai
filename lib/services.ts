@@ -76,7 +76,8 @@ export async function listServices(publishedOnly = false): Promise<Service[]> {
   });
   if (error) {
     // Table not yet applied → treat as empty so /services still renders.
-    if (error.code === "42P01" || /schema cache/i.test(error.message)) return [];
+    if (error.code === "42P01" || /schema cache/i.test(error.message))
+      return [];
     throw new Error(`listServices: ${error.message}`);
   }
   return (data ?? []) as Service[];

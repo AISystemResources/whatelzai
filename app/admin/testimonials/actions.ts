@@ -84,7 +84,10 @@ export async function setStatus(id: string, status: TestimonialStatus) {
     patch.published = false;
     patch.featured = false;
   }
-  const { error } = await supabaseAdmin.from("testimonials").update(patch).eq("id", id);
+  const { error } = await supabaseAdmin
+    .from("testimonials")
+    .update(patch)
+    .eq("id", id);
   if (error) throw new Error(error.message);
   afterWrite();
 }
@@ -108,7 +111,9 @@ export async function createPrefillTestimonial(input: {
   redirect(`/admin/testimonials/${t.id}`);
 }
 
-export async function uploadAvatarAction(formData: FormData): Promise<{ url: string }> {
+export async function uploadAvatarAction(
+  formData: FormData,
+): Promise<{ url: string }> {
   await assertAdmin();
   const file = formData.get("file");
   if (!(file instanceof File)) throw new Error("No file");

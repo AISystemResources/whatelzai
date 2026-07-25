@@ -1,5 +1,5 @@
-import { listChannels } from '@/lib/channels';
-import { ChannelsPageClient } from './ChannelsPageClient';
+import { listChannels } from "@/lib/channels";
+import { ChannelsPageClient } from "./ChannelsPageClient";
 
 export default async function ChannelsPage() {
   const channels = await listChannels(true);

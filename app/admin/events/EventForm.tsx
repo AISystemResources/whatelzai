@@ -71,7 +71,9 @@ export function EventForm({ initial }: { initial: ServiceEvent | null }) {
           kind: state.kind,
           event_date: state.event_date || null,
           location: state.location || null,
-          attendee_count: state.attendee_count ? Number(state.attendee_count) : null,
+          attendee_count: state.attendee_count
+            ? Number(state.attendee_count)
+            : null,
           description: state.description || null,
         });
         setStatus("saved");
@@ -84,7 +86,8 @@ export function EventForm({ initial }: { initial: ServiceEvent | null }) {
 
   function remove() {
     if (!state.id) return;
-    if (!confirm("Delete this event? Linked testimonials will be un-linked.")) return;
+    if (!confirm("Delete this event? Linked testimonials will be un-linked."))
+      return;
     start(async () => {
       try {
         await removeEvent(state.id!);

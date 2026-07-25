@@ -31,7 +31,11 @@ function afterWrite() {
 }
 
 export async function saveEvent(
-  fields: Partial<ServiceEvent> & { slug: string; name: string; kind: ServiceEventKind },
+  fields: Partial<ServiceEvent> & {
+    slug: string;
+    name: string;
+    kind: ServiceEventKind;
+  },
 ) {
   await assertAdmin();
   const saved = await upsertServiceEvent(fields);

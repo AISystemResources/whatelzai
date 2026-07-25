@@ -52,7 +52,9 @@ export function KeywordCards({
                     ? "border-zinc-900 shadow-lg"
                     : "border-zinc-200 bg-white hover:border-zinc-900"
                 }`}
-                style={isActive ? { backgroundColor: "var(--accent)" } : undefined}
+                style={
+                  isActive ? { backgroundColor: "var(--accent)" } : undefined
+                }
               >
                 {/* Icon */}
                 <span

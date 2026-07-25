@@ -1,28 +1,30 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
-import { supabaseAdmin } from '@/lib/supabase-server';
-import { ContentEditor } from '@/components/admin/ContentEditor';
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { supabaseAdmin } from "@/lib/supabase-server";
+import { ContentEditor } from "@/components/admin/ContentEditor";
 
-export const metadata: Metadata = { title: 'Edit Career Content — whatelz.ai Admin' };
+export const metadata: Metadata = {
+  title: "Edit Career Content — whatelz.ai Admin",
+};
 
 type Props = { params: Promise<{ id: string }> };
 
 async function saveContent(id: string, content: string) {
-  'use server';
+  "use server";
   await supabaseAdmin
-    .from('career')
+    .from("career")
     .update({ content, updated_at: new Date().toISOString() })
-    .eq('id', id);
+    .eq("id", id);
 }
 
 export default async function AdminCareerContentPage({ params }: Props) {
   const { id } = await params;
 
   const { data: entry } = await supabaseAdmin
-    .from('career')
-    .select('*')
-    .eq('id', id)
+    .from("career")
+    .select("*")
+    .eq("id", id)
     .maybeSingle();
 
   if (!entry) notFound();
@@ -36,16 +38,20 @@ export default async function AdminCareerContentPage({ params }: Props) {
         >
           ← Career
         </Link>
-        <p className="mt-4 font-mono text-xs uppercase tracking-widest text-zinc-400">Profile · Career</p>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-zinc-900">{entry.company}</h1>
+        <p className="mt-4 font-mono text-xs uppercase tracking-widest text-zinc-400">
+          Profile · Career
+        </p>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-zinc-900">
+          {entry.company}
+        </h1>
         <p className="text-sm text-zinc-500">{entry.role}</p>
         <p className="mt-1 font-mono text-xs text-zinc-400">
-          {entry.start_date} — {entry.end_date ?? 'present'}
+          {entry.start_date} — {entry.end_date ?? "present"}
         </p>
       </div>
 
       <ContentEditor
-        initial={entry.content ?? ''}
+        initial={entry.content ?? ""}
         onSave={saveContent.bind(null, id)}
         label="Case Study"
       />

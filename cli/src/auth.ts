@@ -85,11 +85,19 @@ function waitForCode(port: number, expectedState: string): Promise<string> {
         err ? reject(err) : resolve(code!);
       };
       if (state !== expectedState) {
-        finish(400, "<p>State mismatch. Login aborted.</p>", new Error("state mismatch"));
+        finish(
+          400,
+          "<p>State mismatch. Login aborted.</p>",
+          new Error("state mismatch"),
+        );
         return;
       }
       if (!code) {
-        finish(400, "<p>No code returned. Login aborted.</p>", new Error("no code"));
+        finish(
+          400,
+          "<p>No code returned. Login aborted.</p>",
+          new Error("no code"),
+        );
         return;
       }
       finish(

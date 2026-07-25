@@ -38,8 +38,7 @@ export default async function AdminLandingPage() {
           <code className="font-mono text-xs text-zinc-700">
             {"{{accent:foo}}"}
           </code>
-          . Use{" "}
-          <code className="font-mono text-xs text-zinc-700">\n</code> in
+          . Use <code className="font-mono text-xs text-zinc-700">\n</code> in
           headings for line breaks. Changes appear on the homepage on next
           request.
         </p>

@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 // Preprocess: replace <YouTube id="abc" /> with a placeholder we can catch
 function preprocessYouTube(content: string): string {
-  return content.replace(/<YouTube\s+id="([^"]+)"\s*\/>/g, '%%YOUTUBE:$1%%');
+  return content.replace(/<YouTube\s+id="([^"]+)"\s*\/>/g, "%%YOUTUBE:$1%%");
 }
 
 export function ContentRenderer({ content }: { content: string }) {
@@ -17,10 +17,16 @@ export function ContentRenderer({ content }: { content: string }) {
         components={{
           p({ children }) {
             // Detect YouTube placeholder
-            if (typeof children === 'string' && children.startsWith('%%YOUTUBE:')) {
-              const id = children.replace('%%YOUTUBE:', '').replace('%%', '');
+            if (
+              typeof children === "string" &&
+              children.startsWith("%%YOUTUBE:")
+            ) {
+              const id = children.replace("%%YOUTUBE:", "").replace("%%", "");
               return (
-                <div className="relative my-6" style={{ paddingBottom: '56.25%', height: 0 }}>
+                <div
+                  className="relative my-6"
+                  style={{ paddingBottom: "56.25%", height: 0 }}
+                >
                   <iframe
                     src={`https://www.youtube.com/embed/${id}`}
                     title="YouTube video"

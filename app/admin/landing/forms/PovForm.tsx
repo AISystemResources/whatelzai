@@ -92,16 +92,27 @@ export function PovForm({ initial }: { initial: PovContent }) {
 
         <div className="space-y-4">
           {state.beliefs.map((b, i) => (
-            <div key={i} className="space-y-2 rounded border border-zinc-100 p-4">
+            <div
+              key={i}
+              className="space-y-2 rounded border border-zinc-100 p-4"
+            >
               <div className="flex items-center justify-between">
                 <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
                   Belief {i + 1}
                 </span>
                 <div className="flex gap-1.5">
-                  <Button variant="ghost" onClick={() => moveBelief(i, -1)} disabled={i === 0}>
+                  <Button
+                    variant="ghost"
+                    onClick={() => moveBelief(i, -1)}
+                    disabled={i === 0}
+                  >
                     ↑
                   </Button>
-                  <Button variant="ghost" onClick={() => moveBelief(i, 1)} disabled={i === state.beliefs.length - 1}>
+                  <Button
+                    variant="ghost"
+                    onClick={() => moveBelief(i, 1)}
+                    disabled={i === state.beliefs.length - 1}
+                  >
                     ↓
                   </Button>
                   <Button variant="danger" onClick={() => removeBelief(i)}>

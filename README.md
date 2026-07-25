@@ -7,8 +7,6 @@ Personal site of Edmund Lin Zhenming — AI Engineer.
 - Next.js 16 (App Router) · React 19 · TypeScript (strict)
 - Tailwind CSS v4
 - Supabase (data layer — projects, channels, career, hackathons, blog)
-- Inngest (background jobs)
-- Groq (AI assistant)
 - Clerk (auth)
 - Vercel (hosting)
 

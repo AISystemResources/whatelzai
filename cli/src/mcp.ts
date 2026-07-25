@@ -33,8 +33,7 @@ export async function callVerb(
     error?: { code?: number; message?: string };
   };
 
-  if (body.error)
-    throw new Error(`mcp error: ${JSON.stringify(body.error)}`);
+  if (body.error) throw new Error(`mcp error: ${JSON.stringify(body.error)}`);
 
   const text = body.result?.content?.[0]?.text;
   if (typeof text === "string") {

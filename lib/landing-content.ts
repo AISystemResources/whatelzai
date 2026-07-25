@@ -131,7 +131,12 @@ export async function getLandingSection(
 
 // Return every landing_content row for the admin/MCP overview.
 export async function listLandingSections(): Promise<
-  { key: string; body: unknown; published: boolean; updated_at: string | null }[]
+  {
+    key: string;
+    body: unknown;
+    published: boolean;
+    updated_at: string | null;
+  }[]
 > {
   const { data, error } = await supabaseAdmin
     .from("landing_content")

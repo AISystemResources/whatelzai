@@ -156,8 +156,8 @@ export default async function MembersPage({
                   <CheckoutButton offerId={offer.id} label="Subscribe →" />
                 ) : (
                   <div className="border border-dashed border-zinc-300 p-5 text-sm text-zinc-500">
-                    Checkout is being wired up. Come back once Stripe is live
-                    — you&rsquo;re signed in, so you&rsquo;ll be first through.
+                    Checkout is being wired up. Come back once Stripe is live —
+                    you&rsquo;re signed in, so you&rsquo;ll be first through.
                   </div>
                 )
               ) : (

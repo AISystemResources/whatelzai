@@ -19,8 +19,7 @@ export default function ProfileAboutPage() {
           My Profile
         </h1>
         <p className="mt-3 max-w-2xl text-zinc-600">
-          Everything that describes you across the site. Public surface lives
-          at{" "}
+          Everything that describes you across the site. Public surface lives at{" "}
           <Link
             href="/about"
             className="underline underline-offset-4 hover:text-zinc-900"

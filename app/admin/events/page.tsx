@@ -26,10 +26,7 @@ export default async function AdminEventsPage() {
   return (
     <div className="space-y-6">
       <nav className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
-        <Link
-          href="/admin/testimonials"
-          className="hover:text-zinc-900"
-        >
+        <Link href="/admin/testimonials" className="hover:text-zinc-900">
           ← Testimonials
         </Link>
       </nav>

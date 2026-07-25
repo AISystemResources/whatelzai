@@ -1,4 +1,4 @@
-import { supabaseAdmin } from './supabase-server';
+import { supabaseAdmin } from "./supabase-server";
 
 export type ResumeVersion = {
   id: string;
@@ -10,21 +10,22 @@ export type ResumeVersion = {
   updated_at: string;
 };
 
-
 export async function listResumeVersions(): Promise<ResumeVersion[]> {
   const { data, error } = await supabaseAdmin
-    .from('resume_versions')
-    .select('*')
-    .order('variant');
+    .from("resume_versions")
+    .select("*")
+    .order("variant");
   if (error) throw new Error(`listResumeVersions: ${error.message}`);
   return (data ?? []) as ResumeVersion[];
 }
 
-export async function getResumeVersion(variant: string): Promise<ResumeVersion | null> {
+export async function getResumeVersion(
+  variant: string,
+): Promise<ResumeVersion | null> {
   const { data, error } = await supabaseAdmin
-    .from('resume_versions')
-    .select('*')
-    .eq('variant', variant)
+    .from("resume_versions")
+    .select("*")
+    .eq("variant", variant)
     .maybeSingle();
   if (error) throw new Error(`getResumeVersion: ${error.message}`);
   return data as ResumeVersion | null;
@@ -35,10 +36,10 @@ export async function upsertResumeVersion(
   content: string,
 ): Promise<ResumeVersion> {
   const { data, error } = await supabaseAdmin
-    .from('resume_versions')
+    .from("resume_versions")
     .upsert(
       { variant, content, updated_at: new Date().toISOString() },
-      { onConflict: 'variant' },
+      { onConflict: "variant" },
     )
     .select()
     .single();
@@ -48,11 +49,15 @@ export async function upsertResumeVersion(
 
 // ── Section-level editing ─────────────────────────────────────────────────────
 
-function applySectionPatch(markdown: string, section: string, newContent: string): string {
-  const lines = markdown.split('\n');
+function applySectionPatch(
+  markdown: string,
+  section: string,
+  newContent: string,
+): string {
+  const lines = markdown.split("\n");
   const headingRe = /^(#{1,3})\s+(.+)$/;
   let startIdx = -1;
-  let headingLine = '';
+  let headingLine = "";
 
   for (let i = 0; i < lines.length; i++) {
     const m = headingRe.exec(lines[i]);
@@ -65,24 +70,36 @@ function applySectionPatch(markdown: string, section: string, newContent: string
 
   if (startIdx === -1) {
     // Section not found — append it
-    return markdown.trimEnd() + '\n\n## ' + section + '\n\n' + newContent.trimEnd() + '\n';
+    return (
+      markdown.trimEnd() +
+      "\n\n## " +
+      section +
+      "\n\n" +
+      newContent.trimEnd() +
+      "\n"
+    );
   }
 
-  const headingLevel = (headingLine.match(/^(#+)/)?.[1] ?? '##').length;
+  const headingLevel = (headingLine.match(/^(#+)/)?.[1] ?? "##").length;
   let endIdx = lines.length;
   for (let i = startIdx + 1; i < lines.length; i++) {
     const m = headingRe.exec(lines[i]);
-    if (m && m[1].length <= headingLevel) { endIdx = i; break; }
+    if (m && m[1].length <= headingLevel) {
+      endIdx = i;
+      break;
+    }
   }
 
   const result = [
     ...lines.slice(0, startIdx),
     headingLine,
-    '',
-    ...newContent.trimEnd().split('\n'),
-    '',
+    "",
+    ...newContent.trimEnd().split("\n"),
+    "",
     ...lines.slice(endIdx),
-  ].join('\n').replace(/\n{3,}/g, '\n\n');
+  ]
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n");
 
   return result;
 }
@@ -107,8 +124,12 @@ export async function appendResumeSection(
 ): Promise<{ variant: string; heading: string; updated_at: string }> {
   const version = await getResumeVersion(variant);
   if (!version) throw new Error(`Variant not found: ${variant}`);
-  const prefix = '#'.repeat(Math.min(Math.max(level, 1), 3));
-  const appended = version.content.trimEnd() + `\n\n${prefix} ${heading}\n\n` + content.trimEnd() + '\n';
+  const prefix = "#".repeat(Math.min(Math.max(level, 1), 3));
+  const appended =
+    version.content.trimEnd() +
+    `\n\n${prefix} ${heading}\n\n` +
+    content.trimEnd() +
+    "\n";
   const saved = await upsertResumeVersion(variant, appended);
   return { variant: saved.variant, heading, updated_at: saved.updated_at };
 }
@@ -119,8 +140,8 @@ export async function setResumeVersionPdf(
   pdf_path: string,
 ): Promise<void> {
   const { error } = await supabaseAdmin
-    .from('resume_versions')
+    .from("resume_versions")
     .update({ pdf_url, pdf_path, updated_at: new Date().toISOString() })
-    .eq('variant', variant);
+    .eq("variant", variant);
   if (error) throw new Error(`setResumeVersionPdf: ${error.message}`);
 }

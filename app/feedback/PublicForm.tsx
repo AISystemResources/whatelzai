@@ -382,9 +382,7 @@ export function PublicForm({
                 maxLength={500}
                 className={inputCls}
                 placeholder={
-                  i === 0
-                    ? "https://www.linkedin.com/in/…"
-                    : "https://…"
+                  i === 0 ? "https://www.linkedin.com/in/…" : "https://…"
                 }
               />
               <button

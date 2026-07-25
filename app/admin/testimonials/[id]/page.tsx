@@ -14,7 +14,10 @@ export default async function EditTestimonialPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [t, events] = await Promise.all([getTestimonial(id), listServiceEvents()]);
+  const [t, events] = await Promise.all([
+    getTestimonial(id),
+    listServiceEvents(),
+  ]);
   if (!t) notFound();
   return (
     <TestimonialForm

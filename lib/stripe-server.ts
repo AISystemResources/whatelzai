@@ -9,9 +9,7 @@ export function getStripe(): Stripe {
   if (cached) return cached;
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) {
-    throw new Error(
-      "Missing STRIPE_SECRET_KEY — set it in Vercel env vars.",
-    );
+    throw new Error("Missing STRIPE_SECRET_KEY — set it in Vercel env vars.");
   }
   cached = new Stripe(key);
   return cached;

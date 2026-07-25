@@ -9,7 +9,13 @@ const roles = [
       "Fraud Detection Model refactor — reduced script-running duration 20%",
       "Gig-worker Prediction Model — semi-supervised ML, 80% accuracy",
     ],
-    skills: ["Python", "Pandas", "Scikit-Learn", "K-Means", "Data Visualisation"],
+    skills: [
+      "Python",
+      "Pandas",
+      "Scikit-Learn",
+      "K-Means",
+      "Data Visualisation",
+    ],
   },
   {
     period: "May – Aug 2024",
@@ -21,7 +27,12 @@ const roles = [
       "Designed API request/response shapes for the core product (APIs sold to clients)",
       "Liaised across engineering, design, sales, and leadership to land the spec",
     ],
-    skills: ["API Design", "Product Discovery", "Stakeholder Management", "UX Collaboration"],
+    skills: [
+      "API Design",
+      "Product Discovery",
+      "Stakeholder Management",
+      "UX Collaboration",
+    ],
   },
   {
     period: "May – Aug 2025",
@@ -43,7 +54,12 @@ const roles = [
       "Token cost control and latency optimisation across both products",
       "Same two greenfield products, significantly deeper technical ownership",
     ],
-    skills: ["Model Migration", "Cost Optimisation", "Latency Tuning", "Production AI"],
+    skills: [
+      "Model Migration",
+      "Cost Optimisation",
+      "Latency Tuning",
+      "Production AI",
+    ],
   },
 ] as const;
 

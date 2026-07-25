@@ -10,7 +10,9 @@ export const ALLOWED_AVATAR_MIME: ReadonlyArray<string> = [
 
 const ALLOWED = new Set(ALLOWED_AVATAR_MIME);
 
-export async function uploadTestimonialAvatar(file: File): Promise<string | null> {
+export async function uploadTestimonialAvatar(
+  file: File,
+): Promise<string | null> {
   if (!file || file.size === 0) return null;
   if (file.size > MAX_AVATAR_BYTES) throw new Error("Avatar exceeds 5MB");
   if (!ALLOWED.has(file.type))

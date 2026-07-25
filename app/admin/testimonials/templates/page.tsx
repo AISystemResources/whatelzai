@@ -17,7 +17,8 @@ function statusPill(t: TestimonialTemplate): { label: string; tone: string } {
   if (ok) return { label: "open", tone: "bg-emerald-100 text-emerald-800" };
   if (reason === "expired")
     return { label: "expired", tone: "bg-zinc-100 text-zinc-500" };
-  if (reason === "full") return { label: "full", tone: "bg-amber-100 text-amber-800" };
+  if (reason === "full")
+    return { label: "full", tone: "bg-amber-100 text-amber-800" };
   return { label: "paused", tone: "bg-zinc-100 text-zinc-500" };
 }
 

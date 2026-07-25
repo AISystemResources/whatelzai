@@ -1,22 +1,22 @@
-import { NextRequest, NextResponse } from 'next/server';
-import chromium from '@sparticuz/chromium-min';
-import puppeteer from 'puppeteer-core';
-import { marked } from 'marked';
-import { getResumeVersion, setResumeVersionPdf } from '@/lib/resume-versions';
-import { supabaseAdmin } from '@/lib/supabase-server';
+import { NextRequest, NextResponse } from "next/server";
+import chromium from "@sparticuz/chromium-min";
+import puppeteer from "puppeteer-core";
+import { marked } from "marked";
+import { getResumeVersion, setResumeVersionPdf } from "@/lib/resume-versions";
+import { supabaseAdmin } from "@/lib/supabase-server";
 
 export const maxDuration = 60;
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 // Sparticuz publishes versioned Chromium tarballs; keep in sync with chromium-min's peer range.
 const CHROMIUM_RELEASE_URL =
-  'https://github.com/Sparticuz/chromium/releases/download/v133.0.0/chromium-v133.0.0-pack.tar';
+  "https://github.com/Sparticuz/chromium/releases/download/v133.0.0/chromium-v133.0.0-pack.tar";
 
 async function getExecutablePath(): Promise<string> {
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === "development") {
     return (
       process.env.CHROME_EXECUTABLE_PATH ??
-      '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
     );
   }
   return chromium.executablePath(CHROMIUM_RELEASE_URL);
@@ -130,19 +130,24 @@ export async function POST(
   const decoded = decodeURIComponent(variant);
 
   const version = await getResumeVersion(decoded);
-  if (!version) return NextResponse.json({ error: 'Variant not found' }, { status: 404 });
-  if (!version.content.trim()) return NextResponse.json({ error: 'No content to export' }, { status: 400 });
+  if (!version)
+    return NextResponse.json({ error: "Variant not found" }, { status: 404 });
+  if (!version.content.trim())
+    return NextResponse.json(
+      { error: "No content to export" },
+      { status: 400 },
+    );
 
   // markdown → HTML
   const htmlBody = marked.parse(version.content, { gfm: true }) as string;
   const fullHtml = buildHtml(htmlBody);
 
   // Launch Puppeteer
-  const isDev = process.env.NODE_ENV === 'development';
+  const isDev = process.env.NODE_ENV === "development";
   const executablePath = await getExecutablePath();
 
   const browser = await puppeteer.launch({
-    args: isDev ? ['--no-sandbox'] : chromium.args,
+    args: isDev ? ["--no-sandbox"] : chromium.args,
     defaultViewport: null,
     executablePath,
     headless: true,
@@ -151,11 +156,11 @@ export async function POST(
   let pdfBuffer: Buffer;
   try {
     const page = await browser.newPage();
-    await page.setContent(fullHtml, { waitUntil: 'networkidle0' });
+    await page.setContent(fullHtml, { waitUntil: "networkidle0" });
     const raw = await page.pdf({
-      format: 'Letter',
+      format: "Letter",
       printBackground: false,
-      margin: { top: '0.5in', right: '0.6in', bottom: '0.5in', left: '0.6in' },
+      margin: { top: "0.5in", right: "0.6in", bottom: "0.5in", left: "0.6in" },
     });
     pdfBuffer = Buffer.from(raw);
   } finally {
@@ -163,20 +168,23 @@ export async function POST(
   }
 
   // Upload to Supabase Storage
-  const slug = decoded.toLowerCase().replace(/\s+/g, '-');
+  const slug = decoded.toLowerCase().replace(/\s+/g, "-");
   const path = `${slug}/resume-${Date.now()}.pdf`;
 
   const { error: uploadError } = await supabaseAdmin.storage
-    .from('resumes')
-    .upload(path, pdfBuffer, { contentType: 'application/pdf', upsert: true });
+    .from("resumes")
+    .upload(path, pdfBuffer, { contentType: "application/pdf", upsert: true });
 
-  if (uploadError) return NextResponse.json({ error: uploadError.message }, { status: 500 });
+  if (uploadError)
+    return NextResponse.json({ error: uploadError.message }, { status: 500 });
 
   // Build public URL with human-readable download filename
-  const downloadName = `EdmundLin_${decoded.replace(/\s+/g, '')}_Resume.pdf`;
-  const { data: urlData } = supabaseAdmin.storage.from('resumes').getPublicUrl(path, {
-    download: downloadName,
-  });
+  const downloadName = `EdmundLin_${decoded.replace(/\s+/g, "")}_Resume.pdf`;
+  const { data: urlData } = supabaseAdmin.storage
+    .from("resumes")
+    .getPublicUrl(path, {
+      download: downloadName,
+    });
   const pdf_url = urlData.publicUrl;
 
   await setResumeVersionPdf(decoded, pdf_url, path);

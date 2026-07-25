@@ -164,7 +164,8 @@ export default async function ServiceDetailPage({
   const primaryCtaHref =
     s.cta_url ??
     `mailto:${site.email}?subject=${encodeURIComponent(`Reserve my ${s.name} spot`)}`;
-  const hasFounding = s.pricing?.founding && s.pricing.founding.public !== false;
+  const hasFounding =
+    s.pricing?.founding && s.pricing.founding.public !== false;
 
   return (
     <main>

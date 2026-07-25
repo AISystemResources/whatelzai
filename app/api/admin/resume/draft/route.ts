@@ -1,24 +1,26 @@
-import { NextResponse } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
-import { readDoc } from '@/lib/website-docs';
-import { listUserProfile } from '@/lib/supabase-jobs';
+import { NextResponse } from "next/server";
+import Anthropic from "@anthropic-ai/sdk";
+import { readDoc } from "@/lib/website-docs";
+import { listUserProfile } from "@/lib/supabase-jobs";
 
 const client = new Anthropic();
 
 export async function POST(req: Request) {
-  const { narrative = 'AI Engineer' } = await req.json() as { narrative?: string };
+  const { narrative = "AI Engineer" } = (await req.json()) as {
+    narrative?: string;
+  };
 
   const [mystory, profile] = await Promise.all([
-    readDoc('MYSTORY'),
+    readDoc("MYSTORY"),
     listUserProfile(),
   ]);
 
   const profileText = profile
-    .map(p => `${p.category}/${p.key}: ${p.value}`)
-    .join('\n');
+    .map((p) => `${p.category}/${p.key}: ${p.value}`)
+    .join("\n");
 
   const message = await client.messages.create({
-    model: 'claude-sonnet-4-6',
+    model: "claude-sonnet-4-6",
     max_tokens: 4096,
     system: `You are a professional resume writer. You write concise, impactful resumes for software engineers.
 Rules:
@@ -43,23 +45,26 @@ Rules:
   "education": [{ "institution": "string", "degree": "string", "period": "string" }],
   "achievements": ["string", ...]
 }`,
-    messages: [{
-      role: 'user',
-      content: `MYSTORY:\n${mystory}\n\nPROFILE DATA:\n${profileText}\n\nNarrative angle: ${narrative}\n\nDraft the resume JSON now.`,
-    }],
+    messages: [
+      {
+        role: "user",
+        content: `MYSTORY:\n${mystory}\n\nPROFILE DATA:\n${profileText}\n\nNarrative angle: ${narrative}\n\nDraft the resume JSON now.`,
+      },
+    ],
   });
 
-  const text = message.content[0].type === 'text' ? message.content[0].text : '';
+  const text =
+    message.content[0].type === "text" ? message.content[0].text : "";
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
-    return NextResponse.json({ error: 'ai_parse_failed' }, { status: 500 });
+    return NextResponse.json({ error: "ai_parse_failed" }, { status: 500 });
   }
 
   let structured: object;
   try {
     structured = JSON.parse(jsonMatch[0]);
   } catch {
-    return NextResponse.json({ error: 'ai_parse_failed' }, { status: 500 });
+    return NextResponse.json({ error: "ai_parse_failed" }, { status: 500 });
   }
 
   return NextResponse.json({ structured });

@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 function getOrCreateDeviceId(): string {
-  const key = 'whatelz_device_id';
+  const key = "whatelz_device_id";
   let id = localStorage.getItem(key);
   if (!id) {
     id = crypto.randomUUID();
@@ -19,12 +19,14 @@ export function DeviceTracker() {
   useEffect(() => {
     try {
       const device_id = getOrCreateDeviceId();
-      fetch('/api/track', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      fetch("/api/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ device_id }),
         keepalive: true,
-      }).catch(() => {/* silent — tracking is best-effort */});
+      }).catch(() => {
+        /* silent — tracking is best-effort */
+      });
     } catch {
       // localStorage may be blocked in some privacy modes
     }

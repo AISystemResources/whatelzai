@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import { useReducedMotion } from 'framer-motion';
+import { useEffect, useRef, useState } from "react";
+import { useReducedMotion } from "framer-motion";
 
 // ── Timing (ms) ────────────────────────────────────────────────────
 const TYPE_MS = 160;
@@ -9,69 +9,69 @@ const CARD_STAGGER = 320;
 const IDLE_MS = 20_000;
 const BS_MS = 60;
 
-const BRAND = 'whatELZ.ai';
+const BRAND = "whatELZ.ai";
 
 // ── Social results ────────────────────────────────────────────────
 const SOCIALS = [
   {
-    name: 'LinkedIn',
-    handle: 'whatelzai',
-    url: 'https://www.linkedin.com/in/whatelzai/',
-    tagline: 'the professional slice',
+    name: "LinkedIn",
+    handle: "whatelzai",
+    url: "https://www.linkedin.com/in/whatelzai/",
+    tagline: "the professional slice",
     tilt: -3,
-    color: '#0A66C2',
+    color: "#0A66C2",
     Icon: LinkedInIcon,
   },
   {
-    name: 'YouTube',
-    handle: '@whatelzai',
-    url: 'https://www.youtube.com/@whatelzai',
-    tagline: 'AI systems, on camera',
+    name: "YouTube",
+    handle: "@whatelzai",
+    url: "https://www.youtube.com/@whatelzai",
+    tagline: "AI systems, on camera",
     tilt: 2,
-    color: '#FF0000',
+    color: "#FF0000",
     Icon: YouTubeIcon,
   },
   {
-    name: 'Medium',
-    handle: '@whatelz.ai',
-    url: 'https://medium.com/@whatelz.ai',
-    tagline: 'long-form essays + build post-mortems',
+    name: "Medium",
+    handle: "@whatelz.ai",
+    url: "https://medium.com/@whatelz.ai",
+    tagline: "long-form essays + build post-mortems",
     tilt: -1,
-    color: '#000000',
+    color: "#000000",
     Icon: MediumIcon,
   },
   {
-    name: 'X',
-    handle: '@whatelz_ai',
-    url: 'https://x.com/whatelz_ai',
-    tagline: 'shipping in public, one thought at a time',
+    name: "X",
+    handle: "@whatelz_ai",
+    url: "https://x.com/whatelz_ai",
+    tagline: "shipping in public, one thought at a time",
     tilt: 4,
-    color: '#000000',
+    color: "#000000",
     Icon: XIcon,
   },
   {
-    name: 'Instagram',
-    handle: 'whatelz.ai',
-    url: 'https://www.instagram.com/whatelz.ai/',
-    tagline: 'life outside the terminal',
+    name: "Instagram",
+    handle: "whatelz.ai",
+    url: "https://www.instagram.com/whatelz.ai/",
+    tagline: "life outside the terminal",
     tilt: -2,
-    color: '#E4405F',
+    color: "#E4405F",
     Icon: InstagramIcon,
   },
   {
-    name: 'GitHub',
-    handle: 'whatelzai',
-    url: 'https://github.com/whatelzai',
-    tagline: 'the code, uncut',
+    name: "GitHub",
+    handle: "whatelzai",
+    url: "https://github.com/whatelzai",
+    tagline: "the code, uncut",
     tilt: 3,
-    color: '#181717',
+    color: "#181717",
     Icon: GitHubIcon,
   },
 ] as const;
 
 export function Hero() {
   const reduced = useReducedMotion();
-  const [text, setText] = useState('');
+  const [text, setText] = useState("");
   const [visibleCards, setVisibleCards] = useState(0);
   const [caretOn, setCaretOn] = useState(true);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -98,7 +98,7 @@ export function Hero() {
 
     const runCycle = () => {
       // Phase 1 — type
-      setText('');
+      setText("");
       setVisibleCards(0);
       for (let i = 1; i <= BRAND.length; i++) {
         push(() => setText(BRAND.slice(0, i)), i * TYPE_MS);
@@ -117,7 +117,10 @@ export function Hero() {
       const bsStart = fadeEnd + IDLE_MS;
       push(() => setVisibleCards(0), bsStart);
       for (let i = 1; i <= BRAND.length; i++) {
-        push(() => setText(BRAND.slice(0, BRAND.length - i)), bsStart + i * BS_MS);
+        push(
+          () => setText(BRAND.slice(0, BRAND.length - i)),
+          bsStart + i * BS_MS,
+        );
       }
       const cycleEnd = bsStart + BRAND.length * BS_MS;
 
@@ -140,7 +143,10 @@ export function Hero() {
       className="relative -mt-14 flex min-h-screen items-center overflow-hidden border-b border-zinc-200 px-6 py-16 sm:px-8"
     >
       {/* Ambient blobs */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10"
+      >
         <div className="hero-blob hero-blob-1" />
         <div className="hero-blob hero-blob-2" />
       </div>
@@ -152,10 +158,14 @@ export function Hero() {
             <SearchIcon className="h-6 w-6 shrink-0 text-zinc-400 sm:h-8 sm:w-8" />
             <div className="flex min-w-0 flex-1 justify-center">
               <span className="font-mono text-3xl leading-none font-bold text-zinc-900 sm:text-6xl md:text-7xl">
-                {text.split('').map((ch, i) => (
+                {text.split("").map((ch, i) => (
                   <span
                     key={i}
-                    style={/^[A-Z]$/.test(ch) ? { color: 'var(--accent-text)' } : undefined}
+                    style={
+                      /^[A-Z]$/.test(ch)
+                        ? { color: "var(--accent-text)" }
+                        : undefined
+                    }
                   >
                     {ch}
                   </span>
@@ -163,7 +173,7 @@ export function Hero() {
                 <span
                   aria-hidden="true"
                   className={`ml-[3px] inline-block h-[0.9em] w-[4px] translate-y-[3px] bg-zinc-900 align-middle sm:w-[6px] ${
-                    caretOn ? 'opacity-100' : 'opacity-0'
+                    caretOn ? "opacity-100" : "opacity-0"
                   }`}
                 />
               </span>
@@ -191,7 +201,9 @@ export function Hero() {
               index={i}
               visible={i < visibleCards}
               reduced={!!reduced}
-              onHoverChange={(h) => setHoveredIndex(h ? i : (prev) => (prev === i ? null : prev))}
+              onHoverChange={(h) =>
+                setHoveredIndex(h ? i : (prev) => (prev === i ? null : prev))
+              }
             />
           ))}
         </div>
@@ -203,20 +215,24 @@ export function Hero() {
             href="#projects"
             aria-label="Scroll to see projects"
             className={`absolute flex flex-col items-center gap-2 font-mono text-[10px] tracking-widest text-zinc-400 uppercase transition-opacity duration-200 hover:text-zinc-700 ${
-              hoveredIndex !== null ? 'opacity-0 pointer-events-none' : 'opacity-100'
+              hoveredIndex !== null
+                ? "opacity-0 pointer-events-none"
+                : "opacity-100"
             }`}
           >
             <span>scroll</span>
-            <span aria-hidden="true" className="scroll-bounce">↓</span>
+            <span aria-hidden="true" className="scroll-bounce">
+              ↓
+            </span>
           </a>
           {/* Hover tooltip pill */}
           <div
             aria-hidden={hoveredIndex === null}
             className={`absolute whitespace-nowrap rounded-full border-2 border-[color:var(--accent)] bg-white px-5 py-2.5 font-mono text-[11px] tracking-wide text-zinc-800 shadow-sm transition-opacity duration-200 sm:text-xs ${
-              hoveredIndex !== null ? 'opacity-100' : 'opacity-0'
+              hoveredIndex !== null ? "opacity-100" : "opacity-0"
             }`}
           >
-            {hoveredIndex !== null ? SOCIALS[hoveredIndex].tagline : ' '}
+            {hoveredIndex !== null ? SOCIALS[hoveredIndex].tagline : " "}
           </div>
         </div>
       </div>
@@ -243,10 +259,10 @@ function SocialLogo({
   const { Icon, name, handle, url, tilt, color } = social;
 
   const style: React.CSSProperties & Record<string, string | number> = {
-    '--tilt': `${tilt}deg`,
-    '--wiggle-dur': `${3.4 + (index % 3) * 0.6}s`,
-    '--wiggle-delay': `${(index * 0.4) % 2}s`,
-    '--glow': color,
+    "--tilt": `${tilt}deg`,
+    "--wiggle-dur": `${3.4 + (index % 3) * 0.6}s`,
+    "--wiggle-delay": `${(index * 0.4) % 2}s`,
+    "--glow": color,
   };
 
   return (
@@ -256,8 +272,8 @@ function SocialLogo({
       rel="noopener noreferrer"
       aria-label={`${name} — ${handle}`}
       style={style}
-      data-reduced={reduced ? 'true' : undefined}
-      data-visible={visible ? 'true' : 'false'}
+      data-reduced={reduced ? "true" : undefined}
+      data-visible={visible ? "true" : "false"}
       onMouseEnter={() => onHoverChange(true)}
       onMouseLeave={() => onHoverChange(false)}
       onFocus={() => onHoverChange(true)}
@@ -277,7 +293,15 @@ type IconProps = React.SVGProps<SVGSVGElement>;
 
 function SearchIcon(props: IconProps) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
       <circle cx="11" cy="11" r="8" />
       <path d="m21 21-4.35-4.35" />
     </svg>
@@ -286,7 +310,15 @@ function SearchIcon(props: IconProps) {
 
 function ArrowIcon(props: IconProps) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
       <path d="M5 12h14" />
       <path d="m13 6 6 6-6 6" />
     </svg>

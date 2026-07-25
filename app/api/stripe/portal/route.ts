@@ -5,12 +5,14 @@ import { findCustomerIdForClerkUser } from "@/lib/subscription";
 
 export const dynamic = "force-dynamic";
 
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://whatelz.ai";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://whatelz.ai";
 
 export async function POST() {
   if (!isStripeConfigured()) {
-    return NextResponse.json({ error: "Stripe is not configured yet." }, { status: 503 });
+    return NextResponse.json(
+      { error: "Stripe is not configured yet." },
+      { status: 503 },
+    );
   }
   const { userId } = await auth();
   if (!userId) {

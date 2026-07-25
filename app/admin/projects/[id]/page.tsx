@@ -1,20 +1,22 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
-import { getProject } from '@/lib/projects';
-import { supabaseAdmin } from '@/lib/supabase-server';
-import { ContentEditor } from '@/components/admin/ContentEditor';
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { getProject } from "@/lib/projects";
+import { supabaseAdmin } from "@/lib/supabase-server";
+import { ContentEditor } from "@/components/admin/ContentEditor";
 
-export const metadata: Metadata = { title: 'Edit Project Content — whatelz.ai Admin' };
+export const metadata: Metadata = {
+  title: "Edit Project Content — whatelz.ai Admin",
+};
 
 type Props = { params: Promise<{ id: string }> };
 
 async function saveContent(id: string, content: string) {
-  'use server';
+  "use server";
   await supabaseAdmin
-    .from('projects')
+    .from("projects")
     .update({ content, updated_at: new Date().toISOString() })
-    .eq('id', id);
+    .eq("id", id);
 }
 
 export default async function AdminProjectContentPage({ params }: Props) {
@@ -31,14 +33,22 @@ export default async function AdminProjectContentPage({ params }: Props) {
         >
           ← Projects
         </Link>
-        <p className="mt-4 font-mono text-xs uppercase tracking-widest text-zinc-400">Profile · Projects</p>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-zinc-900">{project.name}</h1>
-        {project.tagline && <p className="text-sm text-zinc-500">{project.tagline}</p>}
-        <p className="mt-1 font-mono text-xs text-zinc-400">/projects/{project.slug}</p>
+        <p className="mt-4 font-mono text-xs uppercase tracking-widest text-zinc-400">
+          Profile · Projects
+        </p>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-zinc-900">
+          {project.name}
+        </h1>
+        {project.tagline && (
+          <p className="text-sm text-zinc-500">{project.tagline}</p>
+        )}
+        <p className="mt-1 font-mono text-xs text-zinc-400">
+          /projects/{project.slug}
+        </p>
       </div>
 
       <ContentEditor
-        initial={project.content ?? ''}
+        initial={project.content ?? ""}
         onSave={saveContent.bind(null, id)}
         label="Case Study"
       />

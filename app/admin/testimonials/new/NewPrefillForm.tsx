@@ -44,7 +44,9 @@ export function NewPrefillForm({ events }: { events: ServiceEvent[] }) {
   }
 
   function updateAffiliation(i: number, patch: Partial<Affiliation>) {
-    setAffiliations(affiliations.map((a, j) => (i === j ? { ...a, ...patch } : a)));
+    setAffiliations(
+      affiliations.map((a, j) => (i === j ? { ...a, ...patch } : a)),
+    );
   }
   function addAffiliation() {
     setAffiliations([...affiliations, { role: "", company: "" }]);
@@ -61,7 +63,9 @@ export function NewPrefillForm({ events }: { events: ServiceEvent[] }) {
     setStatus("saving");
     start(async () => {
       try {
-        const affs = affiliations.filter((a) => a.role.trim() || a.company.trim());
+        const affs = affiliations.filter(
+          (a) => a.role.trim() || a.company.trim(),
+        );
         await createPrefillTestimonial({
           category,
           author_name: author_name || undefined,
@@ -119,12 +123,16 @@ export function NewPrefillForm({ events }: { events: ServiceEvent[] }) {
                 <TextInput
                   placeholder="Role"
                   value={aff.role}
-                  onChange={(e) => updateAffiliation(i, { role: e.target.value })}
+                  onChange={(e) =>
+                    updateAffiliation(i, { role: e.target.value })
+                  }
                 />
                 <TextInput
                   placeholder="Company / team"
                   value={aff.company}
-                  onChange={(e) => updateAffiliation(i, { company: e.target.value })}
+                  onChange={(e) =>
+                    updateAffiliation(i, { company: e.target.value })
+                  }
                 />
                 <button
                   type="button"

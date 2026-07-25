@@ -1,7 +1,14 @@
 export type ApplicationStatus =
-  | 'draft' | 'ready' | 'submitted' | 'acknowledged'
-  | 'interviewing' | 'offered' | 'accepted' | 'rejected'
-  | 'withdrawn' | 'ghosted';
+  | "draft"
+  | "ready"
+  | "submitted"
+  | "acknowledged"
+  | "interviewing"
+  | "offered"
+  | "accepted"
+  | "rejected"
+  | "withdrawn"
+  | "ghosted";
 
 export type JobListing = {
   readonly id: string;
@@ -12,14 +19,20 @@ export type JobListing = {
   readonly company: string;
   readonly role: string;
   readonly location: string | null;
-  readonly remote_type: 'onsite' | 'hybrid' | 'remote' | null;
+  readonly remote_type: "onsite" | "hybrid" | "remote" | null;
   readonly salary_min: number | null;
   readonly salary_max: number | null;
   readonly salary_currency: string;
   readonly description: string | null;
   readonly match_score: number | null;
   readonly score_reasoning: string | null;
-  readonly status: 'new' | 'shortlisted' | 'applying' | 'applied' | 'rejected_by_user' | 'expired';
+  readonly status:
+    | "new"
+    | "shortlisted"
+    | "applying"
+    | "applied"
+    | "rejected_by_user"
+    | "expired";
   readonly discovered_at: string;
 };
 
@@ -38,7 +51,10 @@ export type Application = {
   readonly cover_letter_pdf_url: string | null;
   readonly created_at: string;
   readonly updated_at: string;
-  readonly job_listings?: Pick<JobListing, 'company' | 'role' | 'external_url'> | null;
+  readonly job_listings?: Pick<
+    JobListing,
+    "company" | "role" | "external_url"
+  > | null;
 };
 
 export type ResumeStructured = {
@@ -51,7 +67,11 @@ export type ResumeStructured = {
     readonly bullets: string[];
     readonly technologies: string[];
   }>;
-  readonly education: Array<{ readonly institution: string; readonly degree: string; readonly period: string }>;
+  readonly education: Array<{
+    readonly institution: string;
+    readonly degree: string;
+    readonly period: string;
+  }>;
   readonly achievements: string[];
 };
 
@@ -74,7 +94,7 @@ export type Company = {
   readonly ats_type: string | null;
   readonly ats_slug: string | null;
   readonly priority: number;
-  readonly status: 'active' | 'paused' | 'archived';
+  readonly status: "active" | "paused" | "archived";
 };
 
 export type UserProfileEntry = {

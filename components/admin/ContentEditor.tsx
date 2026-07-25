@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useTransition } from 'react';
-import { ContentRenderer } from '@/components/shell/ContentRenderer';
+import { useState, useTransition } from "react";
+import { ContentRenderer } from "@/components/shell/ContentRenderer";
 
 type Props = {
   initial: string;
@@ -9,7 +9,11 @@ type Props = {
   label?: string;
 };
 
-export function ContentEditor({ initial, onSave, label = 'Case Study' }: Props) {
+export function ContentEditor({
+  initial,
+  onSave,
+  label = "Case Study",
+}: Props) {
   const [content, setContent] = useState(initial);
   const [preview, setPreview] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -29,13 +33,13 @@ export function ContentEditor({ initial, onSave, label = 'Case Study' }: Props) 
         <div className="flex gap-1 rounded border border-zinc-200 p-0.5">
           <button
             onClick={() => setPreview(false)}
-            className={`rounded px-3 py-1 font-mono text-xs transition-colors ${!preview ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:text-zinc-900'}`}
+            className={`rounded px-3 py-1 font-mono text-xs transition-colors ${!preview ? "bg-zinc-900 text-white" : "text-zinc-500 hover:text-zinc-900"}`}
           >
             Edit
           </button>
           <button
             onClick={() => setPreview(true)}
-            className={`rounded px-3 py-1 font-mono text-xs transition-colors ${preview ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:text-zinc-900'}`}
+            className={`rounded px-3 py-1 font-mono text-xs transition-colors ${preview ? "bg-zinc-900 text-white" : "text-zinc-500 hover:text-zinc-900"}`}
           >
             Preview
           </button>
@@ -45,7 +49,7 @@ export function ContentEditor({ initial, onSave, label = 'Case Study' }: Props) 
           disabled={pending}
           className="border border-zinc-900 px-4 py-1.5 font-mono text-xs uppercase tracking-widest text-zinc-900 transition-colors hover:bg-zinc-900 hover:text-white disabled:opacity-40"
         >
-          {pending ? 'Saving…' : saved ? 'Saved ✓' : 'Save'}
+          {pending ? "Saving…" : saved ? "Saved ✓" : "Save"}
         </button>
       </div>
 
@@ -60,14 +64,16 @@ export function ContentEditor({ initial, onSave, label = 'Case Study' }: Props) 
       ) : (
         <textarea
           value={content}
-          onChange={e => setContent(e.target.value)}
+          onChange={(e) => setContent(e.target.value)}
           rows={24}
           placeholder={`Write the ${label.toLowerCase()} in Markdown…`}
           className="w-full resize-y rounded border border-zinc-200 bg-zinc-50 p-4 font-mono text-sm leading-relaxed text-zinc-800 placeholder:text-zinc-300 focus:border-zinc-400 focus:outline-none"
         />
       )}
       <p className="font-mono text-[10px] text-zinc-400">
-        Markdown + GFM supported · <code className="text-[10px]">{'<YouTube id="..." />'}</code> for video embeds
+        Markdown + GFM supported ·{" "}
+        <code className="text-[10px]">{'<YouTube id="..." />'}</code> for video
+        embeds
       </p>
     </div>
   );

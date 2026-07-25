@@ -1,11 +1,15 @@
-import type { Leadership } from '@/lib/leadership';
+import type { Leadership } from "@/lib/leadership";
 
 interface Props {
   entries: Leadership[];
 }
 
 function formatPeriod(start: string, end: string | null): string {
-  const fmt = (d: string) => new Date(d).toLocaleDateString('en-SG', { month: 'short', year: 'numeric' });
+  const fmt = (d: string) =>
+    new Date(d).toLocaleDateString("en-SG", {
+      month: "short",
+      year: "numeric",
+    });
   return end ? `${fmt(start)} – ${fmt(end)}` : `${fmt(start)} – Present`;
 }
 
@@ -21,7 +25,10 @@ export function LeadershipSection({ entries }: Props) {
     >
       <div className="mx-auto max-w-6xl">
         <header className="mb-12 flex items-baseline justify-between">
-          <h2 id="leadership-heading" className="text-2xl font-semibold text-zinc-900">
+          <h2
+            id="leadership-heading"
+            className="text-2xl font-semibold text-zinc-900"
+          >
             Leadership
           </h2>
           <p className="hidden font-mono text-[10px] uppercase tracking-widest text-zinc-400 sm:block">
@@ -35,9 +42,9 @@ export function LeadershipSection({ entries }: Props) {
               <div className="mb-4 flex items-center gap-3">
                 <span
                   className="font-mono text-[10px] uppercase tracking-widest"
-                  style={{ color: 'var(--accent-text)' }}
+                  style={{ color: "var(--accent-text)" }}
                 >
-                  {String(i + 1).padStart(2, '0')}
+                  {String(i + 1).padStart(2, "0")}
                 </span>
                 <span className="h-px flex-1 bg-zinc-300" aria-hidden="true" />
               </div>
@@ -53,7 +60,11 @@ export function LeadershipSection({ entries }: Props) {
               <p className="mt-1 text-sm text-zinc-600">{entry.role}</p>
               {entry.description && (
                 <p className="mt-3 text-sm leading-relaxed text-zinc-700">
-                  {entry.description.split('\n').find(l => l.trim())?.replace(/^[-*•]\s*/, '').trim()}
+                  {entry.description
+                    .split("\n")
+                    .find((l) => l.trim())
+                    ?.replace(/^[-*•]\s*/, "")
+                    .trim()}
                 </p>
               )}
             </li>

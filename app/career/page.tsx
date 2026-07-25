@@ -1,9 +1,9 @@
-import { listCareer } from '@/lib/career';
-import type { CareerEntry } from '@/lib/career';
-import { PageShell } from '@/components/shell/PageShell';
-import { CareerList } from './_components/CareerList';
+import { listCareer } from "@/lib/career";
+import type { CareerEntry } from "@/lib/career";
+import { PageShell } from "@/components/shell/PageShell";
+import { CareerList } from "./_components/CareerList";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function CareerPage({
   searchParams,

@@ -1,2 +1,2 @@
-import { Inngest } from 'inngest';
-export const inngest = new Inngest({ id: 'whatelz' });
+import { Inngest } from "inngest";
+export const inngest = new Inngest({ id: "whatelz" });

@@ -1,27 +1,37 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import type { CareerEntry } from '@/lib/career';
+import { useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import type { CareerEntry } from "@/lib/career";
 
 function blinkRow(el: HTMLElement, onDone: () => void) {
-  const flash = 'rgba(250,204,21,0.35)';
-  el.style.transition = 'background-color 200ms ease';
+  const flash = "rgba(250,204,21,0.35)";
+  el.style.transition = "background-color 200ms ease";
   el.style.backgroundColor = flash;
-  setTimeout(() => { el.style.backgroundColor = ''; }, 300);
-  setTimeout(() => { el.style.backgroundColor = flash; }, 600);
   setTimeout(() => {
-    el.style.backgroundColor = '';
-    el.style.transition = '';
+    el.style.backgroundColor = "";
+  }, 300);
+  setTimeout(() => {
+    el.style.backgroundColor = flash;
+  }, 600);
+  setTimeout(() => {
+    el.style.backgroundColor = "";
+    el.style.transition = "";
     onDone();
   }, 1000);
 }
 
 function formatDateRange(start: string, end: string | null): string {
-  const startDate = new Date(start).toLocaleDateString('en-SG', { month: 'short', year: 'numeric' });
+  const startDate = new Date(start).toLocaleDateString("en-SG", {
+    month: "short",
+    year: "numeric",
+  });
   if (!end) return `${startDate} – Present`;
-  const endDate = new Date(end).toLocaleDateString('en-SG', { month: 'short', year: 'numeric' });
+  const endDate = new Date(end).toLocaleDateString("en-SG", {
+    month: "short",
+    year: "numeric",
+  });
   return `${startDate} – ${endDate}`;
 }
 
@@ -37,9 +47,11 @@ export function CareerList({ slugOrder, bySlug, highlight }: Props) {
   useEffect(() => {
     if (!highlight) return;
     const t = setTimeout(() => {
-      const el = document.querySelector<HTMLElement>(`[data-career-slug="${highlight}"]`);
+      const el = document.querySelector<HTMLElement>(
+        `[data-career-slug="${highlight}"]`,
+      );
       if (!el) return;
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
       const dest = `/career/${highlight}`;
       setTimeout(() => blinkRow(el, () => router.push(dest)), 400);
     }, 350);
@@ -51,19 +63,32 @@ export function CareerList({ slugOrder, bySlug, highlight }: Props) {
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-zinc-200">
-            <th className="pb-3 text-left font-mono text-[10px] uppercase tracking-widest text-zinc-400 pr-8">Company</th>
-            <th className="pb-3 text-left font-mono text-[10px] uppercase tracking-widest text-zinc-400 pr-8">Role</th>
-            <th className="pb-3 text-left font-mono text-[10px] uppercase tracking-widest text-zinc-400">Period</th>
+            <th className="pb-3 text-left font-mono text-[10px] uppercase tracking-widest text-zinc-400 pr-8">
+              Company
+            </th>
+            <th className="pb-3 text-left font-mono text-[10px] uppercase tracking-widest text-zinc-400 pr-8">
+              Role
+            </th>
+            <th className="pb-3 text-left font-mono text-[10px] uppercase tracking-widest text-zinc-400">
+              Period
+            </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-zinc-100">
-          {slugOrder.map(slug => {
+          {slugOrder.map((slug) => {
             const roles = bySlug[slug];
             const latest = roles[0];
             return (
-              <tr key={slug} data-career-slug={slug} className="hover:bg-zinc-50 transition-colors">
+              <tr
+                key={slug}
+                data-career-slug={slug}
+                className="hover:bg-zinc-50 transition-colors"
+              >
                 <td className="py-4 pr-8 font-medium text-zinc-900 whitespace-nowrap">
-                  <Link href={`/career/${slug}`} className="hover:underline underline-offset-2">
+                  <Link
+                    href={`/career/${slug}`}
+                    className="hover:underline underline-offset-2"
+                  >
                     {latest.company}
                   </Link>
                 </td>
@@ -71,7 +96,9 @@ export function CareerList({ slugOrder, bySlug, highlight }: Props) {
                   {roles.length > 1 ? (
                     <span>
                       {latest.role}
-                      <span className="ml-1.5 font-mono text-[10px] text-zinc-400">+{roles.length - 1} more</span>
+                      <span className="ml-1.5 font-mono text-[10px] text-zinc-400">
+                        +{roles.length - 1} more
+                      </span>
                     </span>
                   ) : (
                     latest.role

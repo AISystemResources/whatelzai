@@ -26,13 +26,16 @@ export const listActiveOffers = cache(async (): Promise<StripeOffer[]> => {
     .eq("active", true)
     .order("sort_order", { ascending: true });
   if (error) {
-    if (error.code === "42P01" || /schema cache/i.test(error.message)) return [];
+    if (error.code === "42P01" || /schema cache/i.test(error.message))
+      return [];
     throw new Error(`listActiveOffers: ${error.message}`);
   }
   return (data ?? []) as StripeOffer[];
 });
 
-export async function getOfferBySlug(slug: string): Promise<StripeOffer | null> {
+export async function getOfferBySlug(
+  slug: string,
+): Promise<StripeOffer | null> {
   const { data, error } = await supabaseAdmin
     .from("stripe_offers")
     .select("*")

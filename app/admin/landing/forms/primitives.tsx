@@ -24,9 +24,7 @@ export function Field({
   );
 }
 
-export function TextInput(
-  props: React.InputHTMLAttributes<HTMLInputElement>,
-) {
+export function TextInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       type="text"
@@ -70,7 +68,11 @@ export function Button({
   );
 }
 
-export function StatusPill({ status }: { status: "idle" | "saving" | "saved" | "error"; }) {
+export function StatusPill({
+  status,
+}: {
+  status: "idle" | "saving" | "saved" | "error";
+}) {
   if (status === "idle") return null;
   const map = {
     saving: { label: "Saving…", cls: "bg-zinc-100 text-zinc-500" },
@@ -109,4 +111,5 @@ export function SectionCard({
   );
 }
 
-export const ACCENT_HINT = "Wrap yellow words in {{accent:foo}}. Use \\n for line breaks.";
+export const ACCENT_HINT =
+  "Wrap yellow words in {{accent:foo}}. Use \\n for line breaks.";

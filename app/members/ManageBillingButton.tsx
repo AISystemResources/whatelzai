@@ -31,9 +31,7 @@ export function ManageBillingButton() {
       >
         {pending ? "Opening…" : "Manage billing →"}
       </button>
-      {error && (
-        <p className="mt-3 font-mono text-xs text-red-600">{error}</p>
-      )}
+      {error && <p className="mt-3 font-mono text-xs text-red-600">{error}</p>}
     </div>
   );
 }

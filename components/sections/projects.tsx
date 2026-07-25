@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
@@ -11,18 +11,33 @@ const sectionVariants = {
 
 const slideUpVariants = {
   hidden: { opacity: 0, y: 28 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.65, ease: [0.16, 1, 0.3, 1] as const } },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.65, ease: [0.16, 1, 0.3, 1] as const },
+  },
 };
 
 const scaleInVariants = {
   hidden: { opacity: 0, scale: 0.94, y: 16 },
-  visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] as const } },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] as const },
+  },
 };
 
-function ProjectFeature({ project, index }: { project: Project; index: number }) {
+function ProjectFeature({
+  project,
+  index,
+}: {
+  project: Project;
+  index: number;
+}) {
   const reduced = useReducedMotion();
   const flip = index % 2 !== 0;
-  const num = String(index + 1).padStart(2, '0');
+  const num = String(index + 1).padStart(2, "0");
 
   return (
     <motion.section
@@ -34,8 +49,9 @@ function ProjectFeature({ project, index }: { project: Project; index: number })
       className="border-b border-zinc-200 px-6 py-24 sm:px-8 sm:py-32"
     >
       <div className="mx-auto max-w-6xl">
-        <div className={`flex flex-col gap-16 lg:items-start lg:gap-20 ${flip ? 'lg:flex-row-reverse' : 'lg:flex-row'}`}>
-
+        <div
+          className={`flex flex-col gap-16 lg:items-start lg:gap-20 ${flip ? "lg:flex-row-reverse" : "lg:flex-row"}`}
+        >
           {/* Text */}
           <motion.div variants={slideUpVariants} className="min-w-0 flex-1">
             <p className="font-mono text-[10px] tracking-widest text-zinc-400 uppercase">
@@ -45,10 +61,14 @@ function ProjectFeature({ project, index }: { project: Project; index: number })
               {project.name}
             </h2>
             {project.tagline && (
-              <p className="mt-4 text-lg text-zinc-600 sm:text-xl">{project.tagline}</p>
+              <p className="mt-4 text-lg text-zinc-600 sm:text-xl">
+                {project.tagline}
+              </p>
             )}
             {project.description && (
-              <p className="mt-2 font-mono text-xs tracking-wide text-zinc-500">{project.description}</p>
+              <p className="mt-2 font-mono text-xs tracking-wide text-zinc-500">
+                {project.description}
+              </p>
             )}
             {project.tech_stack && project.tech_stack.length > 0 && (
               <ul className="mt-8 flex flex-wrap gap-1.5">
@@ -81,7 +101,10 @@ function ProjectFeature({ project, index }: { project: Project; index: number })
               className="w-full shrink-0 lg:w-[500px]"
             >
               <div className="group overflow-hidden rounded bg-zinc-950 shadow-xl transition-shadow duration-500 hover:shadow-2xl">
-                <div className="flex items-center gap-1.5 px-4 py-3" aria-hidden="true">
+                <div
+                  className="flex items-center gap-1.5 px-4 py-3"
+                  aria-hidden="true"
+                >
                   <span className="h-2.5 w-2.5 rounded-full bg-zinc-700" />
                   <span className="h-2.5 w-2.5 rounded-full bg-zinc-700" />
                   <span className="h-2.5 w-2.5 rounded-full bg-zinc-700" />
@@ -98,8 +121,11 @@ function ProjectFeature({ project, index }: { project: Project; index: number })
               </div>
               {project.status && (
                 <p className="mt-3 flex items-center gap-1.5 font-mono text-[10px] tracking-widest text-zinc-500 uppercase">
-                  <span style={{ color: 'var(--accent-text)' }} aria-hidden="true">
-                    {project.status === 'active' ? '●' : '✓'}
+                  <span
+                    style={{ color: "var(--accent-text)" }}
+                    aria-hidden="true"
+                  >
+                    {project.status === "active" ? "●" : "✓"}
                   </span>
                   {project.status}
                 </p>
@@ -116,21 +142,25 @@ function ProjectFeature({ project, index }: { project: Project; index: number })
                     <dt className="font-mono text-[10px] tracking-widest text-zinc-500 uppercase">
                       {m.label}
                     </dt>
-                    <dd className="mt-2 text-2xl font-bold tracking-tight">{m.value}</dd>
+                    <dd className="mt-2 text-2xl font-bold tracking-tight">
+                      {m.value}
+                    </dd>
                   </div>
                 ))}
               </dl>
               {project.status && (
                 <p className="mt-3 flex items-center gap-1.5 font-mono text-[10px] tracking-widest text-zinc-500 uppercase">
-                  <span style={{ color: 'var(--accent-text)' }} aria-hidden="true">
-                    {project.status === 'active' ? '●' : '✓'}
+                  <span
+                    style={{ color: "var(--accent-text)" }}
+                    aria-hidden="true"
+                  >
+                    {project.status === "active" ? "●" : "✓"}
                   </span>
                   {project.status}
                 </p>
               )}
             </motion.div>
           ) : null}
-
         </div>
       </div>
     </motion.section>

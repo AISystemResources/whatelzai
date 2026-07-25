@@ -91,7 +91,10 @@ export function TrackRecordForm({ initial }: { initial: TrackRecordContent }) {
         </div>
         <div className="space-y-3">
           {state.stats.map((s, i) => (
-            <div key={i} className="grid gap-2 rounded border border-zinc-100 p-3 sm:grid-cols-[120px_1fr_auto]">
+            <div
+              key={i}
+              className="grid gap-2 rounded border border-zinc-100 p-3 sm:grid-cols-[120px_1fr_auto]"
+            >
               <TextInput
                 placeholder="Value (e.g. 5,000+)"
                 value={s.value}
@@ -113,7 +116,9 @@ export function TrackRecordForm({ initial }: { initial: TrackRecordContent }) {
       <Field label="Links heading">
         <TextInput
           value={state.links_heading}
-          onChange={(e) => setState({ ...state, links_heading: e.target.value })}
+          onChange={(e) =>
+            setState({ ...state, links_heading: e.target.value })
+          }
         />
       </Field>
 
@@ -128,7 +133,10 @@ export function TrackRecordForm({ initial }: { initial: TrackRecordContent }) {
         </div>
         <div className="space-y-3">
           {state.links.map((l, i) => (
-            <div key={i} className="grid gap-2 rounded border border-zinc-100 p-3 sm:grid-cols-[1fr_1fr_auto]">
+            <div
+              key={i}
+              className="grid gap-2 rounded border border-zinc-100 p-3 sm:grid-cols-[1fr_1fr_auto]"
+            >
               <TextInput
                 placeholder="/path"
                 value={l.href}

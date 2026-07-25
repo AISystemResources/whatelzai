@@ -1,13 +1,16 @@
-import { NextResponse } from 'next/server';
-import { updateApplicationStatus, updateApplicationDraft } from '@/lib/supabase-jobs';
-import type { ApplicationStatus } from '@/lib/types/jobs';
+import { NextResponse } from "next/server";
+import {
+  updateApplicationStatus,
+  updateApplicationDraft,
+} from "@/lib/supabase-jobs";
+import type { ApplicationStatus } from "@/lib/types/jobs";
 
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const body = await req.json() as {
+  const body = (await req.json()) as {
     status?: ApplicationStatus;
     cover_letter?: string;
     resume_bullets?: Record<string, string>[];

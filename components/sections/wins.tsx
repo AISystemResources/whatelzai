@@ -1,11 +1,11 @@
-import type { Hackathon } from '@/lib/hackathons';
+import type { Hackathon } from "@/lib/hackathons";
 
 interface Props {
   hackathons: Hackathon[];
 }
 
 export function Wins({ hackathons }: Props) {
-  const winners = hackathons.filter(h => h.awards.length > 0);
+  const winners = hackathons.filter((h) => h.awards.length > 0);
   const podiumCount = winners.length;
   const totalCount = hackathons.length;
 
@@ -18,7 +18,10 @@ export function Wins({ hackathons }: Props) {
     >
       <div className="mx-auto max-w-6xl">
         <header className="mb-12 flex items-baseline justify-between">
-          <h2 id="hackathons-heading" className="text-2xl font-semibold text-zinc-900">
+          <h2
+            id="hackathons-heading"
+            className="text-2xl font-semibold text-zinc-900"
+          >
             Hackathons
           </h2>
           <p className="hidden font-mono text-[10px] tracking-widest text-zinc-400 uppercase sm:block">
@@ -27,10 +30,15 @@ export function Wins({ hackathons }: Props) {
         </header>
 
         <p className="mb-8 font-mono text-sm text-zinc-600">
-          <span className="font-bold text-zinc-900" style={{ color: 'var(--accent-text)' }}>{podiumCount}</span>
-          {' '}podium finishes across{' '}
-          <span className="font-bold text-zinc-900">{totalCount}+</span>
-          {' '}hackathons
+          <span
+            className="font-bold text-zinc-900"
+            style={{ color: "var(--accent-text)" }}
+          >
+            {podiumCount}
+          </span>{" "}
+          podium finishes across{" "}
+          <span className="font-bold text-zinc-900">{totalCount}+</span>{" "}
+          hackathons
         </p>
 
         <ul className="divide-y divide-zinc-200 border-y border-zinc-200">
@@ -40,16 +48,19 @@ export function Wins({ hackathons }: Props) {
               className="grid grid-cols-12 items-baseline gap-4 py-5"
             >
               <span className="col-span-3 font-mono text-[10px] tracking-widest text-zinc-500 uppercase sm:text-xs">
-                {new Date(h.date).toLocaleDateString('en-SG', { month: 'short', year: 'numeric' })}
+                {new Date(h.date).toLocaleDateString("en-SG", {
+                  month: "short",
+                  year: "numeric",
+                })}
               </span>
               <span className="col-span-5 text-sm font-medium sm:text-base">
                 {h.name}
               </span>
               <span
                 className="col-span-4 text-right font-mono text-xs tracking-wide uppercase"
-                style={{ color: 'var(--accent-text)' }}
+                style={{ color: "var(--accent-text)" }}
               >
-                {h.awards[0]?.title ?? '—'}
+                {h.awards[0]?.title ?? "—"}
               </span>
               {h.project_name && (
                 <span className="col-span-12 text-xs text-zinc-500 sm:col-span-9 sm:col-start-4">

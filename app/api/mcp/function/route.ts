@@ -6,20 +6,47 @@ import {
   updatePost,
   deletePost,
 } from "@/lib/blog";
-import {
-  getMediaAssets,
-  getMediaAsset,
-  updateMediaAsset,
-} from "@/lib/media";
+import { getMediaAssets, getMediaAsset, updateMediaAsset } from "@/lib/media";
 import { supabaseAdmin } from "@/lib/supabase-server";
-import { listResumeVersions, getResumeVersion, upsertResumeVersion, patchResumeSection, appendResumeSection } from "@/lib/resume-versions";
-import { listHackathons, getHackathon, upsertHackathon, deleteHackathon } from "@/lib/hackathons";
+import {
+  listResumeVersions,
+  getResumeVersion,
+  upsertResumeVersion,
+  patchResumeSection,
+  appendResumeSection,
+} from "@/lib/resume-versions";
+import {
+  listHackathons,
+  getHackathon,
+  upsertHackathon,
+  deleteHackathon,
+} from "@/lib/hackathons";
 import type { HackathonAward } from "@/lib/hackathons";
-import { listCareer, getCareerBySlug, upsertCareer, deleteCareer } from "@/lib/career";
+import {
+  listCareer,
+  getCareerBySlug,
+  upsertCareer,
+  deleteCareer,
+} from "@/lib/career";
 import type { CareerEntry } from "@/lib/career";
-import { listProjects, getProject, upsertProject, deleteProject } from "@/lib/projects";
-import { listLeadership, getLeadership, upsertLeadership, deleteLeadership } from "@/lib/leadership";
-import { listMentorship, getMentorship, upsertMentorship, deleteMentorship } from "@/lib/mentorship";
+import {
+  listProjects,
+  getProject,
+  upsertProject,
+  deleteProject,
+} from "@/lib/projects";
+import {
+  listLeadership,
+  getLeadership,
+  upsertLeadership,
+  deleteLeadership,
+} from "@/lib/leadership";
+import {
+  listMentorship,
+  getMentorship,
+  upsertMentorship,
+  deleteMentorship,
+} from "@/lib/mentorship";
 import {
   listApplications,
   getApplication,
@@ -37,27 +64,28 @@ type ToolArgs = Record<string, unknown>;
 
 const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
   // ── Blog ────────────────────────────────────────────────────────────────
-  list_posts: (a) => getAllPosts((a.include_drafts as boolean | undefined) ?? false),
+  list_posts: (a) =>
+    getAllPosts((a.include_drafts as boolean | undefined) ?? false),
 
   get_post: (a) => getPost(a.slug as string),
 
   create_post: (a) =>
     createPost({
-      slug:    a.slug    as string,
-      title:   a.title   as string,
+      slug: a.slug as string,
+      title: a.title as string,
       content: a.content as string,
       summary: a.summary as string | undefined,
-      tags:    a.tags    as string[] | undefined,
-      status:  a.status  as "draft" | "published" | undefined,
+      tags: a.tags as string[] | undefined,
+      status: a.status as "draft" | "published" | undefined,
     }),
 
   update_post: (a) =>
     updatePost(a.slug as string, {
-      title:   a.title   as string | undefined,
+      title: a.title as string | undefined,
       summary: a.summary as string | undefined,
       content: a.content as string | undefined,
-      tags:    a.tags    as string[] | undefined,
-      status:  a.status  as "draft" | "published" | undefined,
+      tags: a.tags as string[] | undefined,
+      status: a.status as "draft" | "published" | undefined,
     }),
 
   delete_post: (a) => deletePost(a.slug as string),
@@ -66,20 +94,22 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
   list_media: (a) =>
     getMediaAssets({
       destination: a.destination as string | undefined,
-      processed:   typeof a.processed === "boolean" ? a.processed : undefined,
-      limit:       (a.limit as number | undefined) ?? 50,
+      processed: typeof a.processed === "boolean" ? a.processed : undefined,
+      limit: (a.limit as number | undefined) ?? 50,
     }),
 
   get_media_asset: (a) => getMediaAsset(a.id as string),
 
   update_media_asset: (a) =>
     updateMediaAsset(a.id as string, {
-      label:        a.label        as string | undefined,
-      description:  a.description  as string | undefined,
+      label: a.label as string | undefined,
+      description: a.description as string | undefined,
       destinations: a.destinations as string[] | undefined,
-      focal_point:  a.focal_point  as { x: number; y: number } | undefined,
-      crop_hint:    a.crop_hint    as { x: number; y: number; width: number; height: number } | undefined,
-      processed:    a.processed    as boolean | undefined,
+      focal_point: a.focal_point as { x: number; y: number } | undefined,
+      crop_hint: a.crop_hint as
+        | { x: number; y: number; width: number; height: number }
+        | undefined,
+      processed: a.processed as boolean | undefined,
     }),
 
   // ── Resume ───────────────────────────────────────────────────────────────
@@ -89,7 +119,11 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
       .select("value, updated_at")
       .eq("key", "resume")
       .single();
-    if (!data?.value) return { content: null, message: "No resume yet — use update_resume to create one." };
+    if (!data?.value)
+      return {
+        content: null,
+        message: "No resume yet — use update_resume to create one.",
+      };
     return { content: data.value, updated_at: data.updated_at };
   },
 
@@ -111,7 +145,11 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
     upsertResumeVersion(a.variant as string, a.content as string),
 
   patch_resume_section: (a) =>
-    patchResumeSection(a.variant as string, a.section as string, a.content as string),
+    patchResumeSection(
+      a.variant as string,
+      a.section as string,
+      a.content as string,
+    ),
 
   append_resume_section: (a) =>
     appendResumeSection(
@@ -130,47 +168,53 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
     const slug = a.slug as string | undefined;
     if (slug) {
       const { data: existing } = await supabaseAdmin
-        .from('hackathons').select('id').eq('slug', slug).maybeSingle();
-      if (existing) return { error: 'slug_conflict', existing_id: existing.id };
+        .from("hackathons")
+        .select("id")
+        .eq("slug", slug)
+        .maybeSingle();
+      if (existing) return { error: "slug_conflict", existing_id: existing.id };
     }
     return upsertHackathon({
-      name:          a.name          as string,
-      date:          a.date          as string,
-      slug:          slug,
-      organizer:     a.organizer     as string | undefined,
-      location:      a.location      as string | undefined,
-      awards:        (a.awards       as HackathonAward[]) ?? [],
-      demo_url:      a.demo_url      as string | undefined,
-      writeup:       (a.writeup      as string) ?? '',
-      tags:          (a.tags         as string[]) ?? [],
+      name: a.name as string,
+      date: a.date as string,
+      slug: slug,
+      organizer: a.organizer as string | undefined,
+      location: a.location as string | undefined,
+      awards: (a.awards as HackathonAward[]) ?? [],
+      demo_url: a.demo_url as string | undefined,
+      writeup: (a.writeup as string) ?? "",
+      tags: (a.tags as string[]) ?? [],
       thumbnail_url: a.thumbnail_url as string | undefined,
-      published:     (a.published    as boolean) ?? false,
-      team:          (a.team         as string[]) ?? [],
-      tier:          (a.tier         as 'coding' | 'non-coding') ?? 'coding',
-      project_name:  a.project_name  as string | undefined,
+      published: (a.published as boolean) ?? false,
+      team: (a.team as string[]) ?? [],
+      tier: (a.tier as "coding" | "non-coding") ?? "coding",
+      project_name: a.project_name as string | undefined,
     });
   },
 
   update_hackathon: async (a) => {
     const id = a.id as string;
     const existing = await getHackathon(id);
-    if (!existing) return { error: 'not_found', id };
-    return upsertHackathon({
-      name:          a.name          as string,
-      date:          a.date          as string,
-      slug:          (a.slug as string | undefined) ?? existing.slug,
-      organizer:     a.organizer     as string | undefined,
-      location:      a.location      as string | undefined,
-      awards:        (a.awards       as HackathonAward[]) ?? [],
-      demo_url:      a.demo_url      as string | undefined,
-      writeup:       (a.writeup      as string) ?? '',
-      tags:          (a.tags         as string[]) ?? [],
-      thumbnail_url: a.thumbnail_url as string | undefined,
-      published:     (a.published    as boolean) ?? false,
-      team:          (a.team         as string[]) ?? [],
-      tier:          (a.tier         as 'coding' | 'non-coding') ?? 'coding',
-      project_name:  a.project_name  as string | undefined,
-    }, id);
+    if (!existing) return { error: "not_found", id };
+    return upsertHackathon(
+      {
+        name: a.name as string,
+        date: a.date as string,
+        slug: (a.slug as string | undefined) ?? existing.slug,
+        organizer: a.organizer as string | undefined,
+        location: a.location as string | undefined,
+        awards: (a.awards as HackathonAward[]) ?? [],
+        demo_url: a.demo_url as string | undefined,
+        writeup: (a.writeup as string) ?? "",
+        tags: (a.tags as string[]) ?? [],
+        thumbnail_url: a.thumbnail_url as string | undefined,
+        published: (a.published as boolean) ?? false,
+        team: (a.team as string[]) ?? [],
+        tier: (a.tier as "coding" | "non-coding") ?? "coding",
+        project_name: a.project_name as string | undefined,
+      },
+      id,
+    );
   },
 
   delete_hackathon: (a) => deleteHackathon(a.id as string),
@@ -182,37 +226,37 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
 
   create_career: (a) =>
     upsertCareer({
-      slug:        a.slug        as string,
-      company:     a.company     as string,
-      role:        a.role        as string,
-      start_date:  a.start_date  as string,
-      end_date:    (a.end_date   as string | undefined) ?? null,
+      slug: a.slug as string,
+      company: a.company as string,
+      role: a.role as string,
+      start_date: a.start_date as string,
+      end_date: (a.end_date as string | undefined) ?? null,
       description: (a.description as string | undefined) ?? null,
-      tags:        (a.tags       as string[]) ?? [],
-      published:   (a.published  as boolean) ?? false,
+      tags: (a.tags as string[]) ?? [],
+      published: (a.published as boolean) ?? false,
     }),
 
   update_career: (a) =>
     upsertCareer({
-      id:          a.id          as string,
-      slug:        a.slug        as string,
-      company:     a.company     as string,
-      role:        a.role        as string,
-      start_date:  a.start_date  as string,
-      end_date:    (a.end_date   as string | undefined) ?? null,
+      id: a.id as string,
+      slug: a.slug as string,
+      company: a.company as string,
+      role: a.role as string,
+      start_date: a.start_date as string,
+      end_date: (a.end_date as string | undefined) ?? null,
       description: (a.description as string | undefined) ?? null,
-      tags:        (a.tags       as string[]) ?? [],
-      published:   (a.published  as boolean) ?? false,
-    } as Omit<CareerEntry, 'created_at' | 'updated_at'>),
+      tags: (a.tags as string[]) ?? [],
+      published: (a.published as boolean) ?? false,
+    } as Omit<CareerEntry, "created_at" | "updated_at">),
 
   delete_career: (a) => deleteCareer(a.id as string),
 
   // ── Hackathon content ─────────────────────────────────────────────────────
   get_hackathon_content: async (a) => {
     const { data, error } = await supabaseAdmin
-      .from('hackathons')
-      .select('id, slug, name, content')
-      .eq('id', a.id as string)
+      .from("hackathons")
+      .select("id, slug, name, content")
+      .eq("id", a.id as string)
       .maybeSingle();
     if (error) throw new Error(`get_hackathon_content: ${error.message}`);
     return data;
@@ -220,10 +264,10 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
 
   patch_hackathon_content: async (a) => {
     const { data, error } = await supabaseAdmin
-      .from('hackathons')
+      .from("hackathons")
       .update({ content: a.content as string })
-      .eq('id', a.id as string)
-      .select('id, slug')
+      .eq("id", a.id as string)
+      .select("id, slug")
       .single();
     if (error) throw new Error(`patch_hackathon_content: ${error.message}`);
     return { ...data, updated: true };
@@ -232,9 +276,9 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
   // ── Career content ────────────────────────────────────────────────────────
   get_career_content: async (a) => {
     const { data, error } = await supabaseAdmin
-      .from('career')
-      .select('id, slug, role, content')
-      .eq('id', a.id as string)
+      .from("career")
+      .select("id, slug, role, content")
+      .eq("id", a.id as string)
       .maybeSingle();
     if (error) throw new Error(`get_career_content: ${error.message}`);
     return data;
@@ -242,10 +286,13 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
 
   patch_career_content: async (a) => {
     const { data, error } = await supabaseAdmin
-      .from('career')
-      .update({ content: a.content as string, updated_at: new Date().toISOString() })
-      .eq('id', a.id as string)
-      .select('id, slug')
+      .from("career")
+      .update({
+        content: a.content as string,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", a.id as string)
+      .select("id, slug")
       .single();
     if (error) throw new Error(`patch_career_content: ${error.message}`);
     return { ...data, updated: true };
@@ -254,10 +301,12 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
   // ── Job listings ──────────────────────────────────────────────────────────
   list_jobs: async (a) => {
     let q = supabaseAdmin
-      .from('job_listings')
-      .select('id, company, role, location, remote_type, salary_min, salary_max, salary_currency, match_score, score_reasoning, status, discovered_at, external_url')
-      .order('match_score', { ascending: false, nullsFirst: false });
-    if (a.status) q = q.eq('status', a.status as string);
+      .from("job_listings")
+      .select(
+        "id, company, role, location, remote_type, salary_min, salary_max, salary_currency, match_score, score_reasoning, status, discovered_at, external_url",
+      )
+      .order("match_score", { ascending: false, nullsFirst: false });
+    if (a.status) q = q.eq("status", a.status as string);
     const limit = (a.limit as number | undefined) ?? 50;
     q = q.limit(limit);
     const { data, error } = await q;
@@ -267,9 +316,9 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
 
   get_job: async (a) => {
     const { data, error } = await supabaseAdmin
-      .from('job_listings')
-      .select('*')
-      .eq('id', a.id as string)
+      .from("job_listings")
+      .select("*")
+      .eq("id", a.id as string)
       .single();
     if (error) throw new Error(`get_job: ${error.message}`);
     return data;
@@ -277,20 +326,30 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
 
   score_job: async (a) => {
     const { data, error } = await supabaseAdmin
-      .from('job_listings')
-      .select('id, role, company, description')
-      .eq('id', a.id as string)
+      .from("job_listings")
+      .select("id, role, company, description")
+      .eq("id", a.id as string)
       .single();
     if (error || !data) throw new Error(`score_job: job not found`);
-    const scores = await scoreListings([{ id: data.id, role: data.role, company: data.company, description: data.description }]);
+    const scores = await scoreListings([
+      {
+        id: data.id,
+        role: data.role,
+        company: data.company,
+        description: data.description,
+      },
+    ]);
     const score = scores.get(data.id);
-    if (!score) throw new Error('score_job: scorer returned no result');
-    await supabaseAdmin.from('job_listings').update({
-      match_score:     score.match_score,
-      score_breakdown: score.score_breakdown,
-      score_reasoning: score.score_reasoning,
-      status: score.match_score >= 0.75 ? 'shortlisted' : 'new',
-    }).eq('id', data.id);
+    if (!score) throw new Error("score_job: scorer returned no result");
+    await supabaseAdmin
+      .from("job_listings")
+      .update({
+        match_score: score.match_score,
+        score_breakdown: score.score_breakdown,
+        score_reasoning: score.score_reasoning,
+        status: score.match_score >= 0.75 ? "shortlisted" : "new",
+      })
+      .eq("id", data.id);
     return { id: data.id, ...score };
   },
 
@@ -298,41 +357,45 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
   create_application: async (a) => {
     const job_listing_id = a.job_listing_id as string;
     const { data: listing, error: listingErr } = await supabaseAdmin
-      .from('job_listings')
-      .select('id, company, role')
-      .eq('id', job_listing_id)
+      .from("job_listings")
+      .select("id, company, role")
+      .eq("id", job_listing_id)
       .single();
-    if (listingErr || !listing) throw new Error(`create_application: job listing not found`);
+    if (listingErr || !listing)
+      throw new Error(`create_application: job listing not found`);
 
     const { data: existing } = await supabaseAdmin
-      .from('applications')
-      .select('id, status')
-      .eq('listing_id', job_listing_id)
+      .from("applications")
+      .select("id, status")
+      .eq("listing_id", job_listing_id)
       .maybeSingle();
     if (existing) return { already_exists: true, application: existing };
 
     const { data: app, error: appErr } = await supabaseAdmin
-      .from('applications')
+      .from("applications")
       .insert({
         listing_id: job_listing_id,
-        resume_id:  (a.resume_id as string | undefined) ?? null,
-        status:     'draft',
+        resume_id: (a.resume_id as string | undefined) ?? null,
+        status: "draft",
       })
       .select()
       .single();
-    if (appErr || !app) throw new Error(`create_application: ${appErr?.message ?? 'insert failed'}`);
+    if (appErr || !app)
+      throw new Error(
+        `create_application: ${appErr?.message ?? "insert failed"}`,
+      );
 
-    await supabaseAdmin.from('application_events').insert({
+    await supabaseAdmin.from("application_events").insert({
       application_id: app.id,
-      event_type:     'created',
-      new_value:      'draft',
-      source:         'user',
+      event_type: "created",
+      new_value: "draft",
+      source: "user",
     });
 
     await supabaseAdmin
-      .from('job_listings')
-      .update({ status: 'applying' })
-      .eq('id', job_listing_id);
+      .from("job_listings")
+      .update({ status: "applying" })
+      .eq("id", job_listing_id);
 
     return { created: true, application: app };
   },
@@ -346,38 +409,42 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
 
   update_application_draft: (a) =>
     updateApplicationDraft(a.id as string, {
-      cover_letter:   a.cover_letter   as string | undefined,
+      cover_letter: a.cover_letter as string | undefined,
       resume_bullets: a.resume_bullets as Record<string, string>[] | undefined,
     }),
 
   mark_followup_sent: async (a) => {
-    const nextDate = new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString().split('T')[0];
+    const nextDate = new Date(Date.now() + 7 * 24 * 3600 * 1000)
+      .toISOString()
+      .split("T")[0];
     const { data: current } = await supabaseAdmin
-      .from('applications')
-      .select('follow_up_count')
-      .eq('id', a.id as string)
+      .from("applications")
+      .select("follow_up_count")
+      .eq("id", a.id as string)
       .single();
     const { error } = await supabaseAdmin
-      .from('applications')
+      .from("applications")
       .update({
         follow_up_count: ((current?.follow_up_count ?? 0) as number) + 1,
-        follow_up_at:    nextDate,
-        updated_at:      new Date().toISOString(),
+        follow_up_at: nextDate,
+        updated_at: new Date().toISOString(),
       })
-      .eq('id', a.id as string);
+      .eq("id", a.id as string);
     if (error) throw new Error(`mark_followup_sent: ${error.message}`);
     return { ok: true, next_follow_up_at: nextDate };
   },
 
   get_followups_due: async () => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split("T")[0];
     const { data, error } = await supabaseAdmin
-      .from('applications')
-      .select('id, status, follow_up_at, follow_up_count, applied_at, job_listings(company, role, external_url)')
-      .eq('status', 'submitted')
-      .is('response_status', null)
-      .lte('follow_up_at', today)
-      .order('follow_up_at', { ascending: true });
+      .from("applications")
+      .select(
+        "id, status, follow_up_at, follow_up_count, applied_at, job_listings(company, role, external_url)",
+      )
+      .eq("status", "submitted")
+      .is("response_status", null)
+      .lte("follow_up_at", today)
+      .order("follow_up_at", { ascending: true });
     if (error) throw new Error(`get_followups_due: ${error.message}`);
     return data ?? [];
   },
@@ -385,12 +452,14 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
   detect_ghosted: async () => {
     const cutoff = new Date(Date.now() - 14 * 24 * 3600 * 1000).toISOString();
     const { data, error } = await supabaseAdmin
-      .from('applications')
-      .select('id, status, applied_at, follow_up_count, job_listings(company, role, external_url)')
-      .eq('status', 'submitted')
-      .is('response_status', null)
-      .lt('applied_at', cutoff)
-      .order('applied_at', { ascending: true });
+      .from("applications")
+      .select(
+        "id, status, applied_at, follow_up_count, job_listings(company, role, external_url)",
+      )
+      .eq("status", "submitted")
+      .is("response_status", null)
+      .lt("applied_at", cutoff)
+      .order("applied_at", { ascending: true });
     if (error) throw new Error(`detect_ghosted: ${error.message}`);
     return data ?? [];
   },
@@ -403,42 +472,53 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
   // ── Cover letter ──────────────────────────────────────────────────────────
   select_resume_for_job: async (a) => {
     const { data, error } = await supabaseAdmin
-      .from('job_listings')
-      .select('role, company, description')
-      .eq('id', a.job_id as string)
+      .from("job_listings")
+      .select("role, company, description")
+      .eq("id", a.job_id as string)
       .single();
     if (error || !data) throw new Error(`select_resume_for_job: job not found`);
-    const jd = `${data.role} at ${data.company}\n${data.description ?? ''}`;
+    const jd = `${data.role} at ${data.company}\n${data.description ?? ""}`;
     const variant = selectResumeVariant(jd);
-    return { recommended_variant: variant, job_role: data.role, company: data.company };
+    return {
+      recommended_variant: variant,
+      job_role: data.role,
+      company: data.company,
+    };
   },
 
   draft_cover_letter: async (a) => {
     const app = await getApplication(a.application_id as string);
     if (!app) throw new Error(`draft_cover_letter: application not found`);
-    if (!app.listing_id) throw new Error(`draft_cover_letter: application has no linked listing`);
+    if (!app.listing_id)
+      throw new Error(`draft_cover_letter: application has no linked listing`);
 
     const { data: listing, error: listingErr } = await supabaseAdmin
-      .from('job_listings')
-      .select('role, company, description')
-      .eq('id', app.listing_id)
+      .from("job_listings")
+      .select("role, company, description")
+      .eq("id", app.listing_id)
       .single();
-    if (listingErr || !listing) throw new Error(`draft_cover_letter: listing not found`);
+    if (listingErr || !listing)
+      throw new Error(`draft_cover_letter: listing not found`);
 
-    const jd = `${listing.role} at ${listing.company}\n${listing.description ?? ''}`;
-    const variantOverride = (a.resume_variant as string | undefined);
+    const jd = `${listing.role} at ${listing.company}\n${listing.description ?? ""}`;
+    const variantOverride = a.resume_variant as string | undefined;
     const variant = variantOverride ?? selectResumeVariant(jd);
 
     const resumeVersion = await getResumeVersion(variant);
-    if (!resumeVersion) throw new Error(`draft_cover_letter: resume variant '${variant}' not found`);
+    if (!resumeVersion)
+      throw new Error(
+        `draft_cover_letter: resume variant '${variant}' not found`,
+      );
 
     const profile = await listUserProfile();
-    const profileContext = profile.map(p => `${p.category}/${p.key}: ${p.value}`).join('\n');
+    const profileContext = profile
+      .map((p) => `${p.category}/${p.key}: ${p.value}`)
+      .join("\n");
 
     const coverLetter = await generateCoverLetter(
       listing.role,
       listing.company,
-      listing.description ?? '',
+      listing.description ?? "",
       resumeVersion.content,
       profileContext,
     );
@@ -449,34 +529,46 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
 
     return {
       application_id: app.id,
-      variant_used:   variant,
-      cover_letter:   coverLetter,
-      word_count:     coverLetter.split(/\s+/).filter(Boolean).length,
-      saved:          a.save !== false,
+      variant_used: variant,
+      cover_letter: coverLetter,
+      word_count: coverLetter.split(/\s+/).filter(Boolean).length,
+      saved: a.save !== false,
     };
   },
 
   render_cover_letter_pdf: async (a) => {
     const app = await getApplication(a.application_id as string);
-    if (!app) throw new Error('render_cover_letter_pdf: application not found');
-    if (!app.cover_letter?.trim()) throw new Error('render_cover_letter_pdf: no cover letter — call draft_cover_letter first');
+    if (!app) throw new Error("render_cover_letter_pdf: application not found");
+    if (!app.cover_letter?.trim())
+      throw new Error(
+        "render_cover_letter_pdf: no cover letter — call draft_cover_letter first",
+      );
 
-    const companyName = (app.job_listings as { company?: string } | null)?.company;
+    const companyName = (app.job_listings as { company?: string } | null)
+      ?.company;
     const buffer = await renderCoverLetterPdf(app.cover_letter, companyName);
 
     const path = `cover-letters/${app.id}/cover-letter-${Date.now()}.pdf`;
     const { error: uploadError } = await supabaseAdmin.storage
-      .from('resumes')
-      .upload(path, buffer, { contentType: 'application/pdf', upsert: true });
-    if (uploadError) throw new Error(`render_cover_letter_pdf: upload failed — ${uploadError.message}`);
+      .from("resumes")
+      .upload(path, buffer, { contentType: "application/pdf", upsert: true });
+    if (uploadError)
+      throw new Error(
+        `render_cover_letter_pdf: upload failed — ${uploadError.message}`,
+      );
 
-    const { data: urlData } = supabaseAdmin.storage.from('resumes').getPublicUrl(path);
+    const { data: urlData } = supabaseAdmin.storage
+      .from("resumes")
+      .getPublicUrl(path);
     const pdf_url = urlData.publicUrl;
 
     await supabaseAdmin
-      .from('applications')
-      .update({ cover_letter_pdf_url: pdf_url, updated_at: new Date().toISOString() })
-      .eq('id', app.id);
+      .from("applications")
+      .update({
+        cover_letter_pdf_url: pdf_url,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", app.id);
 
     return { application_id: app.id, pdf_url };
   },
@@ -484,10 +576,12 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
   // ── Company / ATS ─────────────────────────────────────────────────────────
   list_companies: async (a) => {
     let q = supabaseAdmin
-      .from('companies')
-      .select('id, name, ats_type, ats_slug, status, last_checked_at, last_fetch_count')
-      .order('name');
-    if (a.status) q = q.eq('status', a.status as string);
+      .from("companies")
+      .select(
+        "id, name, ats_type, ats_slug, status, last_checked_at, last_fetch_count",
+      )
+      .order("name");
+    if (a.status) q = q.eq("status", a.status as string);
     const { data, error } = await q;
     if (error) throw new Error(`list_companies: ${error.message}`);
     return data ?? [];
@@ -495,10 +589,13 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
 
   update_company_ats: async (a) => {
     const { data, error } = await supabaseAdmin
-      .from('companies')
-      .update({ ats_type: a.ats_type as string, ats_slug: a.ats_slug as string })
-      .eq('id', a.id as string)
-      .select('id, name, ats_type, ats_slug')
+      .from("companies")
+      .update({
+        ats_type: a.ats_type as string,
+        ats_slug: a.ats_slug as string,
+      })
+      .eq("id", a.id as string)
+      .select("id, name, ats_type, ats_slug")
       .single();
     if (error) throw new Error(`update_company_ats: ${error.message}`);
     return { ...data, updated: true };
@@ -511,41 +608,44 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
 
   create_project: (a) =>
     upsertProject({
-      slug:         a.slug         as string,
-      name:         a.name         as string,
-      tagline:      a.tagline      as string | undefined,
-      description:  a.description  as string | undefined,
-      status:       a.status       as 'active' | 'shipped' | 'archived' | undefined,
-      type:         a.type         as string | undefined,
-      tech_stack:   a.tech_stack   as string[] | undefined,
+      slug: a.slug as string,
+      name: a.name as string,
+      tagline: a.tagline as string | undefined,
+      description: a.description as string | undefined,
+      status: a.status as "active" | "shipped" | "archived" | undefined,
+      type: a.type as string | undefined,
+      tech_stack: a.tech_stack as string[] | undefined,
       external_url: a.external_url as string | undefined,
-      published:    (a.published   as boolean | undefined) ?? false,
+      published: (a.published as boolean | undefined) ?? false,
     }),
 
   update_project: async (a) => {
     const id = a.id as string;
     const existing = await getProject(id);
-    if (!existing) return { error: 'not_found', id };
+    if (!existing) return { error: "not_found", id };
     return upsertProject({
       id,
-      slug:         (a.slug         as string | undefined) ?? existing.slug,
-      name:         (a.name         as string | undefined) ?? existing.name,
-      tagline:      a.tagline      as string | undefined,
-      description:  a.description  as string | undefined,
-      status:       a.status       as 'active' | 'shipped' | 'archived' | undefined,
-      type:         a.type         as string | undefined,
-      tech_stack:   a.tech_stack   as string[] | undefined,
+      slug: (a.slug as string | undefined) ?? existing.slug,
+      name: (a.name as string | undefined) ?? existing.name,
+      tagline: a.tagline as string | undefined,
+      description: a.description as string | undefined,
+      status: a.status as "active" | "shipped" | "archived" | undefined,
+      type: a.type as string | undefined,
+      tech_stack: a.tech_stack as string[] | undefined,
       external_url: a.external_url as string | undefined,
-      published:    a.published    as boolean | undefined,
+      published: a.published as boolean | undefined,
     });
   },
 
   patch_project_content: async (a) => {
     const { data, error } = await supabaseAdmin
-      .from('projects')
-      .update({ content: a.content as string, updated_at: new Date().toISOString() })
-      .eq('id', a.id as string)
-      .select('id, slug')
+      .from("projects")
+      .update({
+        content: a.content as string,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", a.id as string)
+      .select("id, slug")
       .single();
     if (error) throw new Error(`patch_project_content: ${error.message}`);
     return { ...data, updated: true };
@@ -553,9 +653,9 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
 
   get_project_content: async (a) => {
     const { data, error } = await supabaseAdmin
-      .from('projects')
-      .select('id, slug, name, content')
-      .eq('id', a.id as string)
+      .from("projects")
+      .select("id, slug, name, content")
+      .eq("id", a.id as string)
       .maybeSingle();
     if (error) throw new Error(`get_project_content: ${error.message}`);
     return data;
@@ -569,47 +669,54 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
   create_leadership: async (a) => {
     const slug = a.slug as string;
     const { data: existing } = await supabaseAdmin
-      .from('leadership').select('id').eq('slug', slug).maybeSingle();
-    if (existing) return { error: 'slug_conflict', existing_id: existing.id };
+      .from("leadership")
+      .select("id")
+      .eq("slug", slug)
+      .maybeSingle();
+    if (existing) return { error: "slug_conflict", existing_id: existing.id };
     return upsertLeadership({
       slug,
-      organisation: a.organisation  as string,
-      role:         a.role          as string,
-      start_date:   a.start_date    as string,
-      body:         (a.body         as string | undefined) ?? null,
-      end_date:     (a.end_date     as string | undefined) ?? null,
-      description:  (a.description  as string | undefined) ?? null,
-      tags:         (a.tags         as string[]) ?? [],
-      published:    (a.published    as boolean) ?? false,
-      content:      (a.content      as string | undefined) ?? null,
+      organisation: a.organisation as string,
+      role: a.role as string,
+      start_date: a.start_date as string,
+      body: (a.body as string | undefined) ?? null,
+      end_date: (a.end_date as string | undefined) ?? null,
+      description: (a.description as string | undefined) ?? null,
+      tags: (a.tags as string[]) ?? [],
+      published: (a.published as boolean) ?? false,
+      content: (a.content as string | undefined) ?? null,
     });
   },
 
   update_leadership: async (a) => {
     const id = a.id as string;
     const existing = await getLeadership(id);
-    if (!existing) return { error: 'not_found', id };
-    return upsertLeadership({
-      slug:         (a.slug         as string  | undefined) ?? existing.slug,
-      organisation: (a.organisation as string  | undefined) ?? existing.organisation,
-      role:         (a.role         as string  | undefined) ?? existing.role,
-      start_date:   (a.start_date   as string  | undefined) ?? existing.start_date,
-      body:         (a.body         as string  | undefined) ?? null,
-      end_date:     (a.end_date     as string  | undefined) ?? null,
-      description:  (a.description  as string  | undefined) ?? null,
-      tags:         (a.tags         as string[]) ?? [],
-      published:    (a.published    as boolean | undefined) ?? existing.published,
-      content:      (a.content      as string  | undefined) ?? existing.content,
-    }, id);
+    if (!existing) return { error: "not_found", id };
+    return upsertLeadership(
+      {
+        slug: (a.slug as string | undefined) ?? existing.slug,
+        organisation:
+          (a.organisation as string | undefined) ?? existing.organisation,
+        role: (a.role as string | undefined) ?? existing.role,
+        start_date: (a.start_date as string | undefined) ?? existing.start_date,
+        body: (a.body as string | undefined) ?? null,
+        end_date: (a.end_date as string | undefined) ?? null,
+        description: (a.description as string | undefined) ?? null,
+        tags: (a.tags as string[]) ?? [],
+        published: (a.published as boolean | undefined) ?? existing.published,
+        content: (a.content as string | undefined) ?? existing.content,
+      },
+      id,
+    );
   },
 
   delete_leadership: (a) => deleteLeadership(a.id as string),
 
   get_leadership_content: async (a) => {
     const { data, error } = await supabaseAdmin
-      .from('leadership')
-      .select('id, slug, role, content')
-      .eq('id', a.id as string)
+      .from("leadership")
+      .select("id, slug, role, content")
+      .eq("id", a.id as string)
       .maybeSingle();
     if (error) throw new Error(`get_leadership_content: ${error.message}`);
     return data;
@@ -617,10 +724,13 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
 
   patch_leadership_content: async (a) => {
     const { data, error } = await supabaseAdmin
-      .from('leadership')
-      .update({ content: a.content as string, updated_at: new Date().toISOString() })
-      .eq('id', a.id as string)
-      .select('id, slug')
+      .from("leadership")
+      .update({
+        content: a.content as string,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", a.id as string)
+      .select("id, slug")
       .single();
     if (error) throw new Error(`patch_leadership_content: ${error.message}`);
     return { ...data, updated: true };
@@ -634,45 +744,51 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
   create_mentorship: async (a) => {
     const slug = a.slug as string;
     const { data: existing } = await supabaseAdmin
-      .from('mentorship').select('id').eq('slug', slug).maybeSingle();
-    if (existing) return { error: 'slug_conflict', existing_id: existing.id };
+      .from("mentorship")
+      .select("id")
+      .eq("slug", slug)
+      .maybeSingle();
+    if (existing) return { error: "slug_conflict", existing_id: existing.id };
     return upsertMentorship({
       slug,
-      programme:   a.programme   as string,
-      organiser:   a.organiser   as string,
-      start_date:  a.start_date  as string,
-      end_date:    (a.end_date   as string | undefined) ?? null,
+      programme: a.programme as string,
+      organiser: a.organiser as string,
+      start_date: a.start_date as string,
+      end_date: (a.end_date as string | undefined) ?? null,
       description: (a.description as string | undefined) ?? null,
-      tags:        (a.tags        as string[]) ?? [],
-      published:   (a.published   as boolean) ?? false,
-      content:     (a.content     as string | undefined) ?? null,
+      tags: (a.tags as string[]) ?? [],
+      published: (a.published as boolean) ?? false,
+      content: (a.content as string | undefined) ?? null,
     });
   },
 
   update_mentorship: async (a) => {
     const id = a.id as string;
     const existing = await getMentorship(id);
-    if (!existing) return { error: 'not_found', id };
-    return upsertMentorship({
-      slug:        (a.slug        as string  | undefined) ?? existing.slug,
-      programme:   (a.programme   as string  | undefined) ?? existing.programme,
-      organiser:   (a.organiser   as string  | undefined) ?? existing.organiser,
-      start_date:  (a.start_date  as string  | undefined) ?? existing.start_date,
-      end_date:    (a.end_date    as string  | undefined) ?? null,
-      description: (a.description as string  | undefined) ?? null,
-      tags:        (a.tags        as string[]) ?? [],
-      published:   (a.published   as boolean | undefined) ?? existing.published,
-      content:     (a.content     as string  | undefined) ?? existing.content,
-    }, id);
+    if (!existing) return { error: "not_found", id };
+    return upsertMentorship(
+      {
+        slug: (a.slug as string | undefined) ?? existing.slug,
+        programme: (a.programme as string | undefined) ?? existing.programme,
+        organiser: (a.organiser as string | undefined) ?? existing.organiser,
+        start_date: (a.start_date as string | undefined) ?? existing.start_date,
+        end_date: (a.end_date as string | undefined) ?? null,
+        description: (a.description as string | undefined) ?? null,
+        tags: (a.tags as string[]) ?? [],
+        published: (a.published as boolean | undefined) ?? existing.published,
+        content: (a.content as string | undefined) ?? existing.content,
+      },
+      id,
+    );
   },
 
   delete_mentorship: (a) => deleteMentorship(a.id as string),
 
   get_mentorship_content: async (a) => {
     const { data, error } = await supabaseAdmin
-      .from('mentorship')
-      .select('id, slug, programme, content')
-      .eq('id', a.id as string)
+      .from("mentorship")
+      .select("id, slug, programme, content")
+      .eq("id", a.id as string)
       .maybeSingle();
     if (error) throw new Error(`get_mentorship_content: ${error.message}`);
     return data;
@@ -680,21 +796,34 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
 
   patch_mentorship_content: async (a) => {
     const { data, error } = await supabaseAdmin
-      .from('mentorship')
-      .update({ content: a.content as string, updated_at: new Date().toISOString() })
-      .eq('id', a.id as string)
-      .select('id, slug')
+      .from("mentorship")
+      .update({
+        content: a.content as string,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", a.id as string)
+      .select("id, slug")
       .single();
     if (error) throw new Error(`patch_mentorship_content: ${error.message}`);
     return { ...data, updated: true };
   },
 
   test_company_ats: async (a) => {
-    const { scrapeCompany } = await import('@/lib/ats-scraper');
-    const { shouldReject } = await import('@/lib/job-filter');
-    const raw = await scrapeCompany(a.ats_type as string, a.ats_slug as string, (a.company_name as string) ?? 'Test');
-    const sample = raw.slice(0, 5).map(r => ({ role: r.role, location: r.location, rejected: shouldReject(r.role) }));
-    const rejectedCount = raw.filter(r => shouldReject(r.role)).length;
+    const { scrapeCompany } = await import("@/lib/ats-scraper");
+    const { shouldReject } = await import("@/lib/job-filter");
+    const raw = await scrapeCompany(
+      a.ats_type as string,
+      a.ats_slug as string,
+      (a.company_name as string) ?? "Test",
+    );
+    const sample = raw
+      .slice(0, 5)
+      .map((r) => ({
+        role: r.role,
+        location: r.location,
+        rejected: shouldReject(r.role),
+      }));
+    const rejectedCount = raw.filter((r) => shouldReject(r.role)).length;
     return {
       total: raw.length,
       rejected: rejectedCount,
@@ -708,7 +837,8 @@ const TOOL_SCHEMAS = [
   // ── Blog ─────────────────────────────────────────────────────────────────
   {
     name: "list_posts",
-    description: "List blog posts. Returns slug, title, date, summary, tags, status. Published only by default.",
+    description:
+      "List blog posts. Returns slug, title, date, summary, tags, status. Published only by default.",
     inputSchema: {
       type: "object",
       properties: { include_drafts: { type: "boolean", default: false } },
@@ -718,7 +848,8 @@ const TOOL_SCHEMAS = [
     name: "get_post",
     description: "Get a single blog post by slug, including full content.",
     inputSchema: {
-      type: "object", required: ["slug"],
+      type: "object",
+      required: ["slug"],
       properties: { slug: { type: "string" } },
     },
   },
@@ -726,29 +857,35 @@ const TOOL_SCHEMAS = [
     name: "create_post",
     description: "Create a new blog post. Status defaults to 'draft'.",
     inputSchema: {
-      type: "object", required: ["slug", "title", "content"],
+      type: "object",
+      required: ["slug", "title", "content"],
       properties: {
-        slug:    { type: "string", description: "URL-safe identifier, e.g. 'my-first-post'" },
-        title:   { type: "string" },
+        slug: {
+          type: "string",
+          description: "URL-safe identifier, e.g. 'my-first-post'",
+        },
+        title: { type: "string" },
         content: { type: "string", description: "MDX/Markdown body" },
         summary: { type: "string" },
-        tags:    { type: "array", items: { type: "string" } },
-        status:  { type: "string", enum: ["draft", "published"] },
+        tags: { type: "array", items: { type: "string" } },
+        status: { type: "string", enum: ["draft", "published"] },
       },
     },
   },
   {
     name: "update_post",
-    description: "Update an existing blog post by slug. Only provided fields are changed.",
+    description:
+      "Update an existing blog post by slug. Only provided fields are changed.",
     inputSchema: {
-      type: "object", required: ["slug"],
+      type: "object",
+      required: ["slug"],
       properties: {
-        slug:    { type: "string" },
-        title:   { type: "string" },
+        slug: { type: "string" },
+        title: { type: "string" },
         summary: { type: "string" },
         content: { type: "string" },
-        tags:    { type: "array", items: { type: "string" } },
-        status:  { type: "string", enum: ["draft", "published"] },
+        tags: { type: "array", items: { type: "string" } },
+        status: { type: "string", enum: ["draft", "published"] },
       },
     },
   },
@@ -756,43 +893,68 @@ const TOOL_SCHEMAS = [
     name: "delete_post",
     description: "Permanently delete a blog post by slug.",
     inputSchema: {
-      type: "object", required: ["slug"],
+      type: "object",
+      required: ["slug"],
       properties: { slug: { type: "string" } },
     },
   },
   // ── Media ─────────────────────────────────────────────────────────────────
   {
     name: "list_media",
-    description: "List media assets. Filter by destination or processed status. Returns id, url, label, description, destinations, focal_point, crop_hint, processed.",
+    description:
+      "List media assets. Filter by destination or processed status. Returns id, url, label, description, destinations, focal_point, crop_hint, processed.",
     inputSchema: {
       type: "object",
       properties: {
-        destination: { type: "string", enum: ["landing", "about", "blog", "hackathon", "projects", "other"] },
-        processed:   { type: "boolean", description: "Pass false to fetch only unanalysed images." },
-        limit:       { type: "integer", default: 50, minimum: 1, maximum: 200 },
+        destination: {
+          type: "string",
+          enum: ["landing", "about", "blog", "hackathon", "projects", "other"],
+        },
+        processed: {
+          type: "boolean",
+          description: "Pass false to fetch only unanalysed images.",
+        },
+        limit: { type: "integer", default: 50, minimum: 1, maximum: 200 },
       },
     },
   },
   {
     name: "get_media_asset",
-    description: "Get a single media asset by ID. Returns the public URL — fetch it to analyse the image with vision.",
+    description:
+      "Get a single media asset by ID. Returns the public URL — fetch it to analyse the image with vision.",
     inputSchema: {
-      type: "object", required: ["id"],
+      type: "object",
+      required: ["id"],
       properties: { id: { type: "string" } },
     },
   },
   {
     name: "update_media_asset",
-    description: "Write analysis results back to a media asset. Set processed=true once done so the asset is skipped on future runs.",
+    description:
+      "Write analysis results back to a media asset. Set processed=true once done so the asset is skipped on future runs.",
     inputSchema: {
-      type: "object", required: ["id"],
+      type: "object",
+      required: ["id"],
       properties: {
-        id:          { type: "string" },
-        label:       { type: "string" },
-        description: { type: "string", description: "Human-readable description / alt text." },
+        id: { type: "string" },
+        label: { type: "string" },
+        description: {
+          type: "string",
+          description: "Human-readable description / alt text.",
+        },
         destinations: {
           type: "array",
-          items: { type: "string", enum: ["landing", "about", "blog", "hackathon", "projects", "other"] },
+          items: {
+            type: "string",
+            enum: [
+              "landing",
+              "about",
+              "blog",
+              "hackathon",
+              "projects",
+              "other",
+            ],
+          },
         },
         focal_point: {
           type: "object",
@@ -805,75 +967,110 @@ const TOOL_SCHEMAS = [
         },
         crop_hint: {
           type: "object",
-          description: "Normalised 0–1 crop rectangle that keeps the most useful area.",
+          description:
+            "Normalised 0–1 crop rectangle that keeps the most useful area.",
           required: ["x", "y", "width", "height"],
           properties: {
-            x:      { type: "number", minimum: 0, maximum: 1 },
-            y:      { type: "number", minimum: 0, maximum: 1 },
-            width:  { type: "number", minimum: 0, maximum: 1 },
+            x: { type: "number", minimum: 0, maximum: 1 },
+            y: { type: "number", minimum: 0, maximum: 1 },
+            width: { type: "number", minimum: 0, maximum: 1 },
             height: { type: "number", minimum: 0, maximum: 1 },
           },
         },
-        processed: { type: "boolean", description: "Set true after analysis is complete." },
+        processed: {
+          type: "boolean",
+          description: "Set true after analysis is complete.",
+        },
       },
     },
   },
   // ── Resume ────────────────────────────────────────────────────────────────
   {
     name: "get_resume",
-    description: "Read the current resume. Returns the full markdown content and when it was last updated.",
+    description:
+      "Read the current resume. Returns the full markdown content and when it was last updated.",
     inputSchema: { type: "object", properties: {} },
   },
   {
     name: "update_resume",
-    description: "Write or fully replace the resume. Always call get_resume first, edit the content, then write back the complete updated markdown. Overwrites whatever is currently stored.",
+    description:
+      "Write or fully replace the resume. Always call get_resume first, edit the content, then write back the complete updated markdown. Overwrites whatever is currently stored.",
     inputSchema: {
       type: "object",
       required: ["content"],
       properties: {
-        content: { type: "string", description: "Full resume in markdown format." },
+        content: {
+          type: "string",
+          description: "Full resume in markdown format.",
+        },
       },
     },
   },
   // ── Resume versions ────────────────────────────────────────────────────────
   {
     name: "list_resume_versions",
-    description: "List all named resume variants (AI Engineer, Blockchain Engineer, Software Engineer) with their content, pdf_url, and timestamps.",
+    description:
+      "List all named resume variants (AI Engineer, Blockchain Engineer, Software Engineer) with their content, pdf_url, and timestamps.",
     inputSchema: { type: "object", properties: {} },
   },
   {
     name: "get_resume_version",
-    description: "Read the markdown content for a specific resume variant. Call list_resume_versions first to see available variant names.",
+    description:
+      "Read the markdown content for a specific resume variant. Call list_resume_versions first to see available variant names.",
     inputSchema: {
       type: "object",
       required: ["variant"],
       properties: {
-        variant: { type: "string", description: "Exact variant name as stored in the database, e.g. 'AI Engineer'." },
+        variant: {
+          type: "string",
+          description:
+            "Exact variant name as stored in the database, e.g. 'AI Engineer'.",
+        },
       },
     },
   },
   {
     name: "update_resume_version",
-    description: "Write or replace the markdown content for a resume variant. If the variant does not exist yet it will be created. Call get_resume_version first, edit, then write back the full content.",
+    description:
+      "Write or replace the markdown content for a resume variant. If the variant does not exist yet it will be created. Call get_resume_version first, edit, then write back the full content.",
     inputSchema: {
       type: "object",
       required: ["variant", "content"],
       properties: {
-        variant: { type: "string", description: "Variant name. Can be an existing one or a new name to create a new entry." },
-        content: { type: "string", description: "Full resume variant in markdown format." },
+        variant: {
+          type: "string",
+          description:
+            "Variant name. Can be an existing one or a new name to create a new entry.",
+        },
+        content: {
+          type: "string",
+          description: "Full resume variant in markdown format.",
+        },
       },
     },
   },
   {
     name: "patch_resume_section",
-    description: "Replace a single named section within a resume variant without touching the rest of the document. The section is identified by its heading text (without # marks). If the section does not exist it will be appended.",
+    description:
+      "Replace a single named section within a resume variant without touching the rest of the document. The section is identified by its heading text (without # marks). If the section does not exist it will be appended.",
     inputSchema: {
       type: "object",
       required: ["variant", "section", "content"],
       properties: {
-        variant: { type: "string", description: "Variant name, e.g. 'AI Engineer'." },
-        section: { type: "string", description: "Heading text of the section to replace, e.g. 'Experience' or 'Skills'. Case-insensitive." },
-        content:  { type: "string", description: "New body content for the section (do not include the heading line)." },
+        variant: {
+          type: "string",
+          description: "Variant name, e.g. 'AI Engineer'.",
+        },
+        section: {
+          type: "string",
+          description:
+            "Heading text of the section to replace, e.g. 'Experience' or 'Skills'. Case-insensitive.",
+        },
+        content: {
+          type: "string",
+          description:
+            "New body content for the section (do not include the heading line).",
+        },
       },
     },
   },
@@ -884,75 +1081,138 @@ const TOOL_SCHEMAS = [
       type: "object",
       required: ["variant", "heading", "content"],
       properties: {
-        variant: { type: "string", description: "Variant name, e.g. 'AI Engineer'." },
-        heading: { type: "string", description: "Heading text for the new section." },
-        content: { type: "string", description: "Body content for the new section." },
-        level:   { type: "integer", minimum: 1, maximum: 3, default: 2, description: "Heading level (1–3). Defaults to 2 (##)." },
+        variant: {
+          type: "string",
+          description: "Variant name, e.g. 'AI Engineer'.",
+        },
+        heading: {
+          type: "string",
+          description: "Heading text for the new section.",
+        },
+        content: {
+          type: "string",
+          description: "Body content for the new section.",
+        },
+        level: {
+          type: "integer",
+          minimum: 1,
+          maximum: 3,
+          default: 2,
+          description: "Heading level (1–3). Defaults to 2 (##).",
+        },
       },
     },
   },
   // ── Hackathons ─────────────────────────────────────────────────────────────
   {
     name: "list_hackathons",
-    description: "List all hackathon entries (including drafts). Returns id, name, date, location, awards, tags, published status.",
+    description:
+      "List all hackathon entries (including drafts). Returns id, name, date, location, awards, tags, published status.",
     inputSchema: { type: "object", properties: {} },
   },
   {
     name: "get_hackathon",
     description: "Get a single hackathon by id, including full writeup.",
     inputSchema: {
-      type: "object", required: ["id"],
-      properties: { id: { type: "string", description: "UUID of the hackathon." } },
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string", description: "UUID of the hackathon." },
+      },
     },
   },
   {
     name: "create_hackathon",
-    description: "Create a new hackathon entry. Awards is an array of objects with title and optional track.",
+    description:
+      "Create a new hackathon entry. Awards is an array of objects with title and optional track.",
     inputSchema: {
       type: "object",
       required: ["name", "date", "slug"],
       properties: {
-        name:          { type: "string" },
-        slug:          { type: "string", description: "URL-safe identifier, e.g. 'hackomania-2026'. Must be unique." },
-        date:          { type: "string", description: "ISO date string, e.g. '2024-03-15'." },
-        organizer:     { type: "string" },
-        location:      { type: "string" },
+        name: { type: "string" },
+        slug: {
+          type: "string",
+          description:
+            "URL-safe identifier, e.g. 'hackomania-2026'. Must be unique.",
+        },
+        date: {
+          type: "string",
+          description: "ISO date string, e.g. '2024-03-15'.",
+        },
+        organizer: { type: "string" },
+        location: { type: "string" },
         awards: {
           type: "array",
-          description: "Awards won. Multiple allowed. e.g. [{\"title\":\"Champion\",\"track\":\"AI\"},{\"title\":\"Special Award\"}]",
+          description:
+            'Awards won. Multiple allowed. e.g. [{"title":"Champion","track":"AI"},{"title":"Special Award"}]',
           items: {
             type: "object",
             required: ["title"],
             properties: {
-              title: { type: "string", description: "e.g. Champion, Second Place, Finalist, Special Award" },
-              track: { type: "string", description: "Optional track or category name." },
+              title: {
+                type: "string",
+                description:
+                  "e.g. Champion, Second Place, Finalist, Special Award",
+              },
+              track: {
+                type: "string",
+                description: "Optional track or category name.",
+              },
             },
           },
         },
-        demo_url:      { type: "string", description: "URL to demo video (YouTube supported) or live project." },
-        writeup:       { type: "string", description: "Markdown writeup about the hackathon." },
-        tags:          { type: "array", items: { type: "string" }, description: "e.g. [\"ai\",\"fintech\"]" },
+        demo_url: {
+          type: "string",
+          description: "URL to demo video (YouTube supported) or live project.",
+        },
+        writeup: {
+          type: "string",
+          description: "Markdown writeup about the hackathon.",
+        },
+        tags: {
+          type: "array",
+          items: { type: "string" },
+          description: 'e.g. ["ai","fintech"]',
+        },
         thumbnail_url: { type: "string" },
-        published:     { type: "boolean", default: false },
-        team:          { type: "array", items: { type: "string" }, description: "Team member names." },
-        tier:          { type: "string", enum: ["coding", "non-coding"], default: "coding", description: "coding = built something; non-coding = case study / ideathon." },
-        project_name:  { type: "string", description: "Name of the project built, e.g. 'EZBIZ'." },
+        published: { type: "boolean", default: false },
+        team: {
+          type: "array",
+          items: { type: "string" },
+          description: "Team member names.",
+        },
+        tier: {
+          type: "string",
+          enum: ["coding", "non-coding"],
+          default: "coding",
+          description:
+            "coding = built something; non-coding = case study / ideathon.",
+        },
+        project_name: {
+          type: "string",
+          description: "Name of the project built, e.g. 'EZBIZ'.",
+        },
       },
     },
   },
   {
     name: "update_hackathon",
-    description: "Update an existing hackathon entry. All fields are replaced — call get_hackathon first and carry over unchanged fields. Slug is preserved from the existing record if not provided.",
+    description:
+      "Update an existing hackathon entry. All fields are replaced — call get_hackathon first and carry over unchanged fields. Slug is preserved from the existing record if not provided.",
     inputSchema: {
       type: "object",
       required: ["id", "name", "date"],
       properties: {
-        id:            { type: "string", description: "UUID of the hackathon to update." },
-        name:          { type: "string" },
-        date:          { type: "string" },
-        slug:          { type: "string", description: "Optional. Only provide to rename the slug — existing slug is preserved otherwise." },
-        organizer:     { type: "string" },
-        location:      { type: "string" },
+        id: { type: "string", description: "UUID of the hackathon to update." },
+        name: { type: "string" },
+        date: { type: "string" },
+        slug: {
+          type: "string",
+          description:
+            "Optional. Only provide to rename the slug — existing slug is preserved otherwise.",
+        },
+        organizer: { type: "string" },
+        location: { type: "string" },
         awards: {
           type: "array",
           items: {
@@ -964,14 +1224,26 @@ const TOOL_SCHEMAS = [
             },
           },
         },
-        demo_url:      { type: "string" },
-        writeup:       { type: "string" },
-        tags:          { type: "array", items: { type: "string" } },
+        demo_url: { type: "string" },
+        writeup: { type: "string" },
+        tags: { type: "array", items: { type: "string" } },
         thumbnail_url: { type: "string" },
-        published:     { type: "boolean" },
-        team:          { type: "array", items: { type: "string" }, description: "Team member names." },
-        tier:          { type: "string", enum: ["coding", "non-coding"], description: "coding = built something; non-coding = case study / ideathon." },
-        project_name:  { type: "string", description: "Name of the project built, e.g. 'EZBIZ'." },
+        published: { type: "boolean" },
+        team: {
+          type: "array",
+          items: { type: "string" },
+          description: "Team member names.",
+        },
+        tier: {
+          type: "string",
+          enum: ["coding", "non-coding"],
+          description:
+            "coding = built something; non-coding = case study / ideathon.",
+        },
+        project_name: {
+          type: "string",
+          description: "Name of the project built, e.g. 'EZBIZ'.",
+        },
       },
     },
   },
@@ -979,58 +1251,90 @@ const TOOL_SCHEMAS = [
     name: "delete_hackathon",
     description: "Permanently delete a hackathon entry by id.",
     inputSchema: {
-      type: "object", required: ["id"],
+      type: "object",
+      required: ["id"],
       properties: { id: { type: "string" } },
     },
   },
   // ── Career ─────────────────────────────────────────────────────────────────
   {
     name: "list_career",
-    description: "List all career entries (including unpublished). Returns id, slug, company, role, start_date, end_date, description, tags, published.",
+    description:
+      "List all career entries (including unpublished). Returns id, slug, company, role, start_date, end_date, description, tags, published.",
     inputSchema: { type: "object", properties: {} },
   },
   {
     name: "get_career_by_slug",
-    description: "Get all published career entries for a given slug (e.g. 'prudential' returns both internships).",
+    description:
+      "Get all published career entries for a given slug (e.g. 'prudential' returns both internships).",
     inputSchema: {
-      type: "object", required: ["slug"],
-      properties: { slug: { type: "string", description: "Company slug, e.g. 'prudential', 'asiaverify', 'setel'." } },
+      type: "object",
+      required: ["slug"],
+      properties: {
+        slug: {
+          type: "string",
+          description:
+            "Company slug, e.g. 'prudential', 'asiaverify', 'setel'.",
+        },
+      },
     },
   },
   {
     name: "create_career",
-    description: "Create a new career entry. Use the same slug for multiple roles at the same company.",
+    description:
+      "Create a new career entry. Use the same slug for multiple roles at the same company.",
     inputSchema: {
       type: "object",
       required: ["slug", "company", "role", "start_date"],
       properties: {
-        slug:        { type: "string", description: "Company slug, e.g. 'prudential'. Multiple roles at same company share a slug." },
-        company:     { type: "string" },
-        role:        { type: "string" },
-        start_date:  { type: "string", description: "ISO date, e.g. '2025-05-01'." },
-        end_date:    { type: "string", description: "ISO date. Omit if current role." },
-        description: { type: "string", description: "Markdown bullet points of responsibilities." },
-        tags:        { type: "array", items: { type: "string" }, description: "e.g. ['ai','internship']" },
-        published:   { type: "boolean", default: false },
+        slug: {
+          type: "string",
+          description:
+            "Company slug, e.g. 'prudential'. Multiple roles at same company share a slug.",
+        },
+        company: { type: "string" },
+        role: { type: "string" },
+        start_date: {
+          type: "string",
+          description: "ISO date, e.g. '2025-05-01'.",
+        },
+        end_date: {
+          type: "string",
+          description: "ISO date. Omit if current role.",
+        },
+        description: {
+          type: "string",
+          description: "Markdown bullet points of responsibilities.",
+        },
+        tags: {
+          type: "array",
+          items: { type: "string" },
+          description: "e.g. ['ai','internship']",
+        },
+        published: { type: "boolean", default: false },
       },
     },
   },
   {
     name: "update_career",
-    description: "Update an existing career entry. All fields are replaced — call list_career or get_career_by_slug first and carry over unchanged fields.",
+    description:
+      "Update an existing career entry. All fields are replaced — call list_career or get_career_by_slug first and carry over unchanged fields.",
     inputSchema: {
       type: "object",
       required: ["id", "slug", "company", "role", "start_date"],
       properties: {
-        id:          { type: "string", description: "UUID of the career entry to update." },
-        slug:        { type: "string" },
-        company:     { type: "string" },
-        role:        { type: "string" },
-        start_date:  { type: "string" },
-        end_date:    { type: "string" },
+        id: {
+          type: "string",
+          description: "UUID of the career entry to update.",
+        },
+        slug: { type: "string" },
+        company: { type: "string" },
+        role: { type: "string" },
+        start_date: { type: "string" },
+        end_date: { type: "string" },
         description: { type: "string" },
-        tags:        { type: "array", items: { type: "string" } },
-        published:   { type: "boolean" },
+        tags: { type: "array", items: { type: "string" } },
+        published: { type: "boolean" },
       },
     },
   },
@@ -1038,62 +1342,85 @@ const TOOL_SCHEMAS = [
     name: "delete_career",
     description: "Permanently delete a career entry by id.",
     inputSchema: {
-      type: "object", required: ["id"],
+      type: "object",
+      required: ["id"],
       properties: { id: { type: "string" } },
     },
   },
   // ── Hackathon content ──────────────────────────────────────────────────────
   {
     name: "get_hackathon_content",
-    description: "Get the long-form content field for a hackathon by id. Returns id, slug, name, content.",
+    description:
+      "Get the long-form content field for a hackathon by id. Returns id, slug, name, content.",
     inputSchema: {
-      type: "object", required: ["id"],
-      properties: { id: { type: "string", description: "UUID of the hackathon." } },
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string", description: "UUID of the hackathon." },
+      },
     },
   },
   {
     name: "patch_hackathon_content",
-    description: "Set or replace the content field of a hackathon. Returns id, slug, updated: true.",
+    description:
+      "Set or replace the content field of a hackathon. Returns id, slug, updated: true.",
     inputSchema: {
-      type: "object", required: ["id", "content"],
+      type: "object",
+      required: ["id", "content"],
       properties: {
-        id:      { type: "string", description: "UUID of the hackathon." },
-        content: { type: "string", description: "Markdown/MDX content for the hackathon detail page." },
+        id: { type: "string", description: "UUID of the hackathon." },
+        content: {
+          type: "string",
+          description: "Markdown/MDX content for the hackathon detail page.",
+        },
       },
     },
   },
   // ── Career content ─────────────────────────────────────────────────────────
   {
     name: "get_career_content",
-    description: "Get the long-form content field for a career entry by id. Returns id, slug, role, content.",
+    description:
+      "Get the long-form content field for a career entry by id. Returns id, slug, role, content.",
     inputSchema: {
-      type: "object", required: ["id"],
-      properties: { id: { type: "string", description: "UUID of the career entry." } },
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string", description: "UUID of the career entry." },
+      },
     },
   },
   {
     name: "patch_career_content",
-    description: "Set or replace the content field of a career entry. Also bumps updated_at. Returns id, slug, updated: true.",
+    description:
+      "Set or replace the content field of a career entry. Also bumps updated_at. Returns id, slug, updated: true.",
     inputSchema: {
-      type: "object", required: ["id", "content"],
+      type: "object",
+      required: ["id", "content"],
       properties: {
-        id:      { type: "string", description: "UUID of the career entry." },
-        content: { type: "string", description: "Markdown/MDX content for the career detail page." },
+        id: { type: "string", description: "UUID of the career entry." },
+        content: {
+          type: "string",
+          description: "Markdown/MDX content for the career detail page.",
+        },
       },
     },
   },
   // ── Leadership ─────────────────────────────────────────────────────────────
   {
     name: "list_leadership",
-    description: "List all leadership entries (including unpublished). Returns id, slug, organisation, body, role, start_date, end_date, description, tags, published, content.",
+    description:
+      "List all leadership entries (including unpublished). Returns id, slug, organisation, body, role, start_date, end_date, description, tags, published, content.",
     inputSchema: { type: "object", properties: {} },
   },
   {
     name: "get_leadership",
     description: "Get a single leadership entry by id, including all fields.",
     inputSchema: {
-      type: "object", required: ["id"],
-      properties: { id: { type: "string", description: "UUID of the leadership entry." } },
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string", description: "UUID of the leadership entry." },
+      },
     },
   },
   {
@@ -1103,37 +1430,72 @@ const TOOL_SCHEMAS = [
       type: "object",
       required: ["slug", "organisation", "role", "start_date"],
       properties: {
-        slug:         { type: "string", description: "URL-safe identifier, e.g. 'ntu-cca-president'. Must be unique." },
-        organisation: { type: "string", description: "Name of the organisation, e.g. 'NTU Chinese Cultural Association'." },
-        body:         { type: "string", description: "Governing body or club name if different from organisation." },
-        role:         { type: "string", description: "Role title, e.g. 'President', 'Vice-Chair'." },
-        start_date:   { type: "string", description: "ISO date, e.g. '2024-08-01'." },
-        end_date:     { type: "string", description: "ISO date. Omit if current role." },
-        description:  { type: "string", description: "Markdown description of responsibilities and impact." },
-        tags:         { type: "array", items: { type: "string" }, description: "e.g. ['leadership','student-life']" },
-        published:    { type: "boolean", default: false },
-        content:      { type: "string", description: "Long-form Markdown case study content." },
+        slug: {
+          type: "string",
+          description:
+            "URL-safe identifier, e.g. 'ntu-cca-president'. Must be unique.",
+        },
+        organisation: {
+          type: "string",
+          description:
+            "Name of the organisation, e.g. 'NTU Chinese Cultural Association'.",
+        },
+        body: {
+          type: "string",
+          description:
+            "Governing body or club name if different from organisation.",
+        },
+        role: {
+          type: "string",
+          description: "Role title, e.g. 'President', 'Vice-Chair'.",
+        },
+        start_date: {
+          type: "string",
+          description: "ISO date, e.g. '2024-08-01'.",
+        },
+        end_date: {
+          type: "string",
+          description: "ISO date. Omit if current role.",
+        },
+        description: {
+          type: "string",
+          description: "Markdown description of responsibilities and impact.",
+        },
+        tags: {
+          type: "array",
+          items: { type: "string" },
+          description: "e.g. ['leadership','student-life']",
+        },
+        published: { type: "boolean", default: false },
+        content: {
+          type: "string",
+          description: "Long-form Markdown case study content.",
+        },
       },
     },
   },
   {
     name: "update_leadership",
-    description: "Update an existing leadership entry by id. All fields are replaced — call get_leadership first and carry over unchanged fields.",
+    description:
+      "Update an existing leadership entry by id. All fields are replaced — call get_leadership first and carry over unchanged fields.",
     inputSchema: {
       type: "object",
       required: ["id"],
       properties: {
-        id:           { type: "string", description: "UUID of the leadership entry to update." },
-        slug:         { type: "string" },
+        id: {
+          type: "string",
+          description: "UUID of the leadership entry to update.",
+        },
+        slug: { type: "string" },
         organisation: { type: "string" },
-        body:         { type: "string" },
-        role:         { type: "string" },
-        start_date:   { type: "string" },
-        end_date:     { type: "string" },
-        description:  { type: "string" },
-        tags:         { type: "array", items: { type: "string" } },
-        published:    { type: "boolean" },
-        content:      { type: "string" },
+        body: { type: "string" },
+        role: { type: "string" },
+        start_date: { type: "string" },
+        end_date: { type: "string" },
+        description: { type: "string" },
+        tags: { type: "array", items: { type: "string" } },
+        published: { type: "boolean" },
+        content: { type: "string" },
       },
     },
   },
@@ -1141,41 +1503,55 @@ const TOOL_SCHEMAS = [
     name: "delete_leadership",
     description: "Permanently delete a leadership entry by id.",
     inputSchema: {
-      type: "object", required: ["id"],
+      type: "object",
+      required: ["id"],
       properties: { id: { type: "string" } },
     },
   },
   {
     name: "get_leadership_content",
-    description: "Get the long-form content field for a leadership entry by id. Returns id, slug, role, content.",
+    description:
+      "Get the long-form content field for a leadership entry by id. Returns id, slug, role, content.",
     inputSchema: {
-      type: "object", required: ["id"],
-      properties: { id: { type: "string", description: "UUID of the leadership entry." } },
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string", description: "UUID of the leadership entry." },
+      },
     },
   },
   {
     name: "patch_leadership_content",
-    description: "Set or replace the content field of a leadership entry. Also bumps updated_at. Returns id, slug, updated: true.",
+    description:
+      "Set or replace the content field of a leadership entry. Also bumps updated_at. Returns id, slug, updated: true.",
     inputSchema: {
-      type: "object", required: ["id", "content"],
+      type: "object",
+      required: ["id", "content"],
       properties: {
-        id:      { type: "string", description: "UUID of the leadership entry." },
-        content: { type: "string", description: "Markdown/MDX content for the leadership detail page." },
+        id: { type: "string", description: "UUID of the leadership entry." },
+        content: {
+          type: "string",
+          description: "Markdown/MDX content for the leadership detail page.",
+        },
       },
     },
   },
   // ── Mentorship ─────────────────────────────────────────────────────────────
   {
     name: "list_mentorship",
-    description: "List all mentorship entries (including unpublished). Returns id, slug, programme, organiser, start_date, end_date, description, tags, published, content.",
+    description:
+      "List all mentorship entries (including unpublished). Returns id, slug, programme, organiser, start_date, end_date, description, tags, published, content.",
     inputSchema: { type: "object", properties: {} },
   },
   {
     name: "get_mentorship",
     description: "Get a single mentorship entry by id, including all fields.",
     inputSchema: {
-      type: "object", required: ["id"],
-      properties: { id: { type: "string", description: "UUID of the mentorship entry." } },
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string", description: "UUID of the mentorship entry." },
+      },
     },
   },
   {
@@ -1185,35 +1561,63 @@ const TOOL_SCHEMAS = [
       type: "object",
       required: ["slug", "programme", "organiser", "start_date"],
       properties: {
-        slug:        { type: "string", description: "URL-safe identifier, e.g. 'google-mentorship-2024'. Must be unique." },
-        programme:   { type: "string", description: "Name of the mentorship programme, e.g. 'Google Developer Student Club Mentorship'." },
-        organiser:   { type: "string", description: "Organising institution or company, e.g. 'Google'." },
-        start_date:  { type: "string", description: "ISO date, e.g. '2024-01-01'." },
-        end_date:    { type: "string", description: "ISO date. Omit if ongoing." },
-        description: { type: "string", description: "Markdown description of the mentorship and outcomes." },
-        tags:        { type: "array", items: { type: "string" }, description: "e.g. ['mentorship','google','career']" },
-        published:   { type: "boolean", default: false },
-        content:     { type: "string", description: "Long-form Markdown case study content." },
+        slug: {
+          type: "string",
+          description:
+            "URL-safe identifier, e.g. 'google-mentorship-2024'. Must be unique.",
+        },
+        programme: {
+          type: "string",
+          description:
+            "Name of the mentorship programme, e.g. 'Google Developer Student Club Mentorship'.",
+        },
+        organiser: {
+          type: "string",
+          description: "Organising institution or company, e.g. 'Google'.",
+        },
+        start_date: {
+          type: "string",
+          description: "ISO date, e.g. '2024-01-01'.",
+        },
+        end_date: { type: "string", description: "ISO date. Omit if ongoing." },
+        description: {
+          type: "string",
+          description: "Markdown description of the mentorship and outcomes.",
+        },
+        tags: {
+          type: "array",
+          items: { type: "string" },
+          description: "e.g. ['mentorship','google','career']",
+        },
+        published: { type: "boolean", default: false },
+        content: {
+          type: "string",
+          description: "Long-form Markdown case study content.",
+        },
       },
     },
   },
   {
     name: "update_mentorship",
-    description: "Update an existing mentorship entry by id. All fields are replaced — call get_mentorship first and carry over unchanged fields.",
+    description:
+      "Update an existing mentorship entry by id. All fields are replaced — call get_mentorship first and carry over unchanged fields.",
     inputSchema: {
       type: "object",
       required: ["id"],
       properties: {
-        id:          { type: "string", description: "UUID of the mentorship entry to update." },
-        slug:        { type: "string" },
-        programme:   { type: "string" },
-        organiser:   { type: "string" },
-        start_date:  { type: "string" },
-        end_date:    { type: "string" },
+        id: {
+          type: "string",
+          description: "UUID of the mentorship entry to update.",
+        },
+        slug: { type: "string" },
+        programme: { type: "string" },
+        organiser: { type: "string" },
+        start_date: { type: "string" },
+        end_date: { type: "string" },
         description: { type: "string" },
-        tags:        { type: "array", items: { type: "string" } },
-        published:   { type: "boolean" },
-        content:     { type: "string" },
+        tags: { type: "array", items: { type: "string" } },
+        published: { type: "boolean" },
+        content: { type: "string" },
       },
     },
   },
@@ -1221,135 +1625,213 @@ const TOOL_SCHEMAS = [
     name: "delete_mentorship",
     description: "Permanently delete a mentorship entry by id.",
     inputSchema: {
-      type: "object", required: ["id"],
+      type: "object",
+      required: ["id"],
       properties: { id: { type: "string" } },
     },
   },
   {
     name: "get_mentorship_content",
-    description: "Get the long-form content field for a mentorship entry by id. Returns id, slug, programme, content.",
+    description:
+      "Get the long-form content field for a mentorship entry by id. Returns id, slug, programme, content.",
     inputSchema: {
-      type: "object", required: ["id"],
-      properties: { id: { type: "string", description: "UUID of the mentorship entry." } },
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string", description: "UUID of the mentorship entry." },
+      },
     },
   },
   {
     name: "patch_mentorship_content",
-    description: "Set or replace the content field of a mentorship entry. Also bumps updated_at. Returns id, slug, updated: true.",
+    description:
+      "Set or replace the content field of a mentorship entry. Also bumps updated_at. Returns id, slug, updated: true.",
     inputSchema: {
-      type: "object", required: ["id", "content"],
+      type: "object",
+      required: ["id", "content"],
       properties: {
-        id:      { type: "string", description: "UUID of the mentorship entry." },
-        content: { type: "string", description: "Markdown/MDX content for the mentorship detail page." },
+        id: { type: "string", description: "UUID of the mentorship entry." },
+        content: {
+          type: "string",
+          description: "Markdown/MDX content for the mentorship detail page.",
+        },
       },
     },
   },
   // ── Job listings ───────────────────────────────────────────────────────────
   {
     name: "list_jobs",
-    description: "Browse job listings. Returns id, company, role, location, remote_type, salary, match_score, score_reasoning, status, discovered_at, external_url. Sorted by match_score descending.",
+    description:
+      "Browse job listings. Returns id, company, role, location, remote_type, salary, match_score, score_reasoning, status, discovered_at, external_url. Sorted by match_score descending.",
     inputSchema: {
       type: "object",
       properties: {
-        status: { type: "string", enum: ["new", "shortlisted", "applying", "applied", "rejected_by_user", "expired"], description: "Filter by listing status. Omit to return all." },
-        limit:  { type: "integer", default: 50, minimum: 1, maximum: 200 },
+        status: {
+          type: "string",
+          enum: [
+            "new",
+            "shortlisted",
+            "applying",
+            "applied",
+            "rejected_by_user",
+            "expired",
+          ],
+          description: "Filter by listing status. Omit to return all.",
+        },
+        limit: { type: "integer", default: 50, minimum: 1, maximum: 200 },
       },
     },
   },
   {
     name: "get_job",
-    description: "Read the full job listing by id, including full description, salary, apply URL, and all scoring fields.",
+    description:
+      "Read the full job listing by id, including full description, salary, apply URL, and all scoring fields.",
     inputSchema: {
-      type: "object", required: ["id"],
-      properties: { id: { type: "string", description: "UUID of the job listing." } },
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string", description: "UUID of the job listing." },
+      },
     },
   },
   {
     name: "score_job",
-    description: "AI-score a job listing against Edmund's profile. Writes match_score, score_breakdown, score_reasoning back to the listing and auto-shortlists if score >= 0.75. Returns the score object.",
+    description:
+      "AI-score a job listing against Edmund's profile. Writes match_score, score_breakdown, score_reasoning back to the listing and auto-shortlists if score >= 0.75. Returns the score object.",
     inputSchema: {
-      type: "object", required: ["id"],
-      properties: { id: { type: "string", description: "UUID of the job listing to score." } },
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: {
+          type: "string",
+          description: "UUID of the job listing to score.",
+        },
+      },
     },
   },
   // ── Applications ───────────────────────────────────────────────────────────
   {
     name: "create_application",
-    description: "Create a new draft application for a job listing. Returns the application record. If an application already exists for the listing, returns the existing one. Also flips the listing status to 'applying'.",
+    description:
+      "Create a new draft application for a job listing. Returns the application record. If an application already exists for the listing, returns the existing one. Also flips the listing status to 'applying'.",
     inputSchema: {
-      type: "object", required: ["job_listing_id"],
+      type: "object",
+      required: ["job_listing_id"],
       properties: {
-        job_listing_id: { type: "string", description: "UUID of the job listing to apply for." },
-        resume_id:      { type: "string", description: "Optional UUID of the resume to attach." },
+        job_listing_id: {
+          type: "string",
+          description: "UUID of the job listing to apply for.",
+        },
+        resume_id: {
+          type: "string",
+          description: "Optional UUID of the resume to attach.",
+        },
       },
     },
   },
   {
     name: "list_applications",
-    description: "List all job applications with linked listing info (company, role, external_url). Sorted by most recently updated.",
+    description:
+      "List all job applications with linked listing info (company, role, external_url). Sorted by most recently updated.",
     inputSchema: { type: "object", properties: {} },
   },
   {
     name: "get_application",
-    description: "Get a single application by id, including cover letter, resume bullets, status, and linked job listing.",
+    description:
+      "Get a single application by id, including cover letter, resume bullets, status, and linked job listing.",
     inputSchema: {
-      type: "object", required: ["id"],
-      properties: { id: { type: "string", description: "UUID of the application." } },
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string", description: "UUID of the application." },
+      },
     },
   },
   {
     name: "update_application_status",
-    description: "Move an application through the pipeline. Logs a status_change event. Valid statuses: draft, ready, submitted, acknowledged, interviewing, offered, accepted, rejected, withdrawn, ghosted.",
+    description:
+      "Move an application through the pipeline. Logs a status_change event. Valid statuses: draft, ready, submitted, acknowledged, interviewing, offered, accepted, rejected, withdrawn, ghosted.",
     inputSchema: {
-      type: "object", required: ["id", "status"],
+      type: "object",
+      required: ["id", "status"],
       properties: {
-        id:     { type: "string", description: "UUID of the application." },
-        status: { type: "string", enum: ["draft", "ready", "submitted", "acknowledged", "interviewing", "offered", "accepted", "rejected", "withdrawn", "ghosted"] },
+        id: { type: "string", description: "UUID of the application." },
+        status: {
+          type: "string",
+          enum: [
+            "draft",
+            "ready",
+            "submitted",
+            "acknowledged",
+            "interviewing",
+            "offered",
+            "accepted",
+            "rejected",
+            "withdrawn",
+            "ghosted",
+          ],
+        },
       },
     },
   },
   {
     name: "update_application_draft",
-    description: "Update the cover letter or resume bullets for an application draft.",
+    description:
+      "Update the cover letter or resume bullets for an application draft.",
     inputSchema: {
-      type: "object", required: ["id"],
+      type: "object",
+      required: ["id"],
       properties: {
-        id:             { type: "string", description: "UUID of the application." },
-        cover_letter:   { type: "string", description: "Cover letter text." },
-        resume_bullets: { type: "array", items: { type: "object" }, description: "Array of tailored bullet objects." },
+        id: { type: "string", description: "UUID of the application." },
+        cover_letter: { type: "string", description: "Cover letter text." },
+        resume_bullets: {
+          type: "array",
+          items: { type: "object" },
+          description: "Array of tailored bullet objects.",
+        },
       },
     },
   },
   {
     name: "mark_followup_sent",
-    description: "Record that a follow-up was sent for a submitted application. Increments follow_up_count and sets next follow_up_at to 7 days from now.",
+    description:
+      "Record that a follow-up was sent for a submitted application. Increments follow_up_count and sets next follow_up_at to 7 days from now.",
     inputSchema: {
-      type: "object", required: ["id"],
-      properties: { id: { type: "string", description: "UUID of the application." } },
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string", description: "UUID of the application." },
+      },
     },
   },
   {
     name: "get_followups_due",
-    description: "List submitted applications whose follow_up_at date has passed and have received no response. Use to identify who to chase today.",
+    description:
+      "List submitted applications whose follow_up_at date has passed and have received no response. Use to identify who to chase today.",
     inputSchema: { type: "object", properties: {} },
   },
   {
     name: "detect_ghosted",
-    description: "List submitted applications older than 14 days with no response. Use to identify dead applications that should be marked ghosted.",
+    description:
+      "List submitted applications older than 14 days with no response. Use to identify dead applications that should be marked ghosted.",
     inputSchema: { type: "object", properties: {} },
   },
   // ── Projects ───────────────────────────────────────────────────────────────
   {
     name: "list_projects",
-    description: "List all projects (including unpublished). Returns all fields.",
+    description:
+      "List all projects (including unpublished). Returns all fields.",
     inputSchema: { type: "object", properties: {} },
   },
   {
     name: "get_project",
     description: "Get a single project by id, including all fields.",
     inputSchema: {
-      type: "object", required: ["id"],
-      properties: { id: { type: "string", description: "UUID of the project." } },
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string", description: "UUID of the project." },
+      },
     },
   },
   {
@@ -1359,109 +1841,153 @@ const TOOL_SCHEMAS = [
       type: "object",
       required: ["slug", "name"],
       properties: {
-        slug:         { type: "string", description: "URL-safe identifier, e.g. 'my-project'. Must be unique." },
-        name:         { type: "string" },
-        tagline:      { type: "string" },
-        description:  { type: "string" },
-        status:       { type: "string", enum: ["active", "shipped", "archived"] },
-        type:         { type: "string", description: "e.g. 'saas', 'personal', 'open-source'" },
-        tech_stack:   { type: "array", items: { type: "string" } },
+        slug: {
+          type: "string",
+          description:
+            "URL-safe identifier, e.g. 'my-project'. Must be unique.",
+        },
+        name: { type: "string" },
+        tagline: { type: "string" },
+        description: { type: "string" },
+        status: { type: "string", enum: ["active", "shipped", "archived"] },
+        type: {
+          type: "string",
+          description: "e.g. 'saas', 'personal', 'open-source'",
+        },
+        tech_stack: { type: "array", items: { type: "string" } },
         external_url: { type: "string" },
-        published:    { type: "boolean", default: false },
+        published: { type: "boolean", default: false },
       },
     },
   },
   {
     name: "update_project",
-    description: "Update an existing project by id. Only provided fields are changed. Fetches existing record to preserve slug/name if not provided.",
+    description:
+      "Update an existing project by id. Only provided fields are changed. Fetches existing record to preserve slug/name if not provided.",
     inputSchema: {
       type: "object",
       required: ["id"],
       properties: {
-        id:           { type: "string", description: "UUID of the project to update." },
-        slug:         { type: "string" },
-        name:         { type: "string" },
-        tagline:      { type: "string" },
-        description:  { type: "string" },
-        status:       { type: "string", enum: ["active", "shipped", "archived"] },
-        type:         { type: "string" },
-        tech_stack:   { type: "array", items: { type: "string" } },
+        id: { type: "string", description: "UUID of the project to update." },
+        slug: { type: "string" },
+        name: { type: "string" },
+        tagline: { type: "string" },
+        description: { type: "string" },
+        status: { type: "string", enum: ["active", "shipped", "archived"] },
+        type: { type: "string" },
+        tech_stack: { type: "array", items: { type: "string" } },
         external_url: { type: "string" },
-        published:    { type: "boolean" },
+        published: { type: "boolean" },
       },
     },
   },
   {
     name: "patch_project_content",
-    description: "Set or replace the content field of a project. Also bumps updated_at. Returns id, slug, updated: true.",
+    description:
+      "Set or replace the content field of a project. Also bumps updated_at. Returns id, slug, updated: true.",
     inputSchema: {
-      type: "object", required: ["id", "content"],
+      type: "object",
+      required: ["id", "content"],
       properties: {
-        id:      { type: "string", description: "UUID of the project." },
-        content: { type: "string", description: "Markdown/MDX content for the project detail page." },
+        id: { type: "string", description: "UUID of the project." },
+        content: {
+          type: "string",
+          description: "Markdown/MDX content for the project detail page.",
+        },
       },
     },
   },
   {
     name: "get_project_content",
-    description: "Get the long-form content field for a project by id. Returns id, slug, name, content.",
+    description:
+      "Get the long-form content field for a project by id. Returns id, slug, name, content.",
     inputSchema: {
-      type: "object", required: ["id"],
-      properties: { id: { type: "string", description: "UUID of the project." } },
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string", description: "UUID of the project." },
+      },
     },
   },
   // ── Company / ATS ──────────────────────────────────────────────────────────
   {
     name: "list_companies",
-    description: "List all target companies with their ATS config and last scrape stats. Filter by status to find companies missing ATS slugs.",
+    description:
+      "List all target companies with their ATS config and last scrape stats. Filter by status to find companies missing ATS slugs.",
     inputSchema: {
       type: "object",
       properties: {
-        status: { type: "string", enum: ["active", "paused", "archived"], description: "Filter by status. Omit to return all." },
+        status: {
+          type: "string",
+          enum: ["active", "paused", "archived"],
+          description: "Filter by status. Omit to return all.",
+        },
       },
     },
   },
   {
     name: "update_company_ats",
-    description: "Set or update the ATS type and slug for a company. Use test_company_ats first to verify the slug returns results before committing.",
+    description:
+      "Set or update the ATS type and slug for a company. Use test_company_ats first to verify the slug returns results before committing.",
     inputSchema: {
-      type: "object", required: ["id", "ats_type", "ats_slug"],
+      type: "object",
+      required: ["id", "ats_type", "ats_slug"],
       properties: {
-        id:       { type: "string", description: "UUID of the company." },
-        ats_type: { type: "string", enum: ["greenhouse", "lever", "ashby"], description: "ATS platform." },
-        ats_slug: { type: "string", description: "The slug used by the ATS, e.g. 'grab', 'revolut', 'wise'." },
+        id: { type: "string", description: "UUID of the company." },
+        ats_type: {
+          type: "string",
+          enum: ["greenhouse", "lever", "ashby"],
+          description: "ATS platform.",
+        },
+        ats_slug: {
+          type: "string",
+          description:
+            "The slug used by the ATS, e.g. 'grab', 'revolut', 'wise'.",
+        },
       },
     },
   },
   {
     name: "test_company_ats",
-    description: "Test an ATS type+slug combo by scraping it live and returning the count + 5-role sample. Use before calling update_company_ats to confirm the slug is correct.",
+    description:
+      "Test an ATS type+slug combo by scraping it live and returning the count + 5-role sample. Use before calling update_company_ats to confirm the slug is correct.",
     inputSchema: {
-      type: "object", required: ["ats_type", "ats_slug"],
+      type: "object",
+      required: ["ats_type", "ats_slug"],
       properties: {
-        ats_type:     { type: "string", enum: ["greenhouse", "lever", "ashby"] },
-        ats_slug:     { type: "string", description: "Slug to test, e.g. 'grab', 'revolut'." },
-        company_name: { type: "string", description: "Optional label for the sample output." },
+        ats_type: { type: "string", enum: ["greenhouse", "lever", "ashby"] },
+        ats_slug: {
+          type: "string",
+          description: "Slug to test, e.g. 'grab', 'revolut'.",
+        },
+        company_name: {
+          type: "string",
+          description: "Optional label for the sample output.",
+        },
       },
     },
   },
   // ── Memory / profile ───────────────────────────────────────────────────────
   {
     name: "get_memory_context",
-    description: "Read Edmund's user profile entries used for personalisation — skills, preferences, targets, constraints. Returns all rows from the user_profile table grouped by category.",
+    description:
+      "Read Edmund's user profile entries used for personalisation — skills, preferences, targets, constraints. Returns all rows from the user_profile table grouped by category.",
     inputSchema: { type: "object", properties: {} },
   },
   {
     name: "list_resumes",
-    description: "List all resume records (structured + raw text) stored in the resumes table. Returns id, label, is_active, created_at.",
+    description:
+      "List all resume records (structured + raw text) stored in the resumes table. Returns id, label, is_active, created_at.",
     inputSchema: { type: "object", properties: {} },
   },
   // ── Cover letter ───────────────────────────────────────────────────────────
   {
     name: "select_resume_for_job",
-    description: "Recommend the best resume variant for a job listing based on its description. Returns one of: 'AI Engineer', 'Blockchain Engineer', 'Software Engineer'. Use before draft_cover_letter to confirm the variant.",
+    description:
+      "Recommend the best resume variant for a job listing based on its description. Returns one of: 'AI Engineer', 'Blockchain Engineer', 'Software Engineer'. Use before draft_cover_letter to confirm the variant.",
     inputSchema: {
-      type: "object", required: ["job_id"],
+      type: "object",
+      required: ["job_id"],
       properties: {
         job_id: { type: "string", description: "UUID of the job listing." },
       },
@@ -1469,30 +1995,49 @@ const TOOL_SCHEMAS = [
   },
   {
     name: "draft_cover_letter",
-    description: "Generate a cover letter for a job application using the JD, best-matched resume variant, and candidate profile. Saves the draft to applications.cover_letter by default. Returns the full text and word count.",
+    description:
+      "Generate a cover letter for a job application using the JD, best-matched resume variant, and candidate profile. Saves the draft to applications.cover_letter by default. Returns the full text and word count.",
     inputSchema: {
-      type: "object", required: ["application_id"],
+      type: "object",
+      required: ["application_id"],
       properties: {
-        application_id: { type: "string", description: "UUID of the application." },
-        resume_variant: { type: "string", description: "Override the auto-selected resume variant. One of: 'AI Engineer', 'Blockchain Engineer', 'Software Engineer'. Omit to auto-select." },
-        save: { type: "boolean", default: true, description: "Set false to preview without saving to the application record." },
+        application_id: {
+          type: "string",
+          description: "UUID of the application.",
+        },
+        resume_variant: {
+          type: "string",
+          description:
+            "Override the auto-selected resume variant. One of: 'AI Engineer', 'Blockchain Engineer', 'Software Engineer'. Omit to auto-select.",
+        },
+        save: {
+          type: "boolean",
+          default: true,
+          description:
+            "Set false to preview without saving to the application record.",
+        },
       },
     },
   },
   {
     name: "render_cover_letter_pdf",
-    description: "Render the saved cover letter for an application to a PDF. Uploads to Supabase storage and saves the URL to applications.cover_letter_pdf_url. Call draft_cover_letter first.",
+    description:
+      "Render the saved cover letter for an application to a PDF. Uploads to Supabase storage and saves the URL to applications.cover_letter_pdf_url. Call draft_cover_letter first.",
     inputSchema: {
-      type: "object", required: ["application_id"],
+      type: "object",
+      required: ["application_id"],
       properties: {
-        application_id: { type: "string", description: "UUID of the application." },
+        application_id: {
+          type: "string",
+          description: "UUID of the application.",
+        },
       },
     },
   },
 ];
 
 async function checkAuth(req: NextRequest) {
-  const auth  = req.headers.get("authorization") ?? "";
+  const auth = req.headers.get("authorization") ?? "";
   const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
   const { data } = await supabaseAdmin
     .from("system_config")
@@ -1522,7 +2067,11 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   if (!body || body.jsonrpc !== "2.0" || typeof body.method !== "string") {
     return NextResponse.json(
-      { jsonrpc: "2.0", id: body?.id ?? null, error: { code: -32600, message: "Invalid Request" } },
+      {
+        jsonrpc: "2.0",
+        id: body?.id ?? null,
+        error: { code: -32600, message: "Invalid Request" },
+      },
       { status: 400 },
     );
   }
@@ -1532,7 +2081,8 @@ export async function POST(req: NextRequest) {
   try {
     if (method === "initialize") {
       return NextResponse.json({
-        jsonrpc: "2.0", id,
+        jsonrpc: "2.0",
+        id,
         result: {
           protocolVersion: "2024-11-05",
           capabilities: { tools: {} },
@@ -1542,7 +2092,11 @@ export async function POST(req: NextRequest) {
     }
 
     if (method === "tools/list") {
-      return NextResponse.json({ jsonrpc: "2.0", id, result: { tools: TOOL_SCHEMAS } });
+      return NextResponse.json({
+        jsonrpc: "2.0",
+        id,
+        result: { tools: TOOL_SCHEMAS },
+      });
     }
 
     if (method === "tools/call") {
@@ -1550,24 +2104,38 @@ export async function POST(req: NextRequest) {
       const handler = TOOLS[name];
       if (!handler) {
         return NextResponse.json({
-          jsonrpc: "2.0", id,
+          jsonrpc: "2.0",
+          id,
           error: { code: -32601, message: `Tool not found: ${name}` },
         });
       }
       const result = await handler(args ?? {});
       return NextResponse.json({
-        jsonrpc: "2.0", id,
-        result: { content: [{ type: "text", text: JSON.stringify(result ?? { ok: true }, null, 2) }] },
+        jsonrpc: "2.0",
+        id,
+        result: {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result ?? { ok: true }, null, 2),
+            },
+          ],
+        },
       });
     }
 
     return NextResponse.json({
-      jsonrpc: "2.0", id,
+      jsonrpc: "2.0",
+      id,
       error: { code: -32601, message: `Method not found: ${method}` },
     });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : "Internal error";
-    return NextResponse.json({ jsonrpc: "2.0", id, error: { code: -32603, message } });
+    return NextResponse.json({
+      jsonrpc: "2.0",
+      id,
+      error: { code: -32603, message },
+    });
   }
 }
 
@@ -1575,9 +2143,10 @@ export async function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
     headers: {
-      "Access-Control-Allow-Origin":  "*",
+      "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization, Mcp-Session-Id",
+      "Access-Control-Allow-Headers":
+        "Content-Type, Authorization, Mcp-Session-Id",
     },
   });
 }

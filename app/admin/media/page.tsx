@@ -1,27 +1,33 @@
-import type { Metadata } from 'next';
-import { revalidatePath } from 'next/cache';
-import { getMediaAssets, updateMediaAsset, deleteMediaAsset } from '@/lib/media';
-import type { MediaAsset } from '@/lib/media';
-import { MediaManager } from './_components/MediaManager';
+import type { Metadata } from "next";
+import { revalidatePath } from "next/cache";
+import {
+  getMediaAssets,
+  updateMediaAsset,
+  deleteMediaAsset,
+} from "@/lib/media";
+import type { MediaAsset } from "@/lib/media";
+import { MediaManager } from "./_components/MediaManager";
 
-export const metadata: Metadata = { title: 'Media — whatelz.ai' };
+export const metadata: Metadata = { title: "Media — whatelz.ai" };
 
 async function saveAsset(
   id: string,
-  patch: Partial<Pick<MediaAsset, 'label' | 'description' | 'destinations'>>,
+  patch: Partial<Pick<MediaAsset, "label" | "description" | "destinations">>,
 ) {
-  'use server';
+  "use server";
   await updateMediaAsset(id, patch);
-  revalidatePath('/admin/media');
+  revalidatePath("/admin/media");
 }
 
 async function removeAsset(id: string) {
-  'use server';
+  "use server";
   await deleteMediaAsset(id);
-  revalidatePath('/admin/media');
+  revalidatePath("/admin/media");
 }
 
 export default async function MediaPage() {
   const assets = await getMediaAssets();
-  return <MediaManager assets={assets} onSave={saveAsset} onDelete={removeAsset} />;
+  return (
+    <MediaManager assets={assets} onSave={saveAsset} onDelete={removeAsset} />
+  );
 }

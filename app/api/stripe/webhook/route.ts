@@ -24,7 +24,9 @@ async function findOfferIdForPrice(priceId: string): Promise<string | null> {
 async function syncSubscription(sub: Stripe.Subscription): Promise<void> {
   const clerkId =
     (sub.metadata?.clerk_id as string | undefined) ??
-    (typeof sub.customer === "object" && sub.customer && "metadata" in sub.customer
+    (typeof sub.customer === "object" &&
+    sub.customer &&
+    "metadata" in sub.customer
       ? ((sub.customer.metadata?.clerk_id as string | undefined) ?? null)
       : null);
   if (!clerkId) {
@@ -91,7 +93,8 @@ export async function POST(req: Request) {
       STRIPE_WEBHOOK_SECRET,
     );
   } catch (e) {
-    const msg = e instanceof Error ? e.message : "Signature verification failed";
+    const msg =
+      e instanceof Error ? e.message : "Signature verification failed";
     return NextResponse.json({ error: msg }, { status: 400 });
   }
 
@@ -133,8 +136,9 @@ export async function POST(req: Request) {
 
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice;
-        const subRef = (invoice as unknown as { subscription?: string | Stripe.Subscription })
-          .subscription;
+        const subRef = (
+          invoice as unknown as { subscription?: string | Stripe.Subscription }
+        ).subscription;
         if (subRef) {
           const subId = typeof subRef === "string" ? subRef : subRef.id;
           const sub = await stripe.subscriptions.retrieve(subId);

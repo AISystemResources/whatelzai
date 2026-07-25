@@ -105,16 +105,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  const [projects, posts, hackathons, career, leadership, mentorship, testimonials] =
-    await Promise.all([
-      safe(() => listProjects(true)),
-      safe(() => getAllPosts(false)),
-      safe(() => listHackathons(true)),
-      safe(() => listCareer(true)),
-      safe(() => listLeadership(true)),
-      safe(() => listMentorship(true)),
-      safe(() => listPublicTestimonials()),
-    ]);
+  const [
+    projects,
+    posts,
+    hackathons,
+    career,
+    leadership,
+    mentorship,
+    testimonials,
+  ] = await Promise.all([
+    safe(() => listProjects(true)),
+    safe(() => getAllPosts(false)),
+    safe(() => listHackathons(true)),
+    safe(() => listCareer(true)),
+    safe(() => listLeadership(true)),
+    safe(() => listMentorship(true)),
+    safe(() => listPublicTestimonials()),
+  ]);
 
   const dynamicEntries: Entry[] = [
     ...projects.map(

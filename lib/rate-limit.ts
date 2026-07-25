@@ -32,12 +32,23 @@ function checkBucket(
   }
 
   if (existing.count >= max) {
-    return { allowed: false, remaining: 0, resetMs: existing.windowStartMs + windowMs };
+    return {
+      allowed: false,
+      remaining: 0,
+      resetMs: existing.windowStartMs + windowMs,
+    };
   }
 
-  const updated = { count: existing.count + 1, windowStartMs: existing.windowStartMs };
+  const updated = {
+    count: existing.count + 1,
+    windowStartMs: existing.windowStartMs,
+  };
   map.set(key, updated);
-  return { allowed: true, remaining: max - updated.count, resetMs: updated.windowStartMs + windowMs };
+  return {
+    allowed: true,
+    remaining: max - updated.count,
+    resetMs: updated.windowStartMs + windowMs,
+  };
 }
 
 export function checkRateLimit(ip: string): RateLimitResult {

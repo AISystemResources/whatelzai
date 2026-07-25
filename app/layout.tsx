@@ -160,12 +160,13 @@ export default async function RootLayout({
         },
       },
       {
-        "@type": "ProfessionalService",
+        "@type": "Service",
         "@id": `${SITE_URL}/services#service`,
         name: `${SITE_NAME} Services`,
         url: `${SITE_URL}/services`,
         provider: { "@id": `${SITE_URL}/#person` },
         serviceType: ["Web Development", "AI Systems", "AI Training"],
+        areaServed: "Worldwide",
         description:
           "Landing pages and sites, production AI systems, and AI training for individuals and businesses.",
       },

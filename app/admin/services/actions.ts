@@ -5,11 +5,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { isAdminRole } from "@/lib/users";
 import { supabaseAdmin } from "@/lib/supabase-server";
-import {
-  deleteService,
-  upsertService,
-  type Service,
-} from "@/lib/services";
+import { deleteService, upsertService, type Service } from "@/lib/services";
 
 async function assertAdmin(): Promise<string> {
   const { userId } = await auth();

@@ -5,13 +5,7 @@ import { useState } from "react";
 const MCP_URL = "https://whatelz.ai/api/mcp/whatelz";
 const CLAUDE_CODE_CMD = `claude mcp add whatelz --transport http ${MCP_URL}`;
 
-function CopyRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
+function CopyRow({ label, value }: { label: string; value: string }) {
   const [copied, setCopied] = useState(false);
 
   const onCopy = async () => {

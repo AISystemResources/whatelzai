@@ -89,7 +89,8 @@ export async function deleteEventByLegacyHackathonId(
     .from("events")
     .delete()
     .eq("legacy_hackathon_id", hackathonId);
-  if (error) throw new Error(`deleteEventByLegacyHackathonId: ${error.message}`);
+  if (error)
+    throw new Error(`deleteEventByLegacyHackathonId: ${error.message}`);
 }
 
 export async function deleteEventByLegacyServiceEventId(

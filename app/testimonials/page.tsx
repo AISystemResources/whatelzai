@@ -105,8 +105,7 @@ export default async function TestimonialsPage({
                 </span>
               </h2>
               <p className="mt-3 text-base text-zinc-600 sm:text-lg">
-                {getKeywordMeta(activeFilter).description}.{" "}
-                <ClearFilterLink />
+                {getKeywordMeta(activeFilter).description}. <ClearFilterLink />
               </p>
             </div>
             {filteredItems.length === 0 ? (

@@ -75,7 +75,11 @@ function unauthorizedPage(): NextResponse {
   `);
 }
 
-function consentPage(p: AuthorizeParams, email: string, error: boolean): NextResponse {
+function consentPage(
+  p: AuthorizeParams,
+  email: string,
+  error: boolean,
+): NextResponse {
   return page(`
     <h1>Connect Claude to whatelz.ai</h1>
     <p>Grant this Claude workspace read/write access to your whatelz tools — testimonials, offers, hackathons, dashboard cards, and website docs.</p>

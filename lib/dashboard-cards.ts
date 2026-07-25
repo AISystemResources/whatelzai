@@ -66,7 +66,10 @@ export async function deleteDashboardCard(
 // A card is "stale" when the writer promised a cadence and we're past it.
 // Null cadence = no promise, never stale. This is the immune system: absence
 // of a fresh briefing becomes visible instead of silently missing.
-export function isCardStale(card: DashboardCard, now: Date = new Date()): boolean {
+export function isCardStale(
+  card: DashboardCard,
+  now: Date = new Date(),
+): boolean {
   if (card.expected_cadence_hours == null) return false;
   const updated = new Date(card.updated_at).getTime();
   const staleAfter = updated + card.expected_cadence_hours * 60 * 60 * 1000;

@@ -32,8 +32,8 @@ Instructions for any AI coding agent (Claude Code, Cursor, Aider, ...) working o
 - **Styling:** Tailwind CSS v4 (`@tailwindcss/postcss`) — _light mode only, see Hard Rule 5_
 - **Auth:** Clerk (`@clerk/nextjs`)
 - **Data:** Supabase (Postgres) — `@supabase/supabase-js`
-- **Jobs:** Inngest 4 (`inngest/client.ts`, `inngest/functions/`)
-- **AI runtime:** none. Zero server-side inference — not Groq, not Anthropic, not any Vercel AI SDK provider. All LLM reasoning happens client-side in Claude Chat / Claude Code, hitting the MCP surface at `/api/mcp/whatelz` (or the future CLI). MCP verbs are pure data — read verbs return structured context, write verbs persist a body Claude produced client-side. Groq/Vercel AI SDK deps are still in `package.json` from prior policy but are unused and slated for removal. Any surviving server-side Anthropic call sites (`inngest/functions/score_job`, `inngest/functions/draft_cover_letter`) are technical debt to be *deleted*, not migrated (see Hard Rule 4).
+- **Jobs:** none. Background/cron work is not supported in-repo — schedule remote agents via claude.ai if needed.
+- **AI runtime:** none. Zero server-side inference — not Anthropic, not Groq, not any Vercel AI SDK provider. All LLM reasoning happens client-side in Claude Chat / Claude Code, hitting the MCP surface at `/api/mcp/whatelz` (or the future CLI). MCP verbs are pure data — read verbs return structured context, write verbs persist a body Claude produced client-side.
 - **PDF:** Puppeteer (`puppeteer-core` + `@sparticuz/chromium-min`) — resume + cover letter renderer
 - **Email:** Resend
 - **Package manager:** npm (lockfile: `package-lock.json`)
@@ -71,18 +71,14 @@ The standardized model (identical across all four EMDEE-tracked repos):
 
 Verified 2026-05-28 by pushing `feat/zzz-ceiling-test`: Vercel created a Preview deploy with `target: null`; the prior direct push to `main` was rejected with `GH006`.
 
-**Inngest interaction:** Inngest is registered only against the production URL (`whatelz.ai`). Preview deploys at ephemeral URLs are not auto-registered. If a feat/\* preview ever tries to handle Inngest events (it shouldn't), Edmund should remove the stray registration from the Inngest dashboard.
-
 ### 2. Never commit secrets
 
 `.env*` (except `.env.example`) is git-ignored. Real values live in Vercel project env vars. Secrets to never appear in commits, even in tests or fixtures:
 
 - `CLERK_SECRET_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_ANON_KEY` (the anon key is public-safe but treat the file as a unit)
 - `MCP_TOKEN` (PAT wrapped by the project's OAuth flow at `/api/mcp`)
-- `GROQ_API_KEY`, `RESEND_API_KEY`
-- `INNGEST_EVENT_KEY`, `INNGEST_SIGNING_KEY`
+- `RESEND_API_KEY`
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN`
-- `ANTHROPIC_API_KEY` — listed in `.env.example` but **slated for removal** once `score_job` + `draft_cover_letter` migrate to Groq. Do not add new code that depends on it.
 
 Full list: `.env.example`. Generate with `openssl rand -hex 32` where the comment says so.
 
@@ -92,10 +88,9 @@ When proposing a new `supabase/migrations/*.sql`, **apply it immediately** in th
 
 ### 4. No server-side LLM. Ever.
 
-- **Zero server inference.** Not Groq, not Anthropic, not OpenAI, not any Vercel AI SDK provider. All LLM reasoning happens client-side in Claude Chat / Claude Code, invoked by Edmund, hitting the MCP at `/api/mcp/whatelz` (or the future CLI) for data.
+- **Zero server inference.** Not Anthropic, not Groq, not OpenAI, not any Vercel AI SDK provider. All LLM reasoning happens client-side in Claude Chat / Claude Code, invoked by Edmund, hitting the MCP at `/api/mcp/whatelz` (or the future CLI) for data.
 - **MCP verbs are pure data.** Read verbs return raw or lightly-shaped structured context. Write verbs persist a body that arrives fully-formed from the client. If a tool feels like it needs server inference to be useful, split it into a read verb + a write verb and let Claude bridge them client-side.
 - **Do not suggest** `ANTHROPIC_API_KEY`, `GROQ_API_KEY`, `OPENAI_API_KEY`, or any similar env var as a pending action, prerequisite, or blocker.
-- Any surviving server-side Anthropic call sites (`inngest/functions/score_job`, `inngest/functions/draft_cover_letter`) are technical debt to be *deleted*, not migrated to Groq. Flag them for rip-out sprints.
 
 ### 5. Light mode only
 
@@ -230,14 +225,11 @@ When stopping mid-run, write a single status patch:
 │   ├── mcp-discovery.ts                       # MCP tool surface
 │   ├── supabase-client.ts, supabase-server.ts, supabase-jobs.ts
 │   ├── projects.ts, channels.ts, blog.ts, career.ts, hackathons.ts, leadership.ts, mentorship.ts
-│   ├── cover-letter-pdf.ts, cover-letter.ts, resume-versions.ts
-│   ├── ats-scraper.ts, job-filter.ts, job-scorer.ts, email-classifier.ts, domain-matcher.ts, gmail.ts
+│   ├── cover-letter-pdf.ts, resume-versions.ts
+│   ├── ats-scraper.ts, job-filter.ts, email-classifier.ts, domain-matcher.ts, gmail.ts
 │   ├── media.ts, website-docs.ts, rate-limit.ts, pill-access.ts, module-nav.ts, navigation-map.ts, utils.ts
 │   ├── shell/                 # Shell-architecture pieces
 │   └── types/
-├── inngest/
-│   ├── client.ts
-│   └── functions/             # score_job, draft_cover_letter, gmail sync, ...
 ├── supabase/
 │   ├── config.toml
 │   └── migrations/            # Apply immediately on propose — Hard Rule 3

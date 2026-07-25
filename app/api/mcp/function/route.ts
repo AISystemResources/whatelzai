@@ -56,8 +56,6 @@ import {
   listUserProfile,
 } from "@/lib/supabase-jobs";
 import type { ApplicationStatus } from "@/lib/types/jobs";
-import { scoreListings } from "@/lib/job-scorer";
-import { generateCoverLetter, selectResumeVariant } from "@/lib/cover-letter";
 import { renderCoverLetterPdf } from "@/lib/cover-letter-pdf";
 
 type ToolArgs = Record<string, unknown>;
@@ -324,35 +322,6 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
     return data;
   },
 
-  score_job: async (a) => {
-    const { data, error } = await supabaseAdmin
-      .from("job_listings")
-      .select("id, role, company, description")
-      .eq("id", a.id as string)
-      .single();
-    if (error || !data) throw new Error(`score_job: job not found`);
-    const scores = await scoreListings([
-      {
-        id: data.id,
-        role: data.role,
-        company: data.company,
-        description: data.description,
-      },
-    ]);
-    const score = scores.get(data.id);
-    if (!score) throw new Error("score_job: scorer returned no result");
-    await supabaseAdmin
-      .from("job_listings")
-      .update({
-        match_score: score.match_score,
-        score_breakdown: score.score_breakdown,
-        score_reasoning: score.score_reasoning,
-        status: score.match_score >= 0.75 ? "shortlisted" : "new",
-      })
-      .eq("id", data.id);
-    return { id: data.id, ...score };
-  },
-
   // ── Applications ──────────────────────────────────────────────────────────
   create_application: async (a) => {
     const job_listing_id = a.job_listing_id as string;
@@ -470,78 +439,12 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
   list_resumes: () => listResumes(),
 
   // ── Cover letter ──────────────────────────────────────────────────────────
-  select_resume_for_job: async (a) => {
-    const { data, error } = await supabaseAdmin
-      .from("job_listings")
-      .select("role, company, description")
-      .eq("id", a.job_id as string)
-      .single();
-    if (error || !data) throw new Error(`select_resume_for_job: job not found`);
-    const jd = `${data.role} at ${data.company}\n${data.description ?? ""}`;
-    const variant = selectResumeVariant(jd);
-    return {
-      recommended_variant: variant,
-      job_role: data.role,
-      company: data.company,
-    };
-  },
-
-  draft_cover_letter: async (a) => {
-    const app = await getApplication(a.application_id as string);
-    if (!app) throw new Error(`draft_cover_letter: application not found`);
-    if (!app.listing_id)
-      throw new Error(`draft_cover_letter: application has no linked listing`);
-
-    const { data: listing, error: listingErr } = await supabaseAdmin
-      .from("job_listings")
-      .select("role, company, description")
-      .eq("id", app.listing_id)
-      .single();
-    if (listingErr || !listing)
-      throw new Error(`draft_cover_letter: listing not found`);
-
-    const jd = `${listing.role} at ${listing.company}\n${listing.description ?? ""}`;
-    const variantOverride = a.resume_variant as string | undefined;
-    const variant = variantOverride ?? selectResumeVariant(jd);
-
-    const resumeVersion = await getResumeVersion(variant);
-    if (!resumeVersion)
-      throw new Error(
-        `draft_cover_letter: resume variant '${variant}' not found`,
-      );
-
-    const profile = await listUserProfile();
-    const profileContext = profile
-      .map((p) => `${p.category}/${p.key}: ${p.value}`)
-      .join("\n");
-
-    const coverLetter = await generateCoverLetter(
-      listing.role,
-      listing.company,
-      listing.description ?? "",
-      resumeVersion.content,
-      profileContext,
-    );
-
-    if (a.save !== false) {
-      await updateApplicationDraft(app.id, { cover_letter: coverLetter });
-    }
-
-    return {
-      application_id: app.id,
-      variant_used: variant,
-      cover_letter: coverLetter,
-      word_count: coverLetter.split(/\s+/).filter(Boolean).length,
-      saved: a.save !== false,
-    };
-  },
-
   render_cover_letter_pdf: async (a) => {
     const app = await getApplication(a.application_id as string);
     if (!app) throw new Error("render_cover_letter_pdf: application not found");
     if (!app.cover_letter?.trim())
       throw new Error(
-        "render_cover_letter_pdf: no cover letter — call draft_cover_letter first",
+        "render_cover_letter_pdf: no cover letter — save one via update_application_draft first",
       );
 
     const companyName = (app.job_listings as { company?: string } | null)
@@ -816,13 +719,11 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
       a.ats_slug as string,
       (a.company_name as string) ?? "Test",
     );
-    const sample = raw
-      .slice(0, 5)
-      .map((r) => ({
-        role: r.role,
-        location: r.location,
-        rejected: shouldReject(r.role),
-      }));
+    const sample = raw.slice(0, 5).map((r) => ({
+      role: r.role,
+      location: r.location,
+      rejected: shouldReject(r.role),
+    }));
     const rejectedCount = raw.filter((r) => shouldReject(r.role)).length;
     return {
       total: raw.length,
@@ -1694,21 +1595,6 @@ const TOOL_SCHEMAS = [
       },
     },
   },
-  {
-    name: "score_job",
-    description:
-      "AI-score a job listing against Edmund's profile. Writes match_score, score_breakdown, score_reasoning back to the listing and auto-shortlists if score >= 0.75. Returns the score object.",
-    inputSchema: {
-      type: "object",
-      required: ["id"],
-      properties: {
-        id: {
-          type: "string",
-          description: "UUID of the job listing to score.",
-        },
-      },
-    },
-  },
   // ── Applications ───────────────────────────────────────────────────────────
   {
     name: "create_application",
@@ -1982,47 +1868,9 @@ const TOOL_SCHEMAS = [
   },
   // ── Cover letter ───────────────────────────────────────────────────────────
   {
-    name: "select_resume_for_job",
-    description:
-      "Recommend the best resume variant for a job listing based on its description. Returns one of: 'AI Engineer', 'Blockchain Engineer', 'Software Engineer'. Use before draft_cover_letter to confirm the variant.",
-    inputSchema: {
-      type: "object",
-      required: ["job_id"],
-      properties: {
-        job_id: { type: "string", description: "UUID of the job listing." },
-      },
-    },
-  },
-  {
-    name: "draft_cover_letter",
-    description:
-      "Generate a cover letter for a job application using the JD, best-matched resume variant, and candidate profile. Saves the draft to applications.cover_letter by default. Returns the full text and word count.",
-    inputSchema: {
-      type: "object",
-      required: ["application_id"],
-      properties: {
-        application_id: {
-          type: "string",
-          description: "UUID of the application.",
-        },
-        resume_variant: {
-          type: "string",
-          description:
-            "Override the auto-selected resume variant. One of: 'AI Engineer', 'Blockchain Engineer', 'Software Engineer'. Omit to auto-select.",
-        },
-        save: {
-          type: "boolean",
-          default: true,
-          description:
-            "Set false to preview without saving to the application record.",
-        },
-      },
-    },
-  },
-  {
     name: "render_cover_letter_pdf",
     description:
-      "Render the saved cover letter for an application to a PDF. Uploads to Supabase storage and saves the URL to applications.cover_letter_pdf_url. Call draft_cover_letter first.",
+      "Render the saved cover letter for an application to a PDF. Uploads to Supabase storage and saves the URL to applications.cover_letter_pdf_url. Requires a cover letter already saved via update_application_draft.",
     inputSchema: {
       type: "object",
       required: ["application_id"],

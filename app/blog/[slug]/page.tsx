@@ -46,12 +46,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
-  const result = await getPost(slug);
+  const [result, site] = await Promise.all([getPost(slug), getSiteIdentity()]);
 
   if (!result) notFound();
 
   const { meta, content } = result;
   const url = `${SITE_URL}/blog/${slug}`;
+  const ogUrl = `${SITE_URL}/api/og?eyebrow=${encodeURIComponent("Blog")}&title=${encodeURIComponent(meta.title)}&subtitle=${encodeURIComponent(meta.summary || "")}`;
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
@@ -60,13 +61,24 @@ export default async function BlogPostPage({ params }: Props) {
         "@id": `${url}#article`,
         headline: meta.title,
         description: meta.summary || undefined,
+        image: [ogUrl],
         datePublished: meta.date || undefined,
-        dateModified: meta.date || undefined,
+        dateModified: meta.updated || meta.date || undefined,
         keywords: meta.tags,
         mainEntityOfPage: url,
         url,
-        author: { "@id": `${SITE_URL}/#person` },
-        publisher: { "@id": `${SITE_URL}/#person` },
+        author: {
+          "@type": "Person",
+          "@id": `${SITE_URL}/#person`,
+          name: site.owner_name,
+          url: SITE_URL,
+        },
+        publisher: {
+          "@type": "Person",
+          "@id": `${SITE_URL}/#person`,
+          name: site.owner_name,
+          url: SITE_URL,
+        },
       },
       {
         "@type": "BreadcrumbList",

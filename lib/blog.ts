@@ -28,7 +28,7 @@ export async function getAllPosts(
   return (data ?? []).map((row) => ({
     slug: row.slug,
     title: row.title,
-    date: row.published_at ? (row.published_at as string).slice(0, 10) : "",
+    date: (row.published_at as string | null) ?? "",
     updated: (row.updated_at as string | null) ?? (row.published_at as string | null) ?? "",
     summary: row.summary ?? "",
     tags: (row.tags as string[]) ?? [],
@@ -51,7 +51,7 @@ export async function getPost(
     meta: {
       slug: data.slug as string,
       title: data.title as string,
-      date: data.published_at ? (data.published_at as string).slice(0, 10) : "",
+      date: (data.published_at as string | null) ?? "",
       updated: (data.updated_at as string | null) ?? (data.published_at as string | null) ?? "",
       summary: (data.summary as string) ?? "",
       tags: (data.tags as string[]) ?? [],

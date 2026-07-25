@@ -112,7 +112,7 @@ export default async function BlogPostPage({ params }: Props) {
 
         <header className="mt-8 mb-12">
           <p className="font-mono text-xs uppercase tracking-widest text-zinc-400">
-            {meta.date}
+            {meta.date ? new Date(meta.date).toLocaleDateString("en-SG", { year: "numeric", month: "short", day: "numeric" }) : ""}
           </p>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
             {meta.title}

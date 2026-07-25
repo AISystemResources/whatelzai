@@ -64,7 +64,7 @@ export default async function BlogIndexPage() {
                       <div className="flex items-start justify-between gap-6">
                         <div className="min-w-0">
                           <p className="font-mono text-[10px] tracking-widest text-zinc-400 uppercase">
-                            {post.date}
+                            {post.date ? new Date(post.date).toLocaleDateString("en-SG", { year: "numeric", month: "short", day: "numeric" }) : ""}
                           </p>
                           <h2 className="mt-3 text-2xl font-semibold tracking-tight text-zinc-900 transition-colors group-hover:text-amber-500 sm:text-3xl">
                             {post.title}

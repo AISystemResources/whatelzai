@@ -4,6 +4,7 @@ export interface PostMeta {
   slug: string;
   title: string;
   date: string;
+  updated: string;
   summary: string;
   tags: string[];
   status: "draft" | "published";
@@ -14,7 +15,7 @@ export async function getAllPosts(
 ): Promise<PostMeta[]> {
   let query = supabaseAdmin
     .from("blog_posts")
-    .select("slug, title, summary, tags, status, published_at")
+    .select("slug, title, summary, tags, status, published_at, updated_at")
     .order("published_at", { ascending: false });
 
   if (!includeUnpublished) {
@@ -28,6 +29,7 @@ export async function getAllPosts(
     slug: row.slug,
     title: row.title,
     date: row.published_at ? (row.published_at as string).slice(0, 10) : "",
+    updated: (row.updated_at as string | null) ?? (row.published_at as string | null) ?? "",
     summary: row.summary ?? "",
     tags: (row.tags as string[]) ?? [],
     status: row.status as "draft" | "published",
@@ -50,6 +52,7 @@ export async function getPost(
       slug: data.slug as string,
       title: data.title as string,
       date: data.published_at ? (data.published_at as string).slice(0, 10) : "",
+      updated: (data.updated_at as string | null) ?? (data.published_at as string | null) ?? "",
       summary: (data.summary as string) ?? "",
       tags: (data.tags as string[]) ?? [],
       status: data.status as "draft" | "published",

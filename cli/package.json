@@ -1,7 +1,7 @@
 {
   "name": "whatelz",
-  "version": "0.1.0",
-  "description": "CLI for whatelz.ai — token-efficient companion to the HTTP MCP",
+  "version": "0.2.0",
+  "description": "CLI for whatelz.ai — token-efficient companion to the HTTP MCP with stdio MCP server support",
   "type": "module",
   "bin": {
     "whatelz": "dist/index.js"

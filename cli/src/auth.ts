@@ -1,4 +1,4 @@
-import { readFile, writeFile, mkdir, rm } from "node:fs/promises";
+import { readFile, writeFile, mkdir, rm, readdir } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { createHash, randomBytes } from "node:crypto";
@@ -8,7 +8,20 @@ import open from "open";
 
 // Override for local dev / preview branches (e.g. WHATELZ_ORIGIN=http://localhost:3100).
 export const ORIGIN = process.env.WHATELZ_ORIGIN ?? "https://whatelz.ai";
-const TOKEN_PATH = join(homedir(), ".config", "whatelz", "token.json");
+
+const CONFIG_DIR = join(homedir(), ".config", "whatelz");
+const CREDENTIALS_DIR = join(CONFIG_DIR, "credentials");
+const LEGACY_TOKEN_PATH = join(CONFIG_DIR, "token.json");
+
+export const DEFAULT_PROFILE = "default";
+
+export function currentProfile(): string {
+  return process.env.WHATELZ_PROFILE ?? DEFAULT_PROFILE;
+}
+
+function credentialsPathFor(profile: string): string {
+  return join(CREDENTIALS_DIR, `${profile}.json`);
+}
 
 export interface StoredToken {
   access_token: string;
@@ -20,27 +33,61 @@ export interface StoredToken {
 export async function saveToken(
   t: Omit<StoredToken, "origin">,
   origin: string,
+  profile: string = currentProfile(),
 ): Promise<void> {
-  await mkdir(dirname(TOKEN_PATH), { recursive: true });
-  await writeFile(TOKEN_PATH, JSON.stringify({ ...t, origin }, null, 2), {
+  const path = credentialsPathFor(profile);
+  await mkdir(dirname(path), { recursive: true });
+  await writeFile(path, JSON.stringify({ ...t, origin }, null, 2), {
     mode: 0o600,
   });
 }
 
-export async function loadToken(): Promise<StoredToken | null> {
+export async function loadToken(
+  profile: string = currentProfile(),
+): Promise<StoredToken | null> {
+  // Try profile-based path first.
   try {
-    const raw = await readFile(TOKEN_PATH, "utf8");
+    const raw = await readFile(credentialsPathFor(profile), "utf8");
     return JSON.parse(raw) as StoredToken;
   } catch {
-    return null;
+    /* fall through */
+  }
+  // Legacy: single-file token from CLI v0.1. Only used for the default
+  // profile; auto-migrates on next login. Prevents breaking existing users.
+  if (profile === DEFAULT_PROFILE) {
+    try {
+      const raw = await readFile(LEGACY_TOKEN_PATH, "utf8");
+      return JSON.parse(raw) as StoredToken;
+    } catch {
+      /* fall through */
+    }
+  }
+  return null;
+}
+
+export async function clearToken(
+  profile: string = currentProfile(),
+): Promise<void> {
+  const targets = [credentialsPathFor(profile)];
+  if (profile === DEFAULT_PROFILE) targets.push(LEGACY_TOKEN_PATH);
+  for (const t of targets) {
+    try {
+      await rm(t);
+    } catch {
+      /* already gone */
+    }
   }
 }
 
-export async function clearToken(): Promise<void> {
+export async function listProfiles(): Promise<string[]> {
   try {
-    await rm(TOKEN_PATH);
+    const entries = await readdir(CREDENTIALS_DIR);
+    return entries
+      .filter((f) => f.endsWith(".json"))
+      .map((f) => f.slice(0, -".json".length))
+      .sort();
   } catch {
-    /* already gone */
+    return [];
   }
 }
 
@@ -119,7 +166,9 @@ function waitForCode(port: number, expectedState: string): Promise<string> {
   });
 }
 
-export async function login(): Promise<StoredToken> {
+export async function login(
+  profile: string = currentProfile(),
+): Promise<StoredToken> {
   const { verifier, challenge } = pkce();
   const state = b64url(randomBytes(16));
   const port = await getFreePort();
@@ -161,6 +210,6 @@ export async function login(): Promise<StoredToken> {
     token_type: data.token_type,
     expires_at: Math.floor(Date.now() / 1000) + data.expires_in,
   };
-  await saveToken(token, ORIGIN);
+  await saveToken(token, ORIGIN, profile);
   return { ...token, origin: ORIGIN };
 }

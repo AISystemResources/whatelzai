@@ -9,6 +9,10 @@ export const SCOPES = {
   testimonials: ["read", "write", "feature"],
   sections: ["read", "write"],
   dashboard: ["read", "write"],
+  docs: ["read", "write"],
+  hackathons: ["read"],
+  offers: ["read"],
+  events: ["read"],
   tokens: ["manage"],
 } as const;
 

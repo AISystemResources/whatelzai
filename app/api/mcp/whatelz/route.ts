@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase-server";
+import { findActiveToken, touchTokenUsage } from "@/lib/auth/tokens";
+import { matchesScope } from "@/lib/auth/scopes";
+import { recordAudit } from "@/lib/auth/audit";
+import { checkTokenRateLimit, getClientIp } from "@/lib/rate-limit";
 import {
   listDocs,
   listSections,
@@ -584,33 +587,109 @@ const TOOL_SCHEMAS = [
   },
 ];
 
-async function checkAuth(req: NextRequest) {
-  const auth = req.headers.get("authorization") ?? "";
-  const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
-  const { data } = await supabaseAdmin
-    .from("system_config")
-    .select("value")
-    .eq("key", "mcp_token")
-    .single();
-  if (!data?.value || token !== data.value) {
-    const url = new URL(req.url);
-    const resourceMetadata = `${url.protocol}//${url.host}/api/mcp/whatelz/.well-known/oauth-protected-resource`;
-    return NextResponse.json(
-      { jsonrpc: "2.0", error: { code: -32001, message: "Unauthorized" } },
-      {
-        status: 401,
-        headers: {
-          "WWW-Authenticate": `Bearer realm="whatelz-mcp", resource_metadata="${resourceMetadata}"`,
-        },
+// Per-verb scope mapping. Every write verb requires a resource:write scope;
+// every read verb requires a resource:read scope. Wildcards (`blog:*`, `*`)
+// satisfy narrower scopes. `initialize`, `tools/list`, and `describe_tools`
+// are introspection-only and require only a valid (any-scope) token.
+const TOOL_SCOPES: Record<string, string> = {
+  // website-docs
+  list_docs: "docs:read",
+  list_sections: "docs:read",
+  read_section: "docs:read",
+  read_doc: "docs:read",
+  list_recent_changes: "docs:read",
+  create_section: "docs:write",
+  append_section: "docs:write",
+  patch_section: "docs:write",
+  rename_section: "docs:write",
+  move_section: "docs:write",
+  delete_section: "docs:write",
+  // dashboard
+  "dashboard.list_cards": "dashboard:read",
+  "dashboard.upsert_card": "dashboard:write",
+  "dashboard.delete_card": "dashboard:write",
+  // testimonials
+  "testimonials.list_public": "testimonials:read",
+  "testimonials.list_all": "testimonials:read",
+  "testimonials.get": "testimonials:read",
+  "testimonials.aggregate_keywords": "testimonials:read",
+  "testimonials.set_headline": "testimonials:write",
+  "testimonials.set_keywords": "testimonials:write",
+  "testimonials.set_featured": "testimonials:feature",
+  // services
+  "services.list_all": "services:read",
+  "services.get_by_slug": "services:read",
+  "services.upsert": "services:write",
+  "services.delete": "services:delete",
+  // landing sections
+  "landing.list_sections": "sections:read",
+  "landing.get_section": "sections:read",
+  "landing.update_section": "sections:write",
+  // read-only surfaces
+  "offers.list_active": "offers:read",
+  "hackathons.list": "hackathons:read",
+  "service_events.list": "events:read",
+};
+
+// Verbs whose success we push to audit_log. Reads are omitted — audit is
+// meant for "who changed what" not "who read what."
+const WRITE_VERBS = new Set([
+  "create_section",
+  "append_section",
+  "patch_section",
+  "rename_section",
+  "move_section",
+  "delete_section",
+  "dashboard.upsert_card",
+  "dashboard.delete_card",
+  "testimonials.set_headline",
+  "testimonials.set_keywords",
+  "testimonials.set_featured",
+  "services.upsert",
+  "services.delete",
+  "landing.update_section",
+]);
+
+function unauthorized(req: NextRequest, message: string) {
+  const url = new URL(req.url);
+  const resourceMetadata = `${url.protocol}//${url.host}/api/mcp/whatelz/.well-known/oauth-protected-resource`;
+  return NextResponse.json(
+    { jsonrpc: "2.0", error: { code: -32001, message } },
+    {
+      status: 401,
+      headers: {
+        "WWW-Authenticate": `Bearer realm="whatelz-mcp", resource_metadata="${resourceMetadata}"`,
       },
-    );
-  }
-  return null;
+    },
+  );
 }
 
 export async function POST(req: NextRequest) {
-  const authFail = await checkAuth(req);
-  if (authFail) return authFail;
+  const authHeader = req.headers.get("authorization") ?? "";
+  const bearer = /^Bearer\s+(\S+)$/.exec(authHeader);
+  if (!bearer) return unauthorized(req, "missing_bearer_token");
+
+  const token = await findActiveToken(bearer[1]);
+  if (!token) return unauthorized(req, "invalid_token");
+
+  const ip = getClientIp(req);
+  const userAgent = req.headers.get("user-agent");
+  const limit = checkTokenRateLimit(token.id, ip, token.rate_limit_tier);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      {
+        jsonrpc: "2.0",
+        error: {
+          code: -32005,
+          message: "rate_limited",
+          data: { reset_at: new Date(limit.resetMs).toISOString() },
+        },
+      },
+      { status: 429 },
+    );
+  }
+
+  void touchTokenUsage(token.id);
 
   const body = await req.json().catch(() => null);
   if (!body || body.jsonrpc !== "2.0" || typeof body.method !== "string") {
@@ -657,7 +736,36 @@ export async function POST(req: NextRequest) {
           error: { code: -32601, message: `Tool not found: ${name}` },
         });
       }
+
+      // Scope check. `describe_tools` is introspection-only — any active
+      // token can hit it; everything else requires the mapped scope.
+      const requiredScope = TOOL_SCOPES[name];
+      if (requiredScope && !matchesScope(requiredScope, token.scopes)) {
+        return NextResponse.json({
+          jsonrpc: "2.0",
+          id,
+          error: {
+            code: -32001,
+            message: `missing_scope:${requiredScope}`,
+          },
+        });
+      }
+
       const result = await handler(args);
+
+      if (WRITE_VERBS.has(name)) {
+        void recordAudit({
+          tokenId: token.id,
+          actorType: "token",
+          actorId: token.id,
+          action: name,
+          resourceType: "mcp_verb",
+          resourceId: name,
+          ip,
+          userAgent,
+        });
+      }
+
       return NextResponse.json({
         jsonrpc: "2.0",
         id,

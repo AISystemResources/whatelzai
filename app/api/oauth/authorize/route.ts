@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { auth } from "@clerk/nextjs/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
-import { ensureUserRow, isAdminRole } from "@/lib/users";
+import { ensureUserRow, isAdminRole, type AppUser } from "@/lib/users";
 
 // whatelz.ai is single-operator: only Edmund (admin role on Clerk) ever
 // authorizes an MCP client. So instead of asking him to paste his own
 // server-side token, we gate this page behind Clerk auth and expose a
-// single "Authorize" button. Click → server pulls the mcp_token from
-// Supabase, signs the OAuth code, redirects back to the Claude client.
+// single "Authorize" button. Click → server signs an OAuth code binding
+// the challenge to the authorising user; token exchange issues a fresh
+// per-login auth_token (see /api/oauth/token).
 
 function sign(secret: string, payload: string): string {
   return crypto
@@ -82,7 +83,7 @@ function consentPage(
 ): NextResponse {
   return page(`
     <h1>Connect Claude to whatelz.ai</h1>
-    <p>Grant this Claude workspace read/write access to your whatelz tools — testimonials, offers, hackathons, dashboard cards, and website docs.</p>
+    <p>Grant this Claude workspace read/write access to your whatelz tools — testimonials, offers, hackathons, dashboard cards, website docs, and services.</p>
     ${error ? `<div class="error">Something went wrong signing the connection. Try again.</div>` : ""}
     <div class="signed">
       <span class="signed-label">Signed in as</span>
@@ -100,22 +101,22 @@ function consentPage(
 
 function missingConfigPage(): NextResponse {
   return page(`
-    <h1>MCP not configured</h1>
-    <p>No <code>mcp_token</code> row is present in <code>system_config</code>. Set one from <a href="/admin/developer">/admin/developer</a> before connecting a client.</p>
+    <h1>OAuth not configured</h1>
+    <p>No <code>oauth_code_secret</code> row is present in <code>system_config</code>. This should have been created by the SPRINT-100 migration — check that it ran.</p>
   `);
 }
 
-async function getMcpToken(): Promise<string | null> {
+async function getOauthCodeSecret(): Promise<string | null> {
   const { data } = await supabaseAdmin
     .from("system_config")
     .select("value")
-    .eq("key", "mcp_token")
+    .eq("key", "oauth_code_secret")
     .single();
   return data?.value ?? null;
 }
 
 async function requireAdmin(): Promise<
-  | { ok: true; email: string }
+  | { ok: true; user: AppUser }
   | { ok: false; reason: "unauthenticated" | "not-admin" }
 > {
   const { userId } = await auth();
@@ -123,7 +124,7 @@ async function requireAdmin(): Promise<
   const user = await ensureUserRow();
   if (!user || !isAdminRole(user.role))
     return { ok: false, reason: "not-admin" };
-  return { ok: true, email: user.email ?? "" };
+  return { ok: true, user };
 }
 
 export async function GET(req: NextRequest) {
@@ -141,10 +142,10 @@ export async function GET(req: NextRequest) {
     return unauthorizedPage();
   }
 
-  const token = await getMcpToken();
-  if (!token) return missingConfigPage();
+  const secret = await getOauthCodeSecret();
+  if (!secret) return missingConfigPage();
 
-  return consentPage(params, gate.email, u.searchParams.has("error"));
+  return consentPage(params, gate.user.email, u.searchParams.has("error"));
 }
 
 export async function POST(req: NextRequest) {
@@ -163,12 +164,14 @@ export async function POST(req: NextRequest) {
   if (!redirect_uri)
     return new NextResponse("Missing redirect_uri", { status: 400 });
 
-  const token = await getMcpToken();
-  if (!token) return missingConfigPage();
+  const secret = await getOauthCodeSecret();
+  if (!secret) return missingConfigPage();
 
   const now = Math.floor(Date.now() / 1000);
-  const payload = `${code_challenge}.${code_challenge_method}.${now}`;
-  const code = `${Buffer.from(payload).toString("base64url")}.${sign(token, payload)}`;
+  // Payload binds challenge + method + issue_time + authorising user id.
+  // Token exchange decodes user_id to know who to issue the auth_token to.
+  const payload = `${code_challenge}.${code_challenge_method}.${now}.${gate.user.id}`;
+  const code = `${Buffer.from(payload).toString("base64url")}.${sign(secret, payload)}`;
 
   const redirect = new URL(redirect_uri);
   redirect.searchParams.set("code", code);

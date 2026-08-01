@@ -5,8 +5,18 @@ type Bucket = {
 
 const MINUTE_MS = 60 * 1000;
 const HOUR_MS = 60 * 60 * 1000;
+
+// Legacy per-IP limits (feedback form submissions, etc.).
 const MAX_PER_MINUTE = 5;
 const MAX_PER_HOUR = 20;
+
+// Per-token tiered limits (req/min). Hour limit derived as 30× the minute cap.
+export type RateLimitTier = "default" | "agent" | "owner";
+const TIER_PER_MINUTE: Record<RateLimitTier, number> = {
+  default: 60,
+  agent: 300,
+  owner: 1000,
+};
 
 const minuteBuckets = new Map<string, Bucket>();
 const hourBuckets = new Map<string, Bucket>();
@@ -57,6 +67,18 @@ export function checkRateLimit(ip: string): RateLimitResult {
 
   const hour = checkBucket(hourBuckets, ip, HOUR_MS, MAX_PER_HOUR);
   return hour;
+}
+
+// Per-token limits — keyed on token_id, tier-scaled. Falls back to IP-keyed
+// bucket for anon calls so anonymous abuse can't ride on the token budget.
+export function checkTokenRateLimit(
+  tokenId: string | null,
+  ip: string,
+  tier: RateLimitTier = "default",
+): RateLimitResult {
+  const key = tokenId ? `token:${tokenId}` : `ip:${ip}`;
+  const perMinute = tokenId ? TIER_PER_MINUTE[tier] : MAX_PER_MINUTE;
+  return checkBucket(minuteBuckets, key, MINUTE_MS, perMinute);
 }
 
 export function getClientIp(req: Request): string {

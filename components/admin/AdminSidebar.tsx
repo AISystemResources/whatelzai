@@ -9,6 +9,7 @@ import { MCPConnectHint } from "./MCPConnectHint";
 type NavItem = { href: string; label: string; exact?: boolean };
 
 const NAV: readonly NavItem[] = [
+  { href: "/admin/command-center", label: "Command Center" },
   { href: "/admin", label: "Dashboard", exact: true },
   { href: "/admin/profile", label: "My Profile" },
   { href: "/admin/services", label: "Services" },

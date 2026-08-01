@@ -1,5 +1,5 @@
 {
-  "name": "whatelz",
+  "name": "@aisystemresources/whatelz",
   "version": "0.2.0",
   "description": "CLI for whatelz.ai — token-efficient companion to the HTTP MCP with stdio MCP server support",
   "type": "module",
@@ -7,8 +7,19 @@
     "whatelz": "dist/index.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AISystemResources/whatelzai.git",
+    "directory": "cli"
+  },
+  "homepage": "https://whatelz.ai",
+  "license": "UNLICENSED",
   "engines": {
     "node": ">=20"
   },

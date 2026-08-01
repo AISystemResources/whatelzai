@@ -7,7 +7,7 @@ Same backend, same verbs — the CLI is a thin wrapper that authenticates via th
 ## Install
 
 ```bash
-npm install -g whatelz
+npm install -g @aisystemresources/whatelz
 ```
 
 Or from this repo during dev:

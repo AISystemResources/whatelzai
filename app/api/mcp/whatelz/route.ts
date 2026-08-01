@@ -47,6 +47,18 @@ import {
   deleteService,
   type Service,
 } from "@/lib/services";
+import {
+  listIssues,
+  getIssueBySlug,
+  createIssue,
+  updateIssue,
+  sendIssue,
+  listSubscribers,
+  subscriberStats,
+  addDistribution,
+  listDistributions,
+  type DistributionPlatform,
+} from "@/lib/newsletter";
 
 type ToolArgs = Record<string, unknown>;
 
@@ -168,6 +180,40 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
   "hackathons.list": async (a) =>
     listHackathons((a.published_only as boolean | undefined) ?? true),
   "service_events.list": async () => listServiceEvents(),
+
+  // Newsletter — What ELZ This Week? Compose, send, log distributions.
+  "newsletter.list_issues": async (a) =>
+    listIssues((a.include_draft as boolean | undefined) ?? false),
+  "newsletter.get_issue": (a) => getIssueBySlug(a.slug as string),
+  "newsletter.create_issue": (a) =>
+    createIssue({
+      slug: a.slug as string,
+      title: a.title as string,
+      subtitle: a.subtitle as string | undefined,
+      summary: a.summary as string | undefined,
+      content: a.content as string,
+    }),
+  "newsletter.update_issue": (a) =>
+    updateIssue(a.id as string, {
+      slug: a.slug as string | undefined,
+      title: a.title as string | undefined,
+      subtitle: a.subtitle as string | null | undefined,
+      summary: a.summary as string | null | undefined,
+      content: a.content as string | undefined,
+    }),
+  "newsletter.send_issue": async (a) => sendIssue(a.id as string),
+  "newsletter.list_subscribers": async () => listSubscribers("confirmed"),
+  "newsletter.subscriber_stats": async () => subscriberStats(),
+  "newsletter.list_distributions": (a) =>
+    listDistributions(a.issue_id as string),
+  "newsletter.add_distribution": (a) =>
+    addDistribution({
+      issue_id: a.issue_id as string,
+      platform: a.platform as DistributionPlatform,
+      external_url: a.external_url as string | undefined,
+      published_at: a.published_at as string | undefined,
+      notes: a.notes as string | undefined,
+    }),
 
   describe_tools: async () => ({ tools: TOOL_SCHEMAS }),
 };
@@ -580,6 +626,114 @@ const TOOL_SCHEMAS = [
     inputSchema: { type: "object", properties: {} },
   },
   {
+    name: "newsletter.list_issues",
+    description:
+      "List newsletter issues. Defaults to sent-only; pass include_draft=true for admin views.",
+    inputSchema: {
+      type: "object",
+      properties: { include_draft: { type: "boolean", default: false } },
+    },
+  },
+  {
+    name: "newsletter.get_issue",
+    description: "Fetch a single issue by slug (any status).",
+    inputSchema: {
+      type: "object",
+      required: ["slug"],
+      properties: { slug: { type: "string" } },
+    },
+  },
+  {
+    name: "newsletter.create_issue",
+    description:
+      "Draft a new issue. issue_number is auto-assigned (max + 1). Status is 'draft' until send_issue is called.",
+    inputSchema: {
+      type: "object",
+      required: ["slug", "title", "content"],
+      properties: {
+        slug: { type: "string" },
+        title: { type: "string" },
+        subtitle: { type: "string" },
+        summary: { type: "string" },
+        content: { type: "string" },
+      },
+    },
+  },
+  {
+    name: "newsletter.update_issue",
+    description:
+      "Update fields on an existing issue. Sent issues can still be updated but the change won't be re-broadcast.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" },
+        slug: { type: "string" },
+        title: { type: "string" },
+        subtitle: { type: "string" },
+        summary: { type: "string" },
+        content: { type: "string" },
+      },
+    },
+  },
+  {
+    name: "newsletter.send_issue",
+    description:
+      "Send a draft issue to all confirmed subscribers via Resend, mark it sent, log distributions for whatelz + resend. Idempotency: fails if already sent.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: { id: { type: "string" } },
+    },
+  },
+  {
+    name: "newsletter.list_subscribers",
+    description: "List confirmed subscribers (admin-only surface).",
+    inputSchema: { type: "object", properties: {} },
+  },
+  {
+    name: "newsletter.subscriber_stats",
+    description:
+      "Return { confirmed, unsubscribed, total } counts for the newsletter list.",
+    inputSchema: { type: "object", properties: {} },
+  },
+  {
+    name: "newsletter.list_distributions",
+    description:
+      "List cross-post distribution rows (platform + URL + timestamp) for an issue.",
+    inputSchema: {
+      type: "object",
+      required: ["issue_id"],
+      properties: { issue_id: { type: "string" } },
+    },
+  },
+  {
+    name: "newsletter.add_distribution",
+    description:
+      "Log a cross-post URL for an issue. Upsert on (issue_id, platform). Platforms: whatelz, resend, linkedin, medium, substack, beehiiv.",
+    inputSchema: {
+      type: "object",
+      required: ["issue_id", "platform"],
+      properties: {
+        issue_id: { type: "string" },
+        platform: {
+          type: "string",
+          enum: [
+            "whatelz",
+            "resend",
+            "linkedin",
+            "medium",
+            "substack",
+            "beehiiv",
+          ],
+        },
+        external_url: { type: "string" },
+        published_at: { type: "string" },
+        notes: { type: "string" },
+      },
+    },
+  },
+  {
     name: "describe_tools",
     description:
       "Return the full tool catalogue (same shape as tools/list, plus descriptions) for callers without MCP introspection.",
@@ -629,6 +783,16 @@ const TOOL_SCOPES: Record<string, string> = {
   "offers.list_active": "offers:read",
   "hackathons.list": "hackathons:read",
   "service_events.list": "events:read",
+  // newsletter
+  "newsletter.list_issues": "newsletter:read",
+  "newsletter.get_issue": "newsletter:read",
+  "newsletter.create_issue": "newsletter:write",
+  "newsletter.update_issue": "newsletter:write",
+  "newsletter.send_issue": "newsletter:send",
+  "newsletter.list_subscribers": "newsletter:subscribers:read",
+  "newsletter.subscriber_stats": "newsletter:subscribers:read",
+  "newsletter.list_distributions": "newsletter:read",
+  "newsletter.add_distribution": "newsletter:write",
 };
 
 // Verbs whose success we push to audit_log. Reads are omitted — audit is
@@ -648,6 +812,10 @@ const WRITE_VERBS = new Set([
   "services.upsert",
   "services.delete",
   "landing.update_section",
+  "newsletter.create_issue",
+  "newsletter.update_issue",
+  "newsletter.send_issue",
+  "newsletter.add_distribution",
 ]);
 
 function unauthorized(req: NextRequest, message: string) {

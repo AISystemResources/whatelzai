@@ -4,7 +4,13 @@
 
 export const SCOPES = {
   blog: ["read", "write", "publish", "delete"],
-  newsletter: ["write", "send", "subscribers:read", "subscribers:manage"],
+  newsletter: [
+    "read",
+    "write",
+    "send",
+    "subscribers:read",
+    "subscribers:manage",
+  ],
   services: ["read", "write", "delete"],
   testimonials: ["read", "write", "feature"],
   sections: ["read", "write"],

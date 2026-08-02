@@ -59,6 +59,8 @@ import {
   listDistributions,
   type DistributionPlatform,
 } from "@/lib/newsletter";
+import { getSelfMetrics } from "@/lib/cockpit-self";
+import { fetchRemoteWidgets } from "@/lib/cockpit";
 
 type ToolArgs = Record<string, unknown>;
 
@@ -214,6 +216,25 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
       published_at: a.published_at as string | undefined,
       notes: a.notes as string | undefined,
     }),
+
+  // Command Center snapshot — same data the /admin/command-center page renders.
+  // scope: 'self' (default) returns whatelz.ai only. 'all' proxies EMDEE +
+  // DoubleLead owner-metrics endpoints too using the server-side tokens.
+  "system.metrics": async (a) => {
+    const scope = (a.scope as string | undefined) ?? "self";
+    if (scope === "self") {
+      return { whatelz: await getSelfMetrics() };
+    }
+    const [self, remote] = await Promise.all([
+      getSelfMetrics(),
+      fetchRemoteWidgets(),
+    ]);
+    return {
+      whatelz: self,
+      emdee: remote.emdee,
+      doublelead: remote.doublelead,
+    };
+  },
 
   describe_tools: async () => ({ tools: TOOL_SCHEMAS }),
 };
@@ -734,6 +755,17 @@ const TOOL_SCHEMAS = [
     },
   },
   {
+    name: "system.metrics",
+    description:
+      "Command Center snapshot — same data the /admin/command-center page renders. Pass scope='self' (default) for whatelz.ai only, or scope='all' to also proxy EMDEE + DoubleLead owner-metrics (returns { whatelz, emdee, doublelead }; remote widgets carry status 'available' | 'pending' | 'error').",
+    inputSchema: {
+      type: "object",
+      properties: {
+        scope: { type: "string", enum: ["self", "all"], default: "self" },
+      },
+    },
+  },
+  {
     name: "describe_tools",
     description:
       "Return the full tool catalogue (same shape as tools/list, plus descriptions) for callers without MCP introspection.",
@@ -793,6 +825,8 @@ const TOOL_SCOPES: Record<string, string> = {
   "newsletter.subscriber_stats": "newsletter:subscribers:read",
   "newsletter.list_distributions": "newsletter:read",
   "newsletter.add_distribution": "newsletter:write",
+  // command center
+  "system.metrics": "system:read",
 };
 
 // Verbs whose success we push to audit_log. Reads are omitted — audit is

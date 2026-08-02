@@ -3,7 +3,8 @@ import crypto from "crypto";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { generateToken, hashToken } from "@/lib/auth/tokens";
 import { recordAudit } from "@/lib/auth/audit";
-import { getClientIp } from "@/lib/rate-limit";
+import { getClientIp, type RateLimitTier } from "@/lib/rate-limit";
+import { OWNER_SCOPE } from "@/lib/auth/scopes";
 
 // Token TTL — 1 year on the wire (informational for the client). Tokens
 // are persisted with expires_at = null so they don't hard-expire; revoke
@@ -29,6 +30,20 @@ function sign(secret: string, payload: string): string {
 
 function s256(verifier: string): string {
   return crypto.createHash("sha256").update(verifier).digest("base64url");
+}
+
+// Decode the optional 5th payload segment (scopes, base64url'd space-joined).
+// Returns null when the payload only has 4 segments (pre-SPRINT-106 code)
+// so the caller can fall back to owner scope.
+function decodeScopes(payload: string): string[] | null {
+  const parts = payload.split(".");
+  if (parts.length < 5) return null;
+  const raw = Buffer.from(parts[4], "base64url").toString();
+  const scopes = raw
+    .split(/\s+/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+  return scopes.length > 0 ? scopes : null;
 }
 
 export async function POST(req: NextRequest) {
@@ -78,10 +93,18 @@ export async function POST(req: NextRequest) {
   if (!userRow || (userRow.role !== "admin" && userRow.role !== "superadmin"))
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
-  // Issue a fresh, revocable, per-login auth_token with owner scope.
+  // Scope decode. Missing / empty → owner default (backwards compat).
+  const requestedScopes = decodeScopes(payload);
+  const scopes = requestedScopes ?? [OWNER_SCOPE];
+  const isOwnerScope = scopes.length === 1 && scopes[0] === OWNER_SCOPE;
+  const rateLimitTier: RateLimitTier = isOwnerScope ? "owner" : "agent";
+
+  // Issue a fresh, revocable auth_token. Name encodes whether it's
+  // owner-scope (broad) or narrow — helpful in /admin/tokens.
   const token = generateToken();
   const now = new Date().toISOString();
-  const name = `oauth-${new Date().toISOString().slice(0, 10)}-${crypto.randomBytes(3).toString("hex")}`;
+  const scopePrefix = isOwnerScope ? "oauth" : "oauth-scoped";
+  const name = `${scopePrefix}-${new Date().toISOString().slice(0, 10)}-${crypto.randomBytes(3).toString("hex")}`;
 
   const { data: inserted, error } = await supabaseAdmin
     .from("auth_tokens")
@@ -89,8 +112,8 @@ export async function POST(req: NextRequest) {
       user_id: userId,
       token_hash: hashToken(token),
       name,
-      scopes: ["*"],
-      rate_limit_tier: "owner",
+      scopes,
+      rate_limit_tier: rateLimitTier,
       expires_at: null,
     })
     .select("id")
@@ -109,16 +132,26 @@ export async function POST(req: NextRequest) {
     action: "tokens:issue:oauth",
     resourceType: "auth_token",
     resourceId: (inserted as { id: string }).id,
-    payload: { name, via: "oauth", issued_at: now },
+    payload: {
+      name,
+      via: "oauth",
+      issued_at: now,
+      scopes,
+      tier: rateLimitTier,
+    },
     ip: getClientIp(req),
     userAgent: req.headers.get("user-agent"),
   });
 
+  // Return the granted scope back to the client per RFC 6749 §5.1 (space-
+  // separated). Callers that requested narrower than granted, or asked
+  // for unknown scopes, can compare to know what they got.
   return NextResponse.json(
     {
       access_token: token,
       token_type: "Bearer",
       expires_in: TOKEN_TTL_SECONDS,
+      scope: scopes.join(" "),
     },
     { headers: { "Access-Control-Allow-Origin": "*" } },
   );

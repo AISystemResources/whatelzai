@@ -1,4 +1,5 @@
 import { baseUrl, jsonWithCors } from "@/lib/mcp-discovery";
+import { ALL_SCOPES, OWNER_SCOPE } from "@/lib/auth/scopes";
 
 export async function GET(req: Request) {
   const base = baseUrl(req);
@@ -11,5 +12,6 @@ export async function GET(req: Request) {
     grant_types_supported: ["authorization_code"],
     code_challenge_methods_supported: ["S256"],
     token_endpoint_auth_methods_supported: ["none"],
+    scopes_supported: [OWNER_SCOPE, ...ALL_SCOPES],
   });
 }

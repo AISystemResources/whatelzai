@@ -241,6 +241,115 @@ export async function unsubscribeByToken(
   return { ok: true, email: (data as { email: string }).email };
 }
 
+// Admin-side unsubscribe by email. Soft by default (matches token flow);
+// hard=true removes the row entirely. Returns { ok: false } if no such
+// email is on the list.
+export async function removeSubscriberByEmail(
+  email: string,
+  hard = false,
+): Promise<{ ok: boolean; email?: string; mode?: "soft" | "hard" }> {
+  const normalized = normalizeEmail(email);
+  if (hard) {
+    const { data, error } = await supabaseAdmin
+      .from("newsletter_subscribers")
+      .delete()
+      .eq("email", normalized)
+      .select("email")
+      .maybeSingle();
+    if (error || !data) return { ok: false };
+    return {
+      ok: true,
+      email: (data as { email: string }).email,
+      mode: "hard",
+    };
+  }
+  const { data, error } = await supabaseAdmin
+    .from("newsletter_subscribers")
+    .update({
+      status: "unsubscribed",
+      unsubscribed_at: new Date().toISOString(),
+    })
+    .eq("email", normalized)
+    .select("email")
+    .maybeSingle();
+  if (error || !data) return { ok: false };
+  return { ok: true, email: (data as { email: string }).email, mode: "soft" };
+}
+
+// Bulk import. Cap enforced by caller. Runs sequentially through subscribe()
+// so we get idempotent upsert semantics for free and per-row error isolation.
+export interface ImportSubscriberRow {
+  email: string;
+  name?: string;
+}
+
+export interface ImportSubscribersResult {
+  added: number;
+  updated: number;
+  skipped: number;
+  errors: { email: string; reason: string }[];
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const IMPORT_CAP = 500;
+
+export async function importSubscribers(
+  rows: ImportSubscriberRow[],
+  source?: string,
+): Promise<ImportSubscribersResult> {
+  if (rows.length > IMPORT_CAP) {
+    throw new Error(`import_cap_exceeded: max ${IMPORT_CAP} rows per call`);
+  }
+  const result: ImportSubscribersResult = {
+    added: 0,
+    updated: 0,
+    skipped: 0,
+    errors: [],
+  };
+
+  // Snapshot which emails already exist so we can distinguish added vs updated.
+  const emails = rows
+    .map((r) => (typeof r.email === "string" ? normalizeEmail(r.email) : ""))
+    .filter((e) => e.length > 0);
+  const { data: existingRows } = await supabaseAdmin
+    .from("newsletter_subscribers")
+    .select("email")
+    .in("email", emails.length > 0 ? emails : [""]);
+  const existingSet = new Set(
+    ((existingRows ?? []) as { email: string }[]).map((r) => r.email),
+  );
+
+  for (const row of rows) {
+    if (typeof row.email !== "string" || !EMAIL_RE.test(row.email.trim())) {
+      result.errors.push({
+        email: String(row.email ?? ""),
+        reason: "invalid_email",
+      });
+      continue;
+    }
+    const normalized = normalizeEmail(row.email);
+    try {
+      await subscribe({
+        email: row.email,
+        name: row.name,
+        source: source ?? "import",
+      });
+      if (existingSet.has(normalized)) {
+        result.updated += 1;
+      } else {
+        result.added += 1;
+      }
+    } catch (err) {
+      result.errors.push({
+        email: normalized,
+        reason: (err as Error).message ?? "insert_failed",
+      });
+      result.skipped += 1;
+    }
+  }
+  return result;
+}
+
 export async function listSubscribers(
   status?: SubscriberStatus,
 ): Promise<NewsletterSubscriber[]> {

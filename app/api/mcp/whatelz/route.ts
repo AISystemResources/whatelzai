@@ -15,6 +15,9 @@ import {
   moveSection,
   deleteSection,
   listRecentChanges,
+  trashDoc,
+  restoreDoc,
+  deleteDoc,
   VALID_SLUGS,
 } from "@/lib/website-docs";
 import {
@@ -57,7 +60,11 @@ import {
   subscriberStats,
   addDistribution,
   listDistributions,
+  subscribe,
+  importSubscribers,
+  removeSubscriberByEmail,
   type DistributionPlatform,
+  type ImportSubscriberRow,
 } from "@/lib/newsletter";
 import { getSelfMetrics } from "@/lib/cockpit-self";
 import { fetchRemoteWidgets } from "@/lib/cockpit";
@@ -120,6 +127,16 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
     listRecentChanges(
       a.doc_slug as (typeof VALID_SLUGS)[number] | undefined,
       (a.limit as number | undefined) ?? 20,
+    ),
+
+  // Doc-level lifecycle (SPRINT-105). trash → hides doc from all reads;
+  // restore → brings it back; delete → hard removal, requires confirm=true.
+  trash_doc: (a) => trashDoc(a.doc_slug as (typeof VALID_SLUGS)[number]),
+  restore_doc: (a) => restoreDoc(a.doc_slug as (typeof VALID_SLUGS)[number]),
+  delete_doc: (a) =>
+    deleteDoc(
+      a.doc_slug as (typeof VALID_SLUGS)[number],
+      (a.confirm as boolean | undefined) ?? false,
     ),
 
   // Dashboard cards — briefing write-back surface for Claude Schedule runs.
@@ -206,6 +223,22 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
   "newsletter.send_issue": async (a) => sendIssue(a.id as string),
   "newsletter.list_subscribers": async () => listSubscribers("confirmed"),
   "newsletter.subscriber_stats": async () => subscriberStats(),
+  "newsletter.add_subscriber": (a) =>
+    subscribe({
+      email: a.email as string,
+      name: a.name as string | undefined,
+      source: (a.source as string | undefined) ?? "manual",
+    }),
+  "newsletter.import_subscribers": (a) =>
+    importSubscribers(
+      (a.subscribers as ImportSubscriberRow[] | undefined) ?? [],
+      (a.source as string | undefined) ?? "import",
+    ),
+  "newsletter.remove_subscriber": (a) =>
+    removeSubscriberByEmail(
+      a.email as string,
+      (a.hard as boolean | undefined) ?? false,
+    ),
   "newsletter.list_distributions": (a) =>
     listDistributions(a.issue_id as string),
   "newsletter.add_distribution": (a) =>
@@ -372,6 +405,39 @@ const TOOL_SCHEMAS = [
       properties: {
         doc_slug: { type: "string", enum: VALID_SLUGS },
         limit: { type: "integer", minimum: 1, maximum: 100, default: 20 },
+      },
+    },
+  },
+  {
+    name: "trash_doc",
+    description:
+      "Soft-hide a whole doc by setting trashed_at on every is_current section. Idempotent. Doc disappears from list_docs / read_doc / read_section / list_sections. Restore with restore_doc.",
+    inputSchema: {
+      type: "object",
+      required: ["doc_slug"],
+      properties: { doc_slug: { type: "string", enum: VALID_SLUGS } },
+    },
+  },
+  {
+    name: "restore_doc",
+    description:
+      "Clear trashed_at on a previously trashed doc — sections reappear.",
+    inputSchema: {
+      type: "object",
+      required: ["doc_slug"],
+      properties: { doc_slug: { type: "string", enum: VALID_SLUGS } },
+    },
+  },
+  {
+    name: "delete_doc",
+    description:
+      "Hard-delete every section (current + historical) of a doc plus its version history. Requires confirm=true — refuses otherwise. Irreversible. Prefer trash_doc unless truly destroying.",
+    inputSchema: {
+      type: "object",
+      required: ["doc_slug", "confirm"],
+      properties: {
+        doc_slug: { type: "string", enum: VALID_SLUGS },
+        confirm: { type: "boolean" },
       },
     },
   },
@@ -719,6 +785,57 @@ const TOOL_SCHEMAS = [
     inputSchema: { type: "object", properties: {} },
   },
   {
+    name: "newsletter.add_subscriber",
+    description:
+      "Add or re-activate a subscriber. Idempotent — adding an existing email is a no-op if already confirmed, or re-activates if previously unsubscribed. Single-opt-in (confirmed_at set immediately).",
+    inputSchema: {
+      type: "object",
+      required: ["email"],
+      properties: {
+        email: { type: "string", format: "email" },
+        name: { type: "string" },
+        source: { type: "string", default: "manual" },
+      },
+    },
+  },
+  {
+    name: "newsletter.import_subscribers",
+    description:
+      "Bulk add up to 500 subscribers. Same idempotent semantics as add_subscriber. Returns { added, updated, skipped, errors[] }. Invalid emails are skipped, not aborting the batch.",
+    inputSchema: {
+      type: "object",
+      required: ["subscribers"],
+      properties: {
+        subscribers: {
+          type: "array",
+          maxItems: 500,
+          items: {
+            type: "object",
+            required: ["email"],
+            properties: {
+              email: { type: "string", format: "email" },
+              name: { type: "string" },
+            },
+          },
+        },
+        source: { type: "string", default: "import" },
+      },
+    },
+  },
+  {
+    name: "newsletter.remove_subscriber",
+    description:
+      "Remove a subscriber by email. Soft by default (sets unsubscribed_at, preserves row for audit). Pass hard=true to delete the row entirely.",
+    inputSchema: {
+      type: "object",
+      required: ["email"],
+      properties: {
+        email: { type: "string", format: "email" },
+        hard: { type: "boolean", default: false },
+      },
+    },
+  },
+  {
     name: "newsletter.list_distributions",
     description:
       "List cross-post distribution rows (platform + URL + timestamp) for an issue.",
@@ -790,6 +907,9 @@ const TOOL_SCOPES: Record<string, string> = {
   rename_section: "docs:write",
   move_section: "docs:write",
   delete_section: "docs:write",
+  trash_doc: "docs:write",
+  restore_doc: "docs:write",
+  delete_doc: "docs:write",
   // dashboard
   "dashboard.list_cards": "dashboard:read",
   "dashboard.upsert_card": "dashboard:write",
@@ -823,6 +943,9 @@ const TOOL_SCOPES: Record<string, string> = {
   "newsletter.send_issue": "newsletter:send",
   "newsletter.list_subscribers": "newsletter:subscribers:read",
   "newsletter.subscriber_stats": "newsletter:subscribers:read",
+  "newsletter.add_subscriber": "newsletter:subscribers:manage",
+  "newsletter.import_subscribers": "newsletter:subscribers:manage",
+  "newsletter.remove_subscriber": "newsletter:subscribers:manage",
   "newsletter.list_distributions": "newsletter:read",
   "newsletter.add_distribution": "newsletter:write",
   // command center
@@ -838,6 +961,9 @@ const WRITE_VERBS = new Set([
   "rename_section",
   "move_section",
   "delete_section",
+  "trash_doc",
+  "restore_doc",
+  "delete_doc",
   "dashboard.upsert_card",
   "dashboard.delete_card",
   "testimonials.set_headline",
@@ -850,6 +976,9 @@ const WRITE_VERBS = new Set([
   "newsletter.update_issue",
   "newsletter.send_issue",
   "newsletter.add_distribution",
+  "newsletter.add_subscriber",
+  "newsletter.import_subscribers",
+  "newsletter.remove_subscriber",
 ]);
 
 function unauthorized(req: NextRequest, message: string) {

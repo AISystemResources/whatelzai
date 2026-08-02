@@ -19,6 +19,7 @@ export const SCOPES = {
   hackathons: ["read"],
   offers: ["read"],
   events: ["read"],
+  system: ["read"],
   tokens: ["manage"],
 } as const;
 

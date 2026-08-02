@@ -66,7 +66,12 @@ async function getUsageStats(): Promise<Record<string, number | null>> {
     countRows("newsletter_subscribers", { status: "unsubscribed" }),
     countRows("newsletter_issues", { status: "sent" }),
     countRows("blog_posts", { status: "published" }),
-    countRows("testimonials", { is_public: true }),
+    supabaseAdmin
+      .from("testimonials")
+      .select("*", { count: "exact", head: true })
+      .eq("published", true)
+      .eq("status", "approved")
+      .then(({ count }) => count ?? 0),
     countRows("testimonials"),
     countRows("services", { status: "live" }),
     countRows("audit_log", {}, { column: "created_at", value: weekAgo }),

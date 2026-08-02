@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { SCOPES, OWNER_SCOPE } from "@/lib/auth/scopes";
+import { SCOPES, OWNER_SCOPE, isElevatedScope } from "@/lib/auth/scopes";
 
 export type TokenRow = {
   id: string;
@@ -52,6 +52,27 @@ export function TokensAdmin({ initialTokens }: { initialTokens: TokenRow[] }) {
       alert(`Revoke failed: ${await res.text()}`);
       return;
     }
+    startTransition(() => router.refresh());
+  }
+
+  async function handleRotate(id: string, name: string) {
+    if (
+      !confirm(
+        `Rotate "${name}" to safe scopes?\n\nThis will:\n  • Immediately revoke the current token (any client using it will 401).\n  • Issue a NEW token with SAFE_DEFAULT_SCOPES only (docs:read, newsletter:read/write, testimonials:read, dashboard:read/write).\n\nCopy the new token from the amber panel and update whichever client was using the old one.`,
+      )
+    )
+      return;
+    const res = await fetch(`/api/admin/tokens/${id}/rotate`, {
+      method: "POST",
+    });
+    if (!res.ok) {
+      alert(`Rotate failed: ${await res.text()}`);
+      return;
+    }
+    const body = (await res.json()) as {
+      new_token: { name: string; token: string };
+    };
+    setNewToken({ name: body.new_token.name, token: body.new_token.token });
     startTransition(() => router.refresh());
   }
 
@@ -132,14 +153,27 @@ export function TokensAdmin({ initialTokens }: { initialTokens: TokenRow[] }) {
                   {t.expires_at && ` · Expires ${formatDate(t.expires_at)}`}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => handleRevoke(t.id, t.name)}
-                disabled={pending}
-                className="shrink-0 font-mono text-xs text-red-600 hover:text-red-800 disabled:opacity-50"
-              >
-                Revoke
-              </button>
+              <div className="shrink-0 flex flex-col items-end gap-1.5">
+                {t.scopes.some((s) => isElevatedScope(s)) && (
+                  <button
+                    type="button"
+                    onClick={() => handleRotate(t.id, t.name)}
+                    disabled={pending}
+                    title="Revoke this elevated token and issue a fresh one with SAFE_DEFAULT_SCOPES"
+                    className="font-mono text-xs text-amber-700 hover:text-amber-900 disabled:opacity-50"
+                  >
+                    Rotate to safe
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => handleRevoke(t.id, t.name)}
+                  disabled={pending}
+                  className="font-mono text-xs text-red-600 hover:text-red-800 disabled:opacity-50"
+                >
+                  Revoke
+                </button>
+              </div>
             </div>
           ))}
         </div>

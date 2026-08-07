@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PublicForm } from "./PublicForm";
 import { StartForm } from "./StartForm";
+import { PeerVoices } from "./PeerVoices";
 import { getTestimonialByToken } from "@/lib/testimonials";
 import { listServiceEvents } from "@/lib/service-events";
 
@@ -151,7 +152,13 @@ export default async function NewTestimonialPage({
             Personal invite · pre-filled for you
           </p>
         )}
+      </div>
 
+      <div className="mx-auto max-w-5xl">
+        <PeerVoices viewerCategory={testimonial.category ?? null} />
+      </div>
+
+      <div className="mx-auto max-w-2xl">
         <div className="mt-14">
           <PublicForm prefill={testimonial} events={events} />
         </div>

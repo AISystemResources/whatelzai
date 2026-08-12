@@ -1,4 +1,5 @@
 import { Hero } from "@/components/sections/hero";
+import { QuizCTA } from "@/components/sections/quiz-cta";
 import { Intro } from "@/components/sections/intro";
 import { Provocation } from "@/components/sections/provocation";
 import { POV } from "@/components/sections/pov";
@@ -13,6 +14,7 @@ export default async function Home() {
   return (
     <main>
       <Hero />
+      <QuizCTA />
       <Intro site={site} />
       <Testimonials />
       <Provocation />

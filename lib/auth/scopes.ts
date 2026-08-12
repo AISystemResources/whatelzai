@@ -21,6 +21,7 @@ export const SCOPES = {
   events: ["read"],
   system: ["read"],
   tokens: ["manage"],
+  quiz: ["read", "manage"],
 } as const;
 
 export const OWNER_SCOPE = "*" as const;
@@ -43,6 +44,7 @@ export const SAFE_DEFAULT_SCOPES: readonly string[] = [
   "testimonials:read",
   "dashboard:read",
   "dashboard:write",
+  "quiz:read",
 ];
 
 // Elevated scopes require explicit human tick on the consent screen. Owner,

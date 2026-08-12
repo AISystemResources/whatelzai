@@ -6,6 +6,7 @@ import { listCareer } from "@/lib/career";
 import { listLeadership } from "@/lib/leadership";
 import { listMentorship } from "@/lib/mentorship";
 import { listPublicTestimonials, testimonialSlug } from "@/lib/testimonials";
+import { listQuizzes } from "@/lib/quizzes";
 
 const SITE_URL = "https://whatelz.ai";
 
@@ -98,6 +99,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     },
     {
+      url: `${SITE_URL}/quiz`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.85,
+    },
+    {
       url: `${SITE_URL}/contact`,
       lastModified: now,
       changeFrequency: "yearly",
@@ -113,6 +120,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     leadership,
     mentorship,
     testimonials,
+    quizzes,
   ] = await Promise.all([
     safe(() => listProjects(true)),
     safe(() => getAllPosts(false)),
@@ -121,6 +129,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     safe(() => listLeadership(true)),
     safe(() => listMentorship(true)),
     safe(() => listPublicTestimonials()),
+    safe(() => listQuizzes(true)),
   ]);
 
   const dynamicEntries: Entry[] = [
@@ -178,6 +187,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: t.updated_at ? new Date(t.updated_at) : now,
         changeFrequency: "yearly",
         priority: 0.6,
+      }),
+    ),
+    ...quizzes.map(
+      (q): Entry => ({
+        url: `${SITE_URL}/quiz/${q.slug}`,
+        lastModified: q.updated_at ? new Date(q.updated_at) : now,
+        changeFrequency: "monthly",
+        priority: 0.8,
       }),
     ),
   ];

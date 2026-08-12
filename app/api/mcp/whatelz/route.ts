@@ -68,6 +68,21 @@ import {
 } from "@/lib/newsletter";
 import { getSelfMetrics } from "@/lib/cockpit-self";
 import { fetchRemoteWidgets } from "@/lib/cockpit";
+import {
+  listQuizzes,
+  getQuizBySlug,
+  listAttempts as listQuizAttempts,
+  attemptStats as quizAttemptStats,
+  quizCreate,
+  quizUpdate,
+  questionCreate,
+  questionUpdate,
+  questionDelete,
+  choiceCreate,
+  choiceUpdate,
+  choiceDelete,
+  archetypeUpsert,
+} from "@/lib/quizzes";
 
 type ToolArgs = Record<string, unknown>;
 
@@ -268,6 +283,76 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
       doublelead: remote.doublelead,
     };
   },
+
+  // quiz
+  "quiz.list": async () => listQuizzes(true),
+  "quiz.get_by_slug": (a) => getQuizBySlug(a.slug as string),
+  "quiz.list_attempts": (a) =>
+    listQuizAttempts({
+      quiz_slug: a.quiz_slug as string | undefined,
+      limit: a.limit as number | undefined,
+    }),
+  "quiz.attempt_stats": (a) => quizAttemptStats(a.quiz_slug as string),
+  "quiz.create": (a) =>
+    quizCreate({
+      slug: a.slug as string,
+      title: a.title as string,
+      subtitle: a.subtitle as string | null | undefined,
+      intro_md: a.intro_md as string | null | undefined,
+      published: a.published as boolean | undefined,
+    }),
+  "quiz.update": (a) =>
+    quizUpdate({
+      slug: a.slug as string,
+      title: a.title as string | undefined,
+      subtitle: a.subtitle as string | null | undefined,
+      intro_md: a.intro_md as string | null | undefined,
+      cta_label: a.cta_label as string | undefined,
+      published: a.published as boolean | undefined,
+    }),
+  "quiz.question_create": (a) =>
+    questionCreate({
+      quiz_slug: a.quiz_slug as string,
+      sort_order: a.sort_order as number,
+      prompt: a.prompt as string,
+      helper_md: a.helper_md as string | null | undefined,
+    }),
+  "quiz.question_update": (a) =>
+    questionUpdate({
+      id: a.id as string,
+      sort_order: a.sort_order as number | undefined,
+      prompt: a.prompt as string | undefined,
+      helper_md: a.helper_md as string | null | undefined,
+    }),
+  "quiz.question_delete": (a) => questionDelete(a.id as string),
+  "quiz.choice_create": (a) =>
+    choiceCreate({
+      question_id: a.question_id as string,
+      sort_order: a.sort_order as number,
+      label: a.label as string,
+      archetype_weights: a.archetype_weights as Record<string, number>,
+    }),
+  "quiz.choice_update": (a) =>
+    choiceUpdate({
+      id: a.id as string,
+      sort_order: a.sort_order as number | undefined,
+      label: a.label as string | undefined,
+      archetype_weights: a.archetype_weights as
+        | Record<string, number>
+        | undefined,
+    }),
+  "quiz.choice_delete": (a) => choiceDelete(a.id as string),
+  "quiz.archetype_upsert": (a) =>
+    archetypeUpsert({
+      quiz_slug: a.quiz_slug as string,
+      key: a.key as string,
+      name: a.name as string,
+      sort_order: a.sort_order as number | undefined,
+      one_line: a.one_line as string,
+      full_report_md: a.full_report_md as string | null | undefined,
+      ebook_url: a.ebook_url as string | null | undefined,
+      ebook_label: a.ebook_label as string | undefined,
+    }),
 
   describe_tools: async () => ({ tools: TOOL_SCHEMAS }),
 };
@@ -883,6 +968,169 @@ const TOOL_SCHEMAS = [
     },
   },
   {
+    name: "quiz.list",
+    description:
+      "List published quizzes. Returns array of { id, slug, title, subtitle, published, updated_at }.",
+    inputSchema: { type: "object", properties: {} },
+  },
+  {
+    name: "quiz.get_by_slug",
+    description:
+      "Fetch one quiz's full config (questions + choices + archetypes) by slug. Public read.",
+    inputSchema: {
+      type: "object",
+      required: ["slug"],
+      properties: { slug: { type: "string" } },
+    },
+  },
+  {
+    name: "quiz.list_attempts",
+    description:
+      "List recent attempts. Optional quiz_slug filter; default limit 100.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        quiz_slug: { type: "string" },
+        limit: { type: "number" },
+      },
+    },
+  },
+  {
+    name: "quiz.attempt_stats",
+    description:
+      "Funnel stats for a quiz: { started, completed, unlocked, by_archetype }.",
+    inputSchema: {
+      type: "object",
+      required: ["quiz_slug"],
+      properties: { quiz_slug: { type: "string" } },
+    },
+  },
+  {
+    name: "quiz.create",
+    description: "Create a new quiz.",
+    inputSchema: {
+      type: "object",
+      required: ["slug", "title"],
+      properties: {
+        slug: { type: "string" },
+        title: { type: "string" },
+        subtitle: { type: "string" },
+        intro_md: { type: "string" },
+        published: { type: "boolean" },
+      },
+    },
+  },
+  {
+    name: "quiz.update",
+    description: "Update a quiz by slug.",
+    inputSchema: {
+      type: "object",
+      required: ["slug"],
+      properties: {
+        slug: { type: "string" },
+        title: { type: "string" },
+        subtitle: { type: "string" },
+        intro_md: { type: "string" },
+        cta_label: { type: "string" },
+        published: { type: "boolean" },
+      },
+    },
+  },
+  {
+    name: "quiz.question_create",
+    description: "Add a question to a quiz.",
+    inputSchema: {
+      type: "object",
+      required: ["quiz_slug", "sort_order", "prompt"],
+      properties: {
+        quiz_slug: { type: "string" },
+        sort_order: { type: "number" },
+        prompt: { type: "string" },
+        helper_md: { type: "string" },
+      },
+    },
+  },
+  {
+    name: "quiz.question_update",
+    description: "Update a question by id.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" },
+        sort_order: { type: "number" },
+        prompt: { type: "string" },
+        helper_md: { type: "string" },
+      },
+    },
+  },
+  {
+    name: "quiz.question_delete",
+    description: "Delete a question (cascades to its choices).",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: { id: { type: "string" } },
+    },
+  },
+  {
+    name: "quiz.choice_create",
+    description:
+      "Add a choice to a question. archetype_weights maps archetype key → integer weight.",
+    inputSchema: {
+      type: "object",
+      required: ["question_id", "sort_order", "label", "archetype_weights"],
+      properties: {
+        question_id: { type: "string" },
+        sort_order: { type: "number" },
+        label: { type: "string" },
+        archetype_weights: { type: "object" },
+      },
+    },
+  },
+  {
+    name: "quiz.choice_update",
+    description: "Update a choice by id.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" },
+        sort_order: { type: "number" },
+        label: { type: "string" },
+        archetype_weights: { type: "object" },
+      },
+    },
+  },
+  {
+    name: "quiz.choice_delete",
+    description: "Delete a choice.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: { id: { type: "string" } },
+    },
+  },
+  {
+    name: "quiz.archetype_upsert",
+    description:
+      "Upsert an archetype for a quiz (conflict on quiz_slug + key). sort_order is the tie-breaker (lower wins).",
+    inputSchema: {
+      type: "object",
+      required: ["quiz_slug", "key", "name", "one_line"],
+      properties: {
+        quiz_slug: { type: "string" },
+        key: { type: "string" },
+        name: { type: "string" },
+        sort_order: { type: "number" },
+        one_line: { type: "string" },
+        full_report_md: { type: "string" },
+        ebook_url: { type: "string" },
+        ebook_label: { type: "string" },
+      },
+    },
+  },
+  {
     name: "describe_tools",
     description:
       "Return the full tool catalogue (same shape as tools/list, plus descriptions) for callers without MCP introspection.",
@@ -950,6 +1198,20 @@ const TOOL_SCOPES: Record<string, string> = {
   "newsletter.add_distribution": "newsletter:write",
   // command center
   "system.metrics": "system:read",
+  // quiz
+  "quiz.list": "quiz:read",
+  "quiz.get_by_slug": "quiz:read",
+  "quiz.list_attempts": "quiz:manage",
+  "quiz.attempt_stats": "quiz:manage",
+  "quiz.create": "quiz:manage",
+  "quiz.update": "quiz:manage",
+  "quiz.question_create": "quiz:manage",
+  "quiz.question_update": "quiz:manage",
+  "quiz.question_delete": "quiz:manage",
+  "quiz.choice_create": "quiz:manage",
+  "quiz.choice_update": "quiz:manage",
+  "quiz.choice_delete": "quiz:manage",
+  "quiz.archetype_upsert": "quiz:manage",
 };
 
 // Verbs whose success we push to audit_log. Reads are omitted — audit is
@@ -979,6 +1241,15 @@ const WRITE_VERBS = new Set([
   "newsletter.add_subscriber",
   "newsletter.import_subscribers",
   "newsletter.remove_subscriber",
+  "quiz.create",
+  "quiz.update",
+  "quiz.question_create",
+  "quiz.question_update",
+  "quiz.question_delete",
+  "quiz.choice_create",
+  "quiz.choice_update",
+  "quiz.choice_delete",
+  "quiz.archetype_upsert",
 ]);
 
 function unauthorized(req: NextRequest, message: string) {

@@ -185,7 +185,7 @@ export function Hero() {
 
           {/* Tagline */}
           <p className="mt-8 text-center font-mono text-[11px] tracking-[0.24em] text-zinc-500 uppercase sm:text-xs">
-            showing you what else you can do with AI
+            the solopreneur&rsquo;s AI playbook
           </p>
         </div>
 

@@ -15,6 +15,9 @@ export interface StripeOffer {
   highlight: boolean;
   active: boolean;
   sort_order: number;
+  anchor_amount: number | null;
+  unit_amount: number | null;
+  currency: string;
   created_at: string;
   updated_at: string;
 }

@@ -18,6 +18,15 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: "/services",
+        destination: "/playbook",
+        permanent: true,
+      },
+    ];
+  },
   async rewrites() {
     return [
       {

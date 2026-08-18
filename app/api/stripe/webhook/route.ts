@@ -7,6 +7,11 @@ import {
 } from "@/lib/stripe-server";
 import { upsertSubscriptionFromStripe } from "@/lib/subscription";
 import { supabaseAdmin } from "@/lib/supabase-server";
+import {
+  grantEntitlement,
+  revokeEntitlementByCharge,
+} from "@/lib/entitlements";
+import { logWebhookEvent } from "@/lib/webhook-log";
 
 export const dynamic = "force-dynamic";
 // Stripe requires the raw request body for signature verification.
@@ -19,6 +24,15 @@ async function findOfferIdForPrice(priceId: string): Promise<string | null> {
     .eq("stripe_price_id", priceId)
     .maybeSingle();
   return data?.id ?? null;
+}
+
+async function findOfferSlugForPrice(priceId: string): Promise<string | null> {
+  const { data } = await supabaseAdmin
+    .from("stripe_offers")
+    .select("slug")
+    .eq("stripe_price_id", priceId)
+    .maybeSingle();
+  return data?.slug ?? null;
 }
 
 async function syncSubscription(sub: Stripe.Subscription): Promise<void> {
@@ -69,6 +83,80 @@ async function syncSubscription(sub: Stripe.Subscription): Promise<void> {
   });
 }
 
+// One-off (Playbook) grant path. Anonymous checkout is intentional per
+// SPR-110 — user_id is null here and stitched later (SPR-112) on Clerk signup
+// via customer_email match. Idempotent on stripe_event_id.
+async function grantOneOffFromSession(
+  eventId: string,
+  session: Stripe.Checkout.Session,
+  stripe: Stripe,
+): Promise<void> {
+  const customerId =
+    typeof session.customer === "string"
+      ? session.customer
+      : session.customer?.id;
+  if (!customerId) {
+    console.warn(`[stripe] session ${session.id} has no customer; skipping.`);
+    return;
+  }
+
+  const email =
+    session.customer_details?.email ??
+    (session.customer_email as string | null | undefined) ??
+    null;
+  if (!email) {
+    console.warn(`[stripe] session ${session.id} has no email; skipping.`);
+    return;
+  }
+
+  // Resolve product_slug — prefer offer_slug from checkout metadata
+  // (SPR-110's route sets it), fall back to price → offer lookup.
+  let productSlug =
+    (session.metadata?.offer_slug as string | undefined) ?? null;
+  let chargeId: string | null = null;
+
+  if (!productSlug || !chargeId) {
+    const line = await stripe.checkout.sessions.listLineItems(session.id, {
+      limit: 1,
+    });
+    const priceId = line.data[0]?.price?.id ?? null;
+    if (!productSlug && priceId) {
+      productSlug = await findOfferSlugForPrice(priceId);
+    }
+  }
+  if (!productSlug) {
+    console.warn(
+      `[stripe] session ${session.id} could not resolve product_slug; skipping.`,
+    );
+    return;
+  }
+
+  const paymentIntentId =
+    typeof session.payment_intent === "string"
+      ? session.payment_intent
+      : session.payment_intent?.id;
+  if (paymentIntentId) {
+    const pi = await stripe.paymentIntents.retrieve(paymentIntentId);
+    chargeId = pi.latest_charge
+      ? typeof pi.latest_charge === "string"
+        ? pi.latest_charge
+        : pi.latest_charge.id
+      : null;
+  }
+
+  const clerkId = (session.metadata?.clerk_id as string | undefined) ?? null;
+
+  await grantEntitlement({
+    user_id: clerkId,
+    stripe_customer_id: customerId,
+    customer_email: email,
+    product_slug: productSlug,
+    stripe_event_id: eventId,
+    stripe_checkout_session_id: session.id,
+    stripe_charge_id: chargeId,
+  });
+}
+
 export async function POST(req: Request) {
   if (!isStripeConfigured() || !STRIPE_WEBHOOK_SECRET) {
     return NextResponse.json(
@@ -108,8 +196,6 @@ export async function POST(req: Request) {
               ? session.subscription
               : session.subscription.id;
           const sub = await stripe.subscriptions.retrieve(subId);
-          // Ensure clerk_id is on the subscription metadata (Checkout puts it
-          // on the session but not always on the subscription).
           if (!sub.metadata?.clerk_id && session.client_reference_id) {
             await stripe.subscriptions.update(subId, {
               metadata: {
@@ -123,6 +209,8 @@ export async function POST(req: Request) {
           } else {
             await syncSubscription(sub);
           }
+        } else if (session.mode === "payment") {
+          await grantOneOffFromSession(event.id, session, stripe);
         }
         break;
       }
@@ -147,14 +235,25 @@ export async function POST(req: Request) {
         break;
       }
 
+      case "charge.refunded": {
+        const charge = event.data.object as Stripe.Charge;
+        // Only revoke if fully refunded — partial refunds leave access intact.
+        if (charge.refunded) {
+          await revokeEntitlementByCharge(charge.id);
+        }
+        break;
+      }
+
       default:
         // Ignore other events; Stripe retries only on non-2xx.
         break;
     }
+    await logWebhookEvent(event.id, event.type, true, null);
     return NextResponse.json({ received: true });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Webhook handler failed";
     console.error("[stripe webhook]", event.type, msg);
+    await logWebhookEvent(event.id, event.type, false, msg);
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

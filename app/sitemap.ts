@@ -39,10 +39,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
-      url: `${SITE_URL}/services`,
+      url: `${SITE_URL}/playbook`,
       lastModified: now,
       changeFrequency: "monthly",
-      priority: 0.9,
+      priority: 0.6,
     },
     {
       url: `${SITE_URL}/blog`,
@@ -91,12 +91,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: now,
       changeFrequency: "weekly",
       priority: 0.8,
-    },
-    {
-      url: `${SITE_URL}/members`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.7,
     },
     {
       url: `${SITE_URL}/quiz`,

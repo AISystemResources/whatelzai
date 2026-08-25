@@ -73,8 +73,29 @@ export default async function PlaybookPage() {
     ? formatMinorUnits(offer.anchor_amount, currency)
     : null;
 
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: offer.name,
+    description: offer.description ?? undefined,
+    brand: { "@type": "Brand", name: "whatelz.ai" },
+    offers: {
+      "@type": "Offer",
+      price: offer.unit_amount
+        ? (offer.unit_amount / 100).toFixed(2)
+        : undefined,
+      priceCurrency: currency.toUpperCase(),
+      availability: "https://schema.org/InStock",
+      url: "https://whatelz.ai/playbook",
+    },
+  };
+
   return (
     <main className="mx-auto max-w-4xl px-6 py-16 sm:py-24">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+      />
       <header className="text-center">
         <p className="font-mono text-xs uppercase tracking-widest text-zinc-500">
           The Solopreneur&apos;s AI Playbook

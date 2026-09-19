@@ -21,7 +21,7 @@ export function ShellProvider({ isAdmin, ownerName, children }: Props) {
       <div
         id="site-content"
         tabIndex={-1}
-        className={isPublic ? "public-site" : undefined}
+        className={isPublic ? "public-site" : "admin-theme"}
       >
         {children}
       </div>

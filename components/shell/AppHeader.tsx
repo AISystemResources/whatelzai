@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRef } from "react";
+import { ThemeToggle } from "./ThemeToggle";
 
 const explore = [
   ["/about", "The person", "Meet Edmund"],
@@ -83,6 +84,7 @@ export function AppHeader() {
             </nav>
           </details>
         </nav>
+        <ThemeToggle />
         <Link href="/playbook" className="header-cta">
           The playbook <span aria-hidden="true">↗</span>
         </Link>

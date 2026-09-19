@@ -20,7 +20,7 @@ Simplify hero, preserve interactive CSS book as a depiction of the existing read
 
 ## Contextual exceptions
 
-Light-only remains the established project requirement and matches print-emulating editorial. Preserve Fraunces: it is already the book reader's display face and continuity with that product is intentional. Keep the existing warm brand palette and primary nav label “Field notes”. Do not globally rewrite published content, quotes, dates, routes or metadata to satisfy vocabulary bans. No decorative counters or new em-dashes in authored presentation copy. Existing product pagination numbers serve navigation and remain intact.
+The initial pass retained the established light-only requirement. Edmund subsequently requested vibrant original yellow and both light/dark modes on 2026-09-19; this explicitly supersedes that earlier constraint. Preserve Fraunces: it is already the book reader's display face and continuity with that product is intentional. Keep the existing warm brand palette and primary nav label “Field notes”. Do not globally rewrite published content, quotes, dates, routes or metadata to satisfy vocabulary bans. No decorative counters or new em-dashes in authored presentation copy. Existing product pagination numbers serve navigation and remain intact.
 
 ## Image provenance
 
@@ -31,3 +31,9 @@ Built-in image_gen, conceptual editorial artwork, not a photo of Edmund's actual
 Verified 2026-09-19: production webpack build and TypeScript pass; targeted ESLint, formatted changed files and git diff whitespace checks pass; all seven existing pagination and gesture tests pass. Browser reviewed at 1280, 820, 390 and 320px widths. Confirmed pillar switching, testimonial controls, article navigation, responsive Explore menu, Escape dismissal, reader opening and keyboard page turning. No browser console errors during final reader check. Narrow-phone header CTA wrapping corrected. Final preview: http://localhost:3104/.
 
 No Lighthouse score was collected: the enabled browser interface does not expose Lighthouse. No performance-score claim is made. The conceptual image uses Next Image with responsive sizes and lazy loading. No runtime dependency added. Touch gesture classification is covered by existing unit tests; physical touchscreen gestures and pointer tilt were not device-tested in this pass.
+
+## Yellow identity and themes
+
+Edmund approved deployment, then requested #FACC15 as the primary identity with a vibrant, fun feel and both light/dark modes. The yellow now anchors primary actions, the wordmark arrow, selected pillars, quote section and both book covers. Warm paper and charcoal palettes use semantic surface/text tokens; dark styling covers public legacy utility classes and the flipbook/reading mode. ThemeToggle follows system preference initially, saves explicit choices, syncs across tabs, supports blocked storage, and uses an inline prepaint initializer to avoid a theme flash. No theme dependency added.
+
+Verified both homepage themes at desktop and 320px width, saved dark preference after reload, article navigation, dark contact fields, tablet reader pages, page turning, reading mode and keyboard theme switching. Production webpack build, targeted ESLint, TypeScript and seven reader tests pass.

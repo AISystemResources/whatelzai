@@ -126,7 +126,7 @@ export default async function ThisWeekIssuePage({ params }: Props) {
   };
 
   return (
-    <section className="border-b border-zinc-200 px-6 py-24 sm:px-8 sm:py-32">
+    <section className="editorial-reading border-b border-zinc-200 px-6 py-24 sm:px-8 sm:py-32">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

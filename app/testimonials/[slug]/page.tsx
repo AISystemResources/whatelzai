@@ -95,7 +95,7 @@ export default async function TestimonialDetailPage({
   };
 
   return (
-    <main className="px-6 py-16 sm:px-8 sm:py-24">
+    <main className="editorial-reading px-6 py-16 sm:px-8 sm:py-24">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

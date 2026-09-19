@@ -258,3 +258,9 @@ Before declaring any work shipped (sprint-sized or one-off fix):
 - [ ] Commit **and push** together (Hard Rule 8). Vercel will deploy on `main` push.
 - [ ] EMDEE SPRINTS updated: sprint Close-out written; index moved Active/Queued → Recently shipped (and body relocated from `sprints/` → `logs/`); Ops Checklist updated if cross-cutting follow-ups remain.
 - [ ] If the change touches code behaviour referenced in this file or EMDEE INSTRUCTIONS — both updated in the same commit.
+
+## Editorial public site (SPR-115)
+
+The public brand is the solopreneur’s playbook: **Money Mindset × AI Skillset**. The primary journey is `/playbook`, then following Edmund’s ongoing journey through `/this-week`, `/blog`, and `/projects`. Write in a personal, practising-in-public voice; do not imply already-achieved financial outcomes.
+
+`app/editorial.css` defines the light-only paper/olive/ochre design system. `components/editorial/FieldElements.tsx` owns reusable chapter heroes, the CSS book object and onward links; `Pillars.tsx` owns the interactive two-pillar spread. Public collection pages use `PageShell`; public detail pages opt into `editorial-reading`. The header Explore menu exposes the full public route catalogue on desktop and mobile. Keep the existing product reader’s pagination, touch/trackpad gestures and accessibility intact. Native cursor, visible keyboard focus and reduced-motion support are intentional. Admin navigation remains separate.

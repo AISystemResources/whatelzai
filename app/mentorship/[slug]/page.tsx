@@ -36,7 +36,7 @@ export default async function MentorshipDetailPage({ params }: Props) {
   if (!entry) notFound();
 
   return (
-    <section className="px-6 py-24 sm:px-8 sm:py-32">
+    <section className="editorial-reading px-6 py-24 sm:px-8 sm:py-32">
       <div className="mx-auto max-w-3xl">
         <Link
           href="/mentorship"

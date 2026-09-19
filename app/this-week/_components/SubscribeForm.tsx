@@ -51,19 +51,23 @@ export function SubscribeForm({ source }: { source: string }) {
       <div className="flex flex-col gap-2 sm:flex-row">
         <input
           type="email"
+          aria-label="Email address"
+          autoComplete="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@work.com"
-          className="flex-1 border border-zinc-300 px-3 py-2.5 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none"
+          className="min-w-0 w-full flex-1 border border-zinc-300 px-3 py-2.5 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none"
           disabled={state === "submitting"}
         />
         <input
           type="text"
+          aria-label="First name (optional)"
+          autoComplete="given-name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="First name (optional)"
-          className="flex-1 border border-zinc-300 px-3 py-2.5 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none"
+          className="min-w-0 w-full flex-1 border border-zinc-300 px-3 py-2.5 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none"
           disabled={state === "submitting"}
         />
       </div>

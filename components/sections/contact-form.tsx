@@ -52,6 +52,8 @@ export function ContactForm({ fallbackEmail }: { fallbackEmail: string }) {
       <div>
         <input
           id="cf-email"
+          aria-label="Your email"
+          autoComplete="email"
           type="email"
           required
           value={email}
@@ -64,6 +66,7 @@ export function ContactForm({ fallbackEmail }: { fallbackEmail: string }) {
       <div>
         <textarea
           id="cf-message"
+          aria-label="Your message"
           required
           rows={4}
           value={message}

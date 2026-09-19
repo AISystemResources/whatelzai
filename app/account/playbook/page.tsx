@@ -53,7 +53,7 @@ export default async function AccountPlaybookPage() {
   }
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-16">
+    <main className="editorial-index mx-auto max-w-2xl px-6 py-16">
       <header className="mb-10">
         <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">
           Your Playbook

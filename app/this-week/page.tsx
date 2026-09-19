@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { listIssues } from "@/lib/newsletter";
 import { getSiteIdentity } from "@/lib/site-identity";
+import { FieldHero } from "@/components/editorial/FieldElements";
 import { SubscribeForm } from "./_components/SubscribeForm";
 
 export const dynamic = "force-dynamic";
@@ -33,32 +34,16 @@ export default async function ThisWeekLandingPage() {
 
   return (
     <main>
-      {/* ── Hero ──────────────────────────────────────────────────────── */}
-      <section className="border-b border-zinc-200 px-6 py-20 sm:px-8 sm:py-28">
-        <div className="mx-auto max-w-4xl">
-          <div className="flex items-center gap-4">
-            <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
-              Weekly Dispatch
-            </p>
-            {issues.length > 0 && (
-              <span className="border border-zinc-200 px-2 py-0.5 font-mono text-[10px] tracking-widest text-zinc-400">
-                {issues.length} issue{issues.length === 1 ? "" : "s"}
-              </span>
-            )}
-          </div>
-          <h1 className="font-display-hero mt-5 text-5xl sm:text-6xl">
-            What ELZ This Week?
-          </h1>
-          <p className="mt-5 max-w-lg text-base text-zinc-600">
-            How solopreneurs run big operations with AI as the team. One tight
-            dispatch every week — no daily inbox noise.
-          </p>
-
-          <div className="mt-8 max-w-md">
-            <SubscribeForm source="this-week-hero" />
-          </div>
+      <FieldHero
+        label="The weekly dispatch"
+        title="A letter from the middle of it."
+        description="What ELZ This Week? The experiments, lessons and useful discoveries from my solopreneur journey. Follow along as I put Money Mindset and AI Skillset into practice."
+        number="06"
+      >
+        <div className="mt-8 max-w-md">
+          <SubscribeForm source="this-week-hero" />
         </div>
-      </section>
+      </FieldHero>
 
       {/* ── Latest issue ──────────────────────────────────────────────── */}
       {latest && (

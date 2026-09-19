@@ -91,7 +91,7 @@ export default async function PlaybookChapterPage({
   }
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-16">
+    <main className="editorial-reading mx-auto max-w-2xl px-6 py-16">
       {chapter ? (
         <>
           <p className="font-mono text-xs uppercase tracking-widest text-zinc-500">

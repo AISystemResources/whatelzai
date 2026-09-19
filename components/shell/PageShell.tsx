@@ -1,6 +1,25 @@
 "use client";
 
 import { type ReactNode } from "react";
+import { FieldHero } from "@/components/editorial/FieldElements";
+const TITLES: Record<string, string> = {
+  Projects: "Ideas with their sleeves rolled up.",
+  Channels: "Same curiosity. Different corners.",
+  Career: "Every chapter brought me here.",
+  Hackathons: "A little pressure. A lot of possibility.",
+  Mentorship: "Nobody grows entirely alone.",
+  Leadership: "Build something bigger than yourself.",
+  Contact: "Good things start with hello.",
+};
+const NUMBERS: Record<string, string> = {
+  Projects: "03",
+  Channels: "07",
+  Career: "08",
+  Hackathons: "09",
+  Mentorship: "10",
+  Leadership: "11",
+  Contact: "12",
+};
 
 interface Props {
   title: string;
@@ -19,27 +38,18 @@ export function PageShell({
   maxWidth = "max-w-5xl",
 }: Props) {
   return (
-    <div className="flex flex-col">
-      {/* Fixed subheader — sticks at top of the scroll container */}
-      <div className="sticky top-0 z-20 shrink-0 border-b border-zinc-200 bg-[var(--background)] px-6 py-4">
-        <div
-          className={`mx-auto ${maxWidth} flex items-center justify-between gap-4`}
-        >
-          <div>
-            <h1 className="text-base font-semibold tracking-tight text-zinc-900">
-              {title}
-            </h1>
-            {description && (
-              <p className="mt-0.5 text-xs text-zinc-500">{description}</p>
-            )}
-          </div>
-          {actions && <div className="shrink-0">{actions}</div>}
-        </div>
+    <main className="collection-page">
+      <FieldHero
+        label={title}
+        title={TITLES[title] ?? title}
+        description={description}
+        number={NUMBERS[title] ?? "01"}
+      />
+      <div className={`collection-body mx-auto w-full ${maxWidth} px-6 py-12`}>
+        {actions && <div className="collection-actions">{actions}</div>}
+        {children}
       </div>
-
-      {/* Page content */}
-      <div className={`mx-auto w-full ${maxWidth} px-6 py-6`}>{children}</div>
-    </div>
+    </main>
   );
 }
 
@@ -57,6 +67,7 @@ export function ViewToggle({
         <button
           key={v}
           onClick={() => onChange(v)}
+          aria-pressed={view === v}
           className={`px-4 py-1.5 font-mono text-xs uppercase tracking-widest transition-colors ${
             view === v
               ? "bg-zinc-900 text-white"

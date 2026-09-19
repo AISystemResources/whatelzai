@@ -65,6 +65,11 @@ export function AppHeader() {
                   <Link
                     href={href}
                     key={href}
+                    aria-current={
+                      pathname === href || pathname.startsWith(href + "/")
+                        ? "page"
+                        : undefined
+                    }
                     onClick={() => {
                       if (menu.current) menu.current.open = false;
                     }}

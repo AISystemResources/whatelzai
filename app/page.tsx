@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { ArrowUpRight, ArrowRight } from "lucide-react";
 import { getSiteIdentity } from "@/lib/site-identity";
 import { getAllPosts } from "@/lib/blog";
-import { Testimonials } from "@/components/sections/testimonials";
+import { listFeaturedTestimonials, testimonialSlug } from "@/lib/testimonials";
 import { BookObject, Eyebrow } from "@/components/editorial/FieldElements";
 import { Pillars } from "@/components/editorial/Pillars";
+import { BookTilt, Reveal } from "@/components/editorial/MotionDetails";
+import { ArticleSelection } from "@/components/editorial/ArticleSelection";
+import { ReaderVoices } from "@/components/editorial/ReaderVoices";
 
 export const metadata: Metadata = {
   title: { absolute: "whatelz.ai — The solopreneur’s playbook" },
@@ -14,275 +18,187 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://whatelz.ai" },
 };
 export default async function Home() {
-  const [site, posts] = await Promise.all([getSiteIdentity(), getAllPosts()]);
+  const [site, posts, testimonials] = await Promise.all([
+    getSiteIdentity(),
+    getAllPosts(),
+    listFeaturedTestimonials(),
+  ]);
+  const voices = testimonials.slice(0, 5).map((t) => ({
+    name: t.author_name,
+    role: (t.author_affiliations ?? [])
+      .map((a) => [a.role, a.company].filter(Boolean).join(", "))
+      .join(" · "),
+    quote: t.quote,
+    avatar: t.author_avatar_url,
+    href: `/testimonials/${testimonialSlug(t)}`,
+  }));
   return (
-    <main className="editorial-home">
+    <main className="editorial-home taste-home">
       <section className="home-hero field-wrap">
         <div className="hero-copy">
-          <Eyebrow>For the one-person possibility</Eyebrow>
+          <Eyebrow>Money Mindset × AI Skillset</Eyebrow>
           <h1>
-            Make a living.
-            <br />
             Build a life.
             <br />
-            <em>On your terms.</em>
+            On your terms.
           </h1>
           <p>
-            Money Mindset × AI Skillset.
-            <br />
-            I’m learning to make it as a solopreneur.
-            <br />
-            This is the playbook I’m writing along the way.
+            I’m learning to make it as a solopreneur. This is the playbook I’m
+            writing along the way.
           </p>
           <div className="hero-actions">
             <Link href="/playbook" className="field-button">
-              Explore the playbook <span>↗</span>
+              Explore the playbook <ArrowUpRight size={21} strokeWidth={1.5} />
             </Link>
             <Link href="/about" className="text-link">
-              Meet the person behind it <span>→</span>
+              Meet Edmund <ArrowRight size={17} />
             </Link>
-          </div>
-          <div className="hero-byline">
-            {site.portrait_url && (
-              <Image src={site.portrait_url} alt="" width={42} height={42} />
-            )}
-            <div>
-              Hey, I’m {site.owner_first_name}.
-              <small>Building in public. Figuring it out, too.</small>
-            </div>
           </div>
         </div>
         <div className="hero-desk">
-          <div className="desk-orbit" aria-hidden="true" />
-          <span className="desk-caption">
-            NOT THE FINISH LINE.
-            <br />
-            THE FIELD NOTES.
-          </span>
-          <div className="desk-note note-top">
-            <span>Note to self / 001</span>You can give
-            <br />
-            yourself <em>100%, too.</em>
-            <svg viewBox="0 0 140 30" aria-hidden="true">
-              <path d="M4 20Q70 0 133 14M115 3l18 11-18 10" />
-            </svg>
-          </div>
-          <BookObject />
-          <div className="desk-note note-bottom">
-            <span className="note-spark" aria-hidden="true">
-              ✳
-            </span>
-            <div>
-              One person.
-              <br />
-              <em>More possible.</em>
-            </div>
-          </div>
-          <span className="desk-edition">THE PERSONAL EDITION — VOL. 01</span>
+          <BookTilt>
+            <BookObject />
+          </BookTilt>
         </div>
       </section>
-      <div className="thesis-strip">
-        <div>
-          <span>MONEY MINDSET</span>
-          <b>×</b>
-          <span>AI SKILLSET</span>
-          <b>↗</b>
-          <span>BUILD. LEARN. REPEAT.</span>
-          <b>✳</b>
-          <span>YOUR OWN WAY FORWARD</span>
-        </div>
-      </div>
       <section className="field-section field-wrap" id="philosophy">
-        <div className="section-heading">
-          <Eyebrow>01 / The foundation</Eyebrow>
-          <h2>
-            Ambition needs belief.
-            <br />
-            <em>Belief needs a way to build.</em>
-          </h2>
-          <p>
-            Two things I keep coming back to. Two things I keep working on.
-            Neither works quite as well without the other.
-          </p>
-        </div>
-        <Pillars />
+        <Reveal>
+          <div className="section-heading">
+            <h2>
+              Think differently.
+              <br />
+              Then make something real.
+            </h2>
+            <p>
+              The beliefs behind the decisions. The skills to act on them. I’m
+              working on both.
+            </p>
+          </div>
+          <Pillars />
+        </Reveal>
       </section>
       <section className="playbook-feature">
         <div className="field-wrap playbook-feature-grid">
-          <div className="feature-book">
-            <BookObject compact />
-            <span className="margin-note">
-              Read it. Question it.
-              <br />
-              Make it your own.
-            </span>
-          </div>
+          <figure className="learning-image">
+            <Image
+              src="/images/editorial/learning-still-life.png"
+              alt="Open notebook and pencil beside olive and ochre cloth-bound books"
+              width={1536}
+              height={1024}
+              sizes="(max-width:768px) 100vw, 50vw"
+            />
+            <figcaption>Read. Try. Reflect. Repeat.</figcaption>
+          </figure>
           <div>
-            <Eyebrow>02 / Start here</Eyebrow>
+            <Eyebrow>The playbook</Eyebrow>
             <h2>
-              A playbook for
+              Useful lessons.
               <br />
-              the <em>work in progress.</em>
+              Still being learned.
             </h2>
             <p>
-              My first digital product is also my working notebook. Lessons from
-              books, building, selling and getting things wrong — brought
-              together for the solopreneur I’m becoming.
+              My first digital product brings together what I’m learning about
+              money, selling and building with AI. Twelve chapters, open for you
+              to explore.
             </p>
             <div className="feature-facts">
               <span>12 chapters</span>
-              <span>Mindset + practical skills</span>
-              <span>Open draft</span>
+              <span>Money Mindset + AI Skillset</span>
             </div>
-            <Link href="/playbook" className="field-button">
-              Turn the first page <span>↗</span>
+            <Link href="/playbook" className="text-link">
+              Read the open draft <ArrowUpRight size={20} />
             </Link>
-            <p className="small-note">
-              Explore the draft freely while I keep making it better.
-            </p>
           </div>
         </div>
       </section>
       <section className="field-section field-wrap">
-        <div className="section-heading horizontal">
-          <div>
-            <Eyebrow>03 / Behind the playbook</Eyebrow>
-            <h2>
-              I’m the first
-              <br />
-              <em>work in progress.</em>
-            </h2>
-          </div>
-          <p>
-            I’m {site.owner_first_name}, an AI builder based in Singapore. I’m
-            putting my own ideas to work, sharing the useful bits and being
-            honest about what I’m still learning.
-          </p>
-        </div>
-        <div className="journey-grid">
-          <Link href="/about" className="portrait-story">
-            {site.portrait_url && (
-              <Image
-                src={site.portrait_url}
-                alt={site.owner_name}
-                fill
-                sizes="(max-width: 700px) 90vw, 40vw"
-                className="object-cover"
-              />
-            )}
-            <div>
-              <small>THE PERSON BEHIND THE PAGES</small>
-              <span>Here’s my story. ↗</span>
-            </div>
-          </Link>
-          <div className="journey-links">
-            {[
-              [
-                "/projects",
-                "01",
-                "Things I’m building",
-                "From an idea in my notes to something that works.",
-              ],
-              [
-                "/blog",
-                "02",
-                "Things I’m learning",
-                "On money, AI and the practice of working for yourself.",
-              ],
-              [
-                "/this-week",
-                "03",
-                "The journey, as it happens",
-                "Follow the experiments. Take the lessons with you.",
-              ],
-            ].map(([href, n, title, desc]) => (
-              <Link href={href} key={href}>
-                <small>{n}</small>
-                <div>
-                  <h3>{title}</h3>
-                  <p>{desc}</p>
-                </div>
-                <span>↗</span>
+        <Reveal className="journey-grid">
+          <div className="portrait-column">
+            <Link href="/about" className="portrait-story">
+              {site.portrait_url && (
+                <Image
+                  src={site.portrait_url}
+                  alt={site.owner_name}
+                  fill
+                  sizes="(max-width:768px) 90vw, 40vw"
+                  className="object-cover"
+                />
+              )}
+            </Link>
+            <p className="portrait-caption">
+              {site.owner_name}
+              <Link href="/about">
+                My story <ArrowUpRight size={17} />
               </Link>
-            ))}
+            </p>
           </div>
-        </div>
+          <div className="journey-copy">
+            <h2>
+              I’m building this
+              <br />
+              as I go.
+            </h2>
+            <p>
+              I’m {site.owner_first_name}, an AI builder in Singapore. I share
+              what I’m making, what’s helping and what I’m still figuring out.
+            </p>
+            <div className="journey-links">
+              {[
+                [
+                  "/projects",
+                  "Things I’m building",
+                  "Products and systems I’m putting to work.",
+                ],
+                [
+                  "/blog",
+                  "Things I’m learning",
+                  "Writing about money, AI and working for yourself.",
+                ],
+                [
+                  "/this-week",
+                  "Follow the journey",
+                  "The experiments and lessons, as they happen.",
+                ],
+              ].map(([href, title, desc]) => (
+                <Link href={href} key={href}>
+                  <div>
+                    <h3>{title}</h3>
+                    <p>{desc}</p>
+                  </div>
+                  <ArrowUpRight size={21} />
+                </Link>
+              ))}
+            </div>
+          </div>
+        </Reveal>
       </section>
       <section className="quote-interlude">
         <div className="field-wrap">
-          <Eyebrow>A question I keep asking myself</Eyebrow>
           <blockquote>
-            “If you can give your company 100%,
-            <br />
-            <em>why not give yourself 100%?”</em>
+            “If you can give your company 100%, why not give yourself 100%?”
           </blockquote>
-          <span>— A reminder to build something of your own.</span>
+          <p>A question I keep asking myself.</p>
         </div>
       </section>
       <section className="field-section field-wrap">
-        <div className="section-heading horizontal">
-          <div>
-            <Eyebrow>04 / Fresh from the notebook</Eyebrow>
-            <h2>
-              Thinking <em>out loud.</em>
-            </h2>
-          </div>
-          <Link href="/blog" className="text-link">
-            All field notes <span>↗</span>
-          </Link>
-        </div>
-        {posts.length ? (
-          <div className="note-grid">
-            {posts.slice(0, 3).map((post, i) => (
-              <Link
-                href={`/blog/${post.slug}`}
-                className="note-card"
-                key={post.slug}
-              >
-                <span className="note-card-number">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <small>{post.tags[0] || "FIELD NOTES"}</small>
-                <h3>{post.title}</h3>
-                <p>{post.summary}</p>
-                <span className="note-card-bottom">
-                  Read the note <b>↗</b>
-                </span>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <div className="notebook-empty">
-            <h3>The next page is being written.</h3>
-            <p>
-              Start with the playbook, or follow along as new notes take shape.
-            </p>
-            <Link href="/this-week" className="text-link">
-              Follow the journey →
+        <Reveal>
+          <div className="section-heading article-heading">
+            <h2>Latest writing.</h2>
+            <Link href="/blog" className="text-link">
+              All articles <ArrowUpRight size={18} />
             </Link>
           </div>
-        )}
+          <ArticleSelection posts={posts.slice(0, 3)} />
+        </Reveal>
       </section>
-      <div className="home-testimonials">
-        <Testimonials />
-      </div>
+      <ReaderVoices voices={voices} />
       <section className="field-wrap quiz-invitation">
         <div>
-          <Eyebrow>Your next small step</Eyebrow>
-          <h2>
-            What kind of
-            <br />
-            <em>builder are you?</em>
-          </h2>
-          <p>A little self-awareness is a good place to begin.</p>
+          <h2>Find your starting point.</h2>
+          <p>Take a short quiz to discover your solopreneur archetype.</p>
         </div>
-        <Link href="/quiz" className="quiz-circle">
-          <span>
-            Find your
-            <br />
-            archetype
-          </span>
-          <b aria-hidden="true">↗</b>
+        <Link href="/quiz" className="field-button">
+          Find your archetype <ArrowUpRight size={21} />
         </Link>
       </section>
     </main>

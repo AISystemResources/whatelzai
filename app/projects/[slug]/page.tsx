@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { listProjects, getProjectBySlug } from "@/lib/projects";
@@ -93,7 +94,7 @@ export default async function ProjectDetailPage({ params }: Props) {
   };
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-16 sm:px-8 sm:py-24">
+    <main className="editorial-reading mx-auto max-w-3xl px-6 py-16 sm:px-8 sm:py-24">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -183,12 +184,12 @@ export default async function ProjectDetailPage({ params }: Props) {
       )}
 
       <div className="border-t border-zinc-200 pt-8">
-        <a
+        <Link
           href="/projects"
           className="font-mono text-xs uppercase tracking-widest text-zinc-400 transition-colors hover:text-zinc-900"
         >
           ← All projects
-        </a>
+        </Link>
       </div>
     </main>
   );

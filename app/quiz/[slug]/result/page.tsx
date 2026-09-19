@@ -35,7 +35,7 @@ export default async function ResultPage({
   if (!archetype) notFound();
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-16 sm:px-8 sm:py-24">
+    <main className="editorial-reading mx-auto max-w-2xl px-6 py-16 sm:px-8 sm:py-24">
       <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
         Unlocked · Your archetype
       </p>

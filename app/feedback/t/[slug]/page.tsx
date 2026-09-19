@@ -45,7 +45,7 @@ export default async function TemplateFeedbackPage({
           : "This link isn't accepting submissions right now. Try the general form below.";
 
     return (
-      <main className="flex min-h-[60vh] items-center px-6 sm:px-8">
+      <main className="editorial-reading flex min-h-[60vh] items-center px-6 sm:px-8">
         <div className="mx-auto max-w-md text-center">
           <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
             Closed

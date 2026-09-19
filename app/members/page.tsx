@@ -53,7 +53,7 @@ export default async function MembersPage({
     null;
 
   return (
-    <main className="px-6 py-16 sm:px-8 sm:py-24">
+    <main className="editorial-index px-6 py-16 sm:px-8 sm:py-24">
       <div className="mx-auto max-w-3xl">
         <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
           Members

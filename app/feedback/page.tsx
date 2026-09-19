@@ -25,7 +25,7 @@ export default async function NewTestimonialPage({
   // Path A: no token yet — email-first start
   if (!t) {
     return (
-      <main className="px-6 py-20 sm:px-8 sm:py-28">
+      <main className="editorial-index px-6 py-20 sm:px-8 sm:py-28">
         <div className="mx-auto max-w-xl">
           <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
             Feedback

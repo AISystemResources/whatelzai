@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import type { Project, ProjectStatus } from "@/lib/projects";
 import { PageShell, ViewToggle } from "@/components/shell/PageShell";
@@ -22,12 +23,12 @@ function StatusBadge({ status }: { status: ProjectStatus | null }) {
 }
 
 export function ProjectsPageClient({ projects }: { projects: Project[] }) {
-  const [view, setView] = useState<"table" | "card">("table");
+  const [view, setView] = useState<"table" | "card">("card");
 
   return (
     <PageShell
       title="Projects"
-      description="Full-stack builds — production systems, not demos."
+      description="The products, systems and experiments behind the playbook. A record of putting the AI skillset to work."
       actions={<ViewToggle view={view} onChange={setView} />}
     >
       {view === "table" ? (
@@ -53,7 +54,12 @@ export function ProjectsPageClient({ projects }: { projects: Project[] }) {
               {projects.map((p) => (
                 <tr key={p.slug} className="hover:bg-zinc-50 transition-colors">
                   <td className="py-4 pr-8">
-                    <p className="font-medium text-zinc-900">{p.name}</p>
+                    <Link
+                      href={`/projects/${p.slug}`}
+                      className="font-medium text-zinc-900 underline underline-offset-4"
+                    >
+                      {p.name}
+                    </Link>
                     <p className="text-xs text-zinc-500 mt-0.5">{p.tagline}</p>
                   </td>
                   <td className="py-4 pr-8">
@@ -91,11 +97,16 @@ export function ProjectsPageClient({ projects }: { projects: Project[] }) {
           {projects.map((p) => (
             <div
               key={p.slug}
-              className="border border-zinc-200 rounded p-5 space-y-4"
+              className="project-card border border-zinc-200 p-8 space-y-4"
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <p className="font-semibold text-zinc-900">{p.name}</p>
+                  <Link
+                    href={`/projects/${p.slug}`}
+                    className="project-card-title"
+                  >
+                    {p.name} <span>↗</span>
+                  </Link>
                   <p className="text-sm text-zinc-500 mt-0.5">{p.tagline}</p>
                 </div>
                 <StatusBadge status={p.status} />

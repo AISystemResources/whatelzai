@@ -12,7 +12,7 @@ export default async function ThankYouPage() {
   const items = await listFeaturedTestimonials();
 
   return (
-    <main className="px-6 py-24 sm:px-8 sm:py-32">
+    <main className="editorial-index px-6 py-24 sm:px-8 sm:py-32">
       <div className="mx-auto max-w-3xl text-center">
         <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
           Received

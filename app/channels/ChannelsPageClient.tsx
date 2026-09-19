@@ -5,12 +5,12 @@ import type { Channel } from "@/lib/channels";
 import { PageShell, ViewToggle } from "@/components/shell/PageShell";
 
 export function ChannelsPageClient({ channels }: { channels: Channel[] }) {
-  const [view, setView] = useState<"table" | "card">("table");
+  const [view, setView] = useState<"table" | "card">("card");
 
   return (
     <PageShell
       title="Channels"
-      description="Same person, four surfaces. Follow whichever format fits."
+      description="The building, the thinking and the things in between. Follow along in whichever format feels like you."
       actions={<ViewToggle view={view} onChange={setView} />}
     >
       {view === "table" ? (

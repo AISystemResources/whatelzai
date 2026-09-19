@@ -37,7 +37,7 @@ export default async function SuccessPage({
   const email = await loadEmail(session_id);
 
   return (
-    <main className="mx-auto max-w-xl px-6 py-20">
+    <main className="editorial-index mx-auto max-w-xl px-6 py-20">
       <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-6 py-4 text-emerald-900">
         <p className="text-sm font-medium">Purchase confirmed.</p>
         <p className="mt-1 text-sm">

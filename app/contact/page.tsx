@@ -13,7 +13,7 @@ export default async function ContactPage() {
   return (
     <PageShell
       title="Contact"
-      description="Open to AI Engineering roles, collabs, and consulting."
+      description="An idea, a collaboration, a question about the journey — I’d love to hear what you’re thinking."
     >
       <p className="text-sm text-zinc-500 max-w-xl mb-2">
         The fastest way to reach me is through this form

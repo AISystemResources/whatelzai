@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Fraunces } from "next/font/google";
 import "./globals.css";
+import "./editorial.css";
 import { ShellProvider } from "@/components/shell/ShellProvider";
 import { getSiteIdentity } from "@/lib/site-identity";
 import { ensureUserRow, isAdminRole } from "@/lib/users";
@@ -28,9 +29,12 @@ const SITE_NAME = "whatelz.ai";
 
 export async function generateMetadata(): Promise<Metadata> {
   const s = await getSiteIdentity();
-  const title = `${SITE_NAME} — ${s.owner_name}`;
-  const description = s.meta_description ?? s.tagline ?? SITE_NAME;
-  const ogSubtitle = `${s.tagline ?? SITE_NAME} — ${s.owner_name}`;
+  const title = `${SITE_NAME} — The solopreneur’s playbook`;
+  const description =
+    "Money Mindset × AI Skillset. Field notes on building a life and business of your own, by " +
+    s.owner_name +
+    ".";
+  const ogSubtitle = `Money Mindset × AI Skillset — ${s.owner_name}`;
   const ogImage = `${SITE_URL}/api/og?title=${encodeURIComponent(SITE_NAME)}&subtitle=${encodeURIComponent(ogSubtitle)}`;
   const [firstName, ...rest] = s.owner_name.split(" ");
   const lastName = rest.join(" ");
@@ -84,7 +88,6 @@ export async function generateMetadata(): Promise<Metadata> {
       creator: "@whatelzai",
       images: [ogImage],
     },
-    alternates: { canonical: SITE_URL },
     robots: {
       index: true,
       follow: true,
@@ -122,7 +125,7 @@ export default async function RootLayout({
         "@id": `${SITE_URL}/#person`,
         name: s.owner_name,
         url: SITE_URL,
-        jobTitle: "AI Engineer & Founder",
+        jobTitle: "AI Solopreneur & Builder",
         description:
           s.meta_description ?? "AI engineer and founder building AI systems.",
         sameAs: [
@@ -148,27 +151,8 @@ export default async function RootLayout({
         "@id": `${SITE_URL}/#website`,
         url: SITE_URL,
         name: SITE_NAME,
-        description: s.meta_description ?? s.tagline ?? SITE_NAME,
+        description: "The solopreneur’s playbook. Money Mindset × AI Skillset.",
         author: { "@id": `${SITE_URL}/#person` },
-        potentialAction: {
-          "@type": "SearchAction",
-          target: {
-            "@type": "EntryPoint",
-            urlTemplate: `${SITE_URL}/blog?q={search_term_string}`,
-          },
-          "query-input": "required name=search_term_string",
-        },
-      },
-      {
-        "@type": "Service",
-        "@id": `${SITE_URL}/services#service`,
-        name: `${SITE_NAME} Services`,
-        url: `${SITE_URL}/services`,
-        provider: { "@id": `${SITE_URL}/#person` },
-        serviceType: ["Web Development", "AI Systems", "AI Training"],
-        areaServed: "Worldwide",
-        description:
-          "Landing pages and sites, production AI systems, and AI training for individuals and businesses.",
       },
     ],
   };

@@ -208,6 +208,14 @@ When stopping mid-run, write a single status patch:
 
 ## Directory map (top levels)
 
+### Playbook draft preview (SPR-114, 2026-09-19)
+
+`/playbook` is an ungated 3D reader of a reviewed, versioned EMDEE chapter snapshot in `content/playbook/chapters.json`. This follows Edmund's request to build the reading experience before adding payment gating. No live vault credentials or requests are used. Editorial placeholders are excluded and the UI labels the content as a work in progress. Import instructions and provenance are in `content/playbook/README.md` and `source-manifest.json`.
+
+The earlier sales page is retained in `app/playbook/_components/storefront.tsx`; checkout, account, and protected chapter routes are unchanged. Future paid access must gate chapter data on the server before it reaches the client. `node --import tsx --test scripts/playbook-pagination.test.ts` verifies the snapshot boundary and lossless pagination.
+
+### Files
+
 ```
 .
 ├── app/                       # Next.js App Router

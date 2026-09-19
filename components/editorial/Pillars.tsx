@@ -1,5 +1,12 @@
 "use client";
 import { useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import {
+  ArrowUpRight,
+  ArrowDownRight,
+  TrendingUp,
+  Workflow,
+} from "lucide-react";
 import Link from "next/link";
 
 const pillars = [
@@ -32,6 +39,7 @@ const pillars = [
 ];
 export function Pillars() {
   const [active, setActive] = useState(0);
+  const reduced = useReducedMotion();
   const p = pillars[active];
   return (
     <div className="pillar-workbench">
@@ -43,15 +51,33 @@ export function Pillars() {
             aria-pressed={active === i}
             aria-controls="pillar-content"
           >
-            <span>0{i + 1}</span>
             {item.name}
-            <span aria-hidden="true">{active === i ? "↘" : "↗"}</span>
+            <span aria-hidden="true">
+              {active === i ? (
+                <ArrowDownRight size={22} />
+              ) : (
+                <ArrowUpRight size={22} />
+              )}
+            </span>
           </button>
         ))}
       </div>
-      <div id="pillar-content" className={`pillar-content ${p.tone}`}>
+      <motion.div
+        id="pillar-content"
+        key={p.name}
+        className={`pillar-content ${p.tone}`}
+        initial={reduced ? false : { opacity: 0, y: 7 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.22 }}
+      >
         <div className="pillar-art" aria-hidden="true">
-          <span>{p.symbol}</span>
+          <span>
+            {active === 0 ? (
+              <TrendingUp size={160} strokeWidth={1} />
+            ) : (
+              <Workflow size={150} strokeWidth={1} />
+            )}
+          </span>
           <small>
             {active === 0
               ? "THINK BIGGER. START SMALLER."
@@ -59,13 +85,12 @@ export function Pillars() {
           </small>
         </div>
         <div className="pillar-copy">
-          <span className="field-eyebrow">{p.name}</span>
           <h3>{p.subtitle}</h3>
           <p>{p.description}</p>
           <ul>
             {p.notes.map((n) => (
               <li key={n}>
-                <span aria-hidden="true">↗</span>
+                <ArrowUpRight size={16} aria-hidden="true" />
                 {n}
               </li>
             ))}
@@ -74,7 +99,7 @@ export function Pillars() {
             Explore it in the playbook <span>→</span>
           </Link>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

@@ -9,11 +9,10 @@ export function SiteFooter({ ownerName }: { ownerName: string }) {
       <div className="field-wrap">
         <div className="footer-top">
           <div>
-            <p className="field-eyebrow">A work. A life. A work in progress.</p>
             <h2>
-              Let’s see
+              Follow what I’m
               <br />
-              <em>what else is possible.</em>
+              building and learning.
             </h2>
             <Link href="/this-week" className="field-button">
               Follow the journey <span>↗</span>

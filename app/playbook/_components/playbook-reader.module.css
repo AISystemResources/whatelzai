@@ -946,3 +946,100 @@
     transform: rotateY(-8deg);
   }
 }
+
+/* Signature yellow cover and theme-aware reading surfaces. */
+.coverFace {
+  background: linear-gradient(
+    90deg,
+    #b89309,
+    #ffe66a 3%,
+    #d9b010 6%,
+    #facc15 10%,
+    #ffda36
+  );
+}
+.openButton,
+.openButton:hover {
+  background: #facc15;
+  color: #25251d;
+}
+.main {
+  --gold: #806000;
+}
+:global([data-theme="dark"]) .main {
+  --ink: #f8f5e8;
+  --muted: #bcbcac;
+  --paper: #292b24;
+  --gold: #facc15;
+  background: #191a17;
+}
+:global([data-theme="dark"])
+  .main
+  :is(
+    .topline,
+    .workspace,
+    .contents,
+    .authorNote,
+    .previewNote,
+    .runningHead,
+    .folio
+  ) {
+  border-color: #414238;
+}
+:global([data-theme="dark"])
+  .main
+  :is(
+    .draft,
+    .part > button,
+    .part > button > span,
+    .readerHint,
+    .runningHead,
+    .folio,
+    .folio > span:last-child,
+    .edition,
+    .previewNote > span:last-child
+  ) {
+  color: var(--muted);
+}
+:global([data-theme="dark"]) .main :is(.stage, .readingStage, .contents) {
+  background: #252720;
+  border-color: #414238;
+}
+:global([data-theme="dark"]) .main :is(.modeButton, .pageButton) {
+  background: #2e3027;
+  color: var(--ink);
+  border-color: #545548;
+}
+:global([data-theme="dark"])
+  .main
+  :is(
+    .modeButton:hover,
+    .pageButton:hover:not(:disabled),
+    .part > button:hover
+  ) {
+  background: #39351c;
+}
+:global([data-theme="dark"]) .main .part > button[aria-current] {
+  background: #facc15;
+  color: #25251d;
+}
+:global([data-theme="dark"]) .main .part > button[aria-current] > span {
+  color: #25251d;
+}
+:global([data-theme="dark"])
+  .main
+  :is(.paper, .leftPage .paper, .rightPage .paper, .leafFront, .leafBack) {
+  background: #292b24;
+  color: var(--ink);
+}
+:global([data-theme="dark"])
+  .main
+  :is(.chapterNumber, .readingArticle > h2 > span, .prose a) {
+  color: var(--gold);
+}
+:global([data-theme="dark"]) .main .progress {
+  background: #414238;
+}
+:global([data-theme="dark"]) .main button:focus-visible {
+  outline-color: var(--gold);
+}

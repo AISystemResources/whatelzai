@@ -5,7 +5,6 @@ import { AppHeader } from "./AppHeader";
 import { SiteFooter } from "./SiteFooter";
 import { DeviceTracker } from "./DeviceTracker";
 import { usePathname } from "next/navigation";
-import { ContinueExploring } from "@/components/editorial/FieldElements";
 
 interface Props {
   isAdmin: boolean;
@@ -22,13 +21,10 @@ export function ShellProvider({ isAdmin, ownerName, children }: Props) {
       <div
         id="site-content"
         tabIndex={-1}
-        className={isPublic ? "public-site" : undefined}
+        className={isPublic ? "public-site" : "admin-theme"}
       >
         {children}
       </div>
-      {isPublic && path !== "/" && !path.startsWith("/playbook") && (
-        <ContinueExploring />
-      )}
       <SiteFooter ownerName={ownerName} />
       {!isAdmin && <DeviceTracker />}
     </>

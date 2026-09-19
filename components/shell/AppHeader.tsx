@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRef } from "react";
+import { ThemeToggle } from "./ThemeToggle";
 
 const explore = [
   ["/about", "The person", "Meet Edmund"],
@@ -65,6 +66,11 @@ export function AppHeader() {
                   <Link
                     href={href}
                     key={href}
+                    aria-current={
+                      pathname === href || pathname.startsWith(href + "/")
+                        ? "page"
+                        : undefined
+                    }
                     onClick={() => {
                       if (menu.current) menu.current.open = false;
                     }}
@@ -78,6 +84,7 @@ export function AppHeader() {
             </nav>
           </details>
         </nav>
+        <ThemeToggle />
         <Link href="/playbook" className="header-cta">
           The playbook <span aria-hidden="true">↗</span>
         </Link>

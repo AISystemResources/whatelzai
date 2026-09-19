@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Asterisk, ArrowUpRight } from "lucide-react";
 import type { ReactNode } from "react";
 
 export function Eyebrow({ children }: { children: ReactNode }) {
@@ -14,7 +15,6 @@ export function FieldHero({
   label,
   title,
   description,
-  number = "01",
   children,
 }: {
   label: string;
@@ -33,10 +33,6 @@ export function FieldHero({
             {description && <p className="field-deck">{description}</p>}
             {children}
           </div>
-          <span className="field-index" aria-hidden="true">
-            {number}
-            <span>THE FIELD NOTES</span>
-          </span>
         </div>
       </div>
     </header>
@@ -53,7 +49,7 @@ export function BookObject({ compact = false }: { compact?: boolean }) {
       <span className="book-pages" aria-hidden="true" />
       <span className="book-face">
         <span className="book-top">
-          WHATELZ.AI <span>FIRST EDITION / IN PROGRESS</span>
+          WHATELZ.AI <span>BY EDMUND LIN ZHENMING</span>
         </span>
         <span className="book-title">
           The
@@ -63,7 +59,7 @@ export function BookObject({ compact = false }: { compact?: boolean }) {
           <em>Playbook.</em>
         </span>
         <span className="book-symbol" aria-hidden="true">
-          ✳
+          <Asterisk size={80} strokeWidth={1} />
         </span>
         <span className="book-bottom">
           MONEY MINDSET
@@ -71,7 +67,7 @@ export function BookObject({ compact = false }: { compact?: boolean }) {
         </span>
       </span>
       <span className="book-open">
-        Open the playbook <span aria-hidden="true">↗</span>
+        Open the playbook <ArrowUpRight size={18} aria-hidden="true" />
       </span>
     </Link>
   );

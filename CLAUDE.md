@@ -30,7 +30,7 @@ Instructions for any AI coding agent (Claude Code, Cursor, Aider, ...) working o
 
 - **Framework:** Next.js 16.2.4 (App Router), React 19.2.4, TypeScript 5 (strict)
 - **Styling:** Tailwind CSS v4 (`@tailwindcss/postcss`) — _light mode only, see Hard Rule 5_
-- **Auth:** Clerk (`@clerk/nextjs`)
+- **Auth:** Supabase Auth (Google OAuth, `@supabase/ssr`)
 - **Data:** Supabase (Postgres) — `@supabase/supabase-js`
 - **Jobs:** none. Background/cron work is not supported in-repo — schedule remote agents via claude.ai if needed.
 - **AI runtime:** none. Zero server-side inference — not Anthropic, not Groq, not any Vercel AI SDK provider. All LLM reasoning happens client-side in Claude Chat / Claude Code, hitting the MCP surface at `/api/mcp/whatelz` (or the future CLI). MCP verbs are pure data — read verbs return structured context, write verbs persist a body Claude produced client-side.
@@ -219,7 +219,7 @@ The earlier sales page is retained in `app/playbook/_components/storefront.tsx`;
 ```
 .
 ├── app/                       # Next.js App Router
-│   ├── admin/                 # Gated admin shell (Clerk-protected)
+│   ├── admin/                 # Gated admin shell (Supabase-protected)
 │   ├── api/                   # API routes (REST + MCP at /api/mcp[/...])
 │   ├── blog/, projects/, channels/, hackathons/, leadership/, mentorship/, services/, career/, contact/
 │   ├── layout.tsx, page.tsx, globals.css, not-found.tsx, sitemap.ts
@@ -273,18 +273,18 @@ Theme preference follows the OS until explicitly toggled, then persists under `w
 
 ## Subdomain surfaces
 
-One Vercel project serves three hosts: `whatelz.ai` (public), `admin.whatelz.ai` (admin), and `app.whatelz.ai` (members). `proxy.ts` uses `lib/domain-routing.ts` to redirect legacy production `/admin/*` URLs to clean admin URLs and rewrite admin pages internally to `/admin/*`. Clerk session checks run before rewrites; the admin layout checks the stored admin role, and the proxy rejects admin mutations from non-admin users. Inline admin Server Actions also call requireAdmin() before mutations, independent of the page layout. APIs retain their existing paths and authorization.
+One Vercel project serves whatelz.ai (public), admin.whatelz.ai (admin), and app.whatelz.ai (members). `proxy.ts` refreshes and verifies Supabase cookie sessions before protected rewrites, forwards refreshed cookies and private cache headers, and checks stored roles on admin mutations. Legacy production `/admin/*` links redirect to the admin host. Local/preview `/admin` routes remain available. `/auth/*`, `/sign-in`, `/sign-up`, APIs and Next assets retain their paths. Clean admin links use `adminUrl`.
 
-The app host root rewrites to `/member-home`, which accepts any signed-in user and syncs their profile without granting admin rights. Team membership and relationship permissions are future work. Sign-in/up catch-all routes serve Clerk callbacks. Clerk production must use the whatelz.ai root domain and production keys. If Allowed Subdomains is enabled, include admin.whatelz.ai and app.whatelz.ai (and www.whatelz.ai when used); sessions share across subdomains. Verify sign-in redirects on both hosts. Localhost and Vercel preview `/admin` routes remain available for verification; `admin.localhost:3100` and `app.localhost:3100` exercise host routing locally. `NEXT_PUBLIC_ADMIN_ORIGIN` is set at build time in next.config.ts so preview navigation stays on the preview deployment.
+Google OAuth uses server-side PKCE through `/auth/google` and `/auth/callback`; redirect destinations are constrained to the current origin or the four production origins. Auth cookies share `.whatelz.ai` on the four known production hosts and stay host-only for local/preview hosts. Sign-out revokes the Supabase session. Google must be enabled in Supabase with its OAuth client credentials and callback allowlist; see `docs/supabase-google-setup.md`. Signed-in responses are never publicly cached. Admin layouts, API wrappers and Server Actions independently check `users.role`; user-editable auth metadata never determines permissions.
 
-Validation: `node --import tsx --test scripts/domain-routing.test.ts`, typecheck, lint, build, and anonymous host-routing requests.
+Stable `users.id` is the application identity; `supabase_auth_user_id` maps verified sessions to it. Sign-in never matches by email, grants admin roles or claims team nodes. New accounts retain the unauthorized default role. Historical Clerk IDs/columns remain solely for migration and old Stripe events; the Clerk SDK and login components are removed. Existing verified accounts require explicit provisioning/linking before cutover. Purchases, subscriptions and quiz history use separate internal owner columns, preserving the legacy columns during migration. No production cutover until Google setup, identity preservation and migration approval are complete.
+
+Validation: `node --import tsx --test scripts/domain-routing.test.ts scripts/team-model.test.ts scripts/auth-routing.test.ts`, typecheck, changed-file lint, build, isolated migration tests and anonymous protected-route checks.
 
 ## Team relationships
 
-`business_teams` groups sponsor trees, `business_team_people` stores independent person IDs and one optional direct sponsor per person, and `business_team_accounts` explicitly links a verified Clerk-backed users row to a person. Repeated names are allowed. Sponsor links must stay within a team; self sponsorship, cycles and changing a person's identity/team are rejected in PostgreSQL. A top-level person has no recorded sponsor, not necessarily no real upline.
+Teams group sponsor trees. People have independent IDs and one optional direct sponsor in their team; PostgreSQL rejects self links, cycles and identity/team changes. Repeated names are allowed. Verified login accounts are linked explicitly to people. Admins see the full tree; members see their direct upline and downline branch; managers see their team. Filtering occurs on the server before serialization. Context notes are manager/admin-only; contact emails are admin-only. Team visibility never changes global roles.
 
-The Team screen at admin.whatelz.ai/team shows the full tree and allows admins to link verified accounts. app.whatelz.ai/team requires authentication and an explicit account link; members see their immediate upline plus their downline branch, managers see their team, and global admins can inspect the full tree. Authorization runs on the server before rendering names. Context notes remain manager/admin-only so a member cannot receive notes about hidden branches. Team visibility never changes the global admin role. The Clerk-backed users table is server-only: revoke all browser role grants and scope its policies to service_role; the legacy broadly scoped policy must not be restored. This initial visibility rule is conservative and can be revised with Edmund's instruction.
+Team screens offer Tree view and Node view with sponsor connectors, scroll, zoom, fit and reset. Admins/managers can select a reference person. Admins can edit optional contact emails and ABO numbers; ABO numbers are text to preserve leading zeros and appear in permitted views. Saving an email never claims an account or sends an invitation. Real names, email addresses, ABO numbers and sponsor placements must stay in Supabase or ignored `supabase/private/` data, never the public repository.
 
-Real names and sponsor placements belong in Supabase or ignored `supabase/private/` imports, never the public GitHub repository. Import with `npm run seed:team -- /path/to/private-team.json` after applying the relationship migration; the atomic import refuses to overwrite an existing team. Seed data does not claim or link anyone's login account. Model tests: `node --import tsx --test scripts/team-model.test.ts`; database tests: `supabase/tests/team_relationships.sql` against an isolated database with the users and relationship migrations applied.
-
-Both team screens offer Tree view and Node view. Node view uses a dependency-free layered layout with sponsor connectors, scroll, zoom, fit and reset controls. Admins/managers can select a node to change the relationship perspective; members retain their linked perspective. Both views receive the same server-filtered people, so switching views never expands access. Layout checks are included in `scripts/team-model.test.ts`.
+The team contact-details migration is applied. The Supabase identity migration is pending explicit rollout approval after automatic review rejected its initial production application. EMDEE behavior documentation requires a writable connection; do not claim it is updated until a write succeeds.

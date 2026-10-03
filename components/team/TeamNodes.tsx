@@ -142,7 +142,12 @@ export function TeamNodes({
                     <span className="mt-2 block line-clamp-2 break-words text-base font-semibold leading-snug text-zinc-900">
                       {person.display_name}
                     </span>
-                    {person.context ? (
+                    {person.abo_number ? (
+                      <span className="mt-1 block text-xs font-medium text-zinc-600">
+                        ABO {person.abo_number}
+                      </span>
+                    ) : null}
+                    {person.context && !person.abo_number ? (
                       <span className="mt-1 block truncate text-xs text-zinc-500">
                         {person.context}
                       </span>

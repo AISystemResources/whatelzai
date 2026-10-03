@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@/lib/auth/server";
 import { getStripe, isStripeConfigured } from "@/lib/stripe-server";
 import { getOfferById, getOfferBySlug } from "@/lib/offers";
-import { findCustomerIdForClerkUser } from "@/lib/subscription";
+import { findCustomerIdForUser } from "@/lib/subscription";
 
 export const dynamic = "force-dynamic";
 
@@ -40,9 +40,9 @@ export async function POST(req: Request) {
   }
 
   const isOneOff = offer.billing_period === "one_off";
-  // Recurring offers require sign-in (needed for a stable Clerk↔Stripe link
+  // Recurring offers require sign-in (needed for a stable account-to-Stripe link
   // across renewals). One-off offers (the Playbook) intentionally accept
-  // anonymous checkout — Stripe collects the email, Clerk sign-up happens on
+  // anonymous checkout — Stripe collects the email, Google sign-in happens on
   // /success with that email prefilled.
   const { userId } = await auth();
   if (!isOneOff && !userId) {
@@ -56,9 +56,9 @@ export async function POST(req: Request) {
   }
 
   const user = userId ? await currentUser() : null;
-  const email = user?.emailAddresses?.[0]?.emailAddress;
+  const email = user?.email;
   const existingCustomerId = userId
-    ? await findCustomerIdForClerkUser(userId)
+    ? await findCustomerIdForUser(userId)
     : null;
 
   const successPath = isOneOff
@@ -82,20 +82,20 @@ export async function POST(req: Request) {
           : {}),
       // Anonymous one-off buyers need a Customer object created on the fly so
       // the webhook can key entitlements on customer_email and /success can
-      // prefill Clerk sign-up.
+      // prefill Google sign-in.
       ...(isOneOff && !existingCustomerId
         ? { customer_creation: "always" as const }
         : {}),
-      // client_reference_id / metadata.clerk_id are omitted for anonymous
-      // one-off checkouts — no Clerk user exists yet.
+      // client_reference_id / metadata.user_id are omitted for anonymous
+      // one-off checkouts — no app user exists yet.
       ...(userId ? { client_reference_id: userId } : {}),
       metadata: {
         offer_id: offer.id,
         offer_slug: offer.slug,
-        ...(userId ? { clerk_id: userId } : {}),
+        ...(userId ? { user_id: userId } : {}),
       },
       subscription_data: !isOneOff
-        ? { metadata: { clerk_id: userId ?? "", offer_id: offer.id } }
+        ? { metadata: { user_id: userId ?? "", offer_id: offer.id } }
         : undefined,
       success_url: `${SITE_URL}${successPath}`,
       cancel_url: `${SITE_URL}${cancelPath}`,

@@ -1,5 +1,5 @@
+import { SignOutButton } from "@/components/auth/AuthControls";
 import type { Metadata } from "next";
-import { ClerkProvider, UserButton } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 import { ensureUserRow } from "@/lib/users";
 
@@ -13,13 +13,13 @@ export default async function MemberHome() {
   const user = await ensureUserRow();
   if (!user) redirect("/sign-in");
   return (
-    <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up">
+    <>
       <main className="mx-auto max-w-3xl px-6 py-12">
         <header className="flex items-center justify-between border-b border-zinc-200 pb-6">
           <a href="https://whatelz.ai" className="font-semibold">
             whatelz.ai
           </a>
-          <UserButton />
+          <SignOutButton />
         </header>
         <h1 className="mt-12 text-3xl font-semibold">
           Welcome{user.name ? `, ${user.name}` : ""}
@@ -30,8 +30,7 @@ export default async function MemberHome() {
         <div className="mt-8 rounded-2xl border border-zinc-200 p-6">
           <h2 className="text-lg font-semibold">Your account</h2>
           <p className="mt-2 text-sm text-zinc-600">
-            Manage your profile using the account menu above, or view your
-            existing purchases.
+            View your existing purchases.
           </p>
           <a href="/account" className="mt-4 inline-block underline">
             View purchases →
@@ -52,6 +51,6 @@ export default async function MemberHome() {
           added here gradually.
         </p>
       </main>
-    </ClerkProvider>
+    </>
   );
 }

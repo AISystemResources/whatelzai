@@ -23,7 +23,11 @@ const LINKS = [
     href: "https://github.com/elz-ming/WHAT-ELZ",
     desc: "Source repo",
   },
-  { label: "Clerk", href: "https://dashboard.clerk.com", desc: "Auth & users" },
+  {
+    label: "Supabase Auth",
+    href: "https://supabase.com/dashboard/project/tnjujbkpepchhgyqwmtb/auth/users",
+    desc: "Auth & users",
+  },
   {
     label: "Inngest",
     href: "https://app.inngest.com",

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { SignInButton, useUser } from "@clerk/nextjs";
+import { SignInButton, useUser } from "@/components/auth/AuthControls";
 
 interface Question {
   id: string;
@@ -286,7 +286,7 @@ export function QuizPlayer({
             {phase === "unlocking" ? (
               <p className="font-mono text-xs text-zinc-500">Unlocking…</p>
             ) : (
-              <SignInButton mode="modal">
+              <SignInButton>
                 <button className="border border-zinc-900 bg-zinc-900 px-6 py-3 font-mono text-sm uppercase tracking-widest text-white transition hover:bg-zinc-700">
                   Sign in with Google to unlock
                 </button>

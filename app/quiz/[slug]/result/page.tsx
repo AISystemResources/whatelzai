@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/auth/server";
 import { getAttempt, getArchetype, getQuizBySlug } from "@/lib/quizzes";
 
 export const dynamic = "force-dynamic";
@@ -26,7 +26,7 @@ export default async function ResultPage({
 
   const attempt = await getAttempt(attempt_id);
   if (!attempt) notFound();
-  if (attempt.clerk_user_id !== userId) redirect(`/quiz/${slug}`);
+  if (attempt.user_id !== userId) redirect(`/quiz/${slug}`);
   if (!attempt.archetype_key || !attempt.unlocked_at) redirect(`/quiz/${slug}`);
 
   const quiz = await getQuizBySlug(slug);

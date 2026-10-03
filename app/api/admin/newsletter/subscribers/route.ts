@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { withClerkAdmin } from "@/lib/auth/withAuth";
+import { withSessionAdmin } from "@/lib/auth/withAuth";
 import {
   listSubscribers,
   subscriberStats,
@@ -8,7 +8,7 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export const GET = withClerkAdmin(async (req) => {
+export const GET = withSessionAdmin(async (req) => {
   const url = new URL(req.url);
   const status = url.searchParams.get("status") as SubscriberStatus | null;
 

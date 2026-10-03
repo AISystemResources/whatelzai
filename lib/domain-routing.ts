@@ -15,7 +15,9 @@ export function domainRoute(hostname: string, pathname: string) {
   const surface = siteSurface(hostname);
   const isAdmin = pathname === "/admin" || pathname.startsWith("/admin/");
   const infrastructure =
-    pathname.startsWith("/api/") || pathname.startsWith("/_next/");
+    pathname.startsWith("/api/") ||
+    pathname.startsWith("/_next/") ||
+    pathname.startsWith("/auth/");
   const authPage = /^\/sign-(in|up)(\/|$)/.test(pathname);
   const local = hostname.split(":")[0].endsWith("localhost");
 

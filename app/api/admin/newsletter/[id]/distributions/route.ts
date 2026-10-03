@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { withClerkAdmin } from "@/lib/auth/withAuth";
+import { withSessionAdmin } from "@/lib/auth/withAuth";
 import {
   addDistribution,
   listDistributions,
@@ -19,13 +19,13 @@ const PLATFORMS: readonly DistributionPlatform[] = [
   "beehiiv",
 ];
 
-export const GET = withClerkAdmin<Context>(async (_req, { params }) => {
+export const GET = withSessionAdmin<Context>(async (_req, { params }) => {
   const { id } = await params;
   const distributions = await listDistributions(id);
   return NextResponse.json({ distributions });
 });
 
-export const POST = withClerkAdmin<Context>(async (req, { params }) => {
+export const POST = withSessionAdmin<Context>(async (req, { params }) => {
   const { id } = await params;
   const body = (await req.json().catch(() => null)) as {
     platform?: unknown;

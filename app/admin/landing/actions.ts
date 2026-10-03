@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/auth/server";
 import { isAdminRole } from "@/lib/users";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import {
@@ -19,7 +19,7 @@ async function assertAdmin(): Promise<void> {
   const { data } = await supabaseAdmin
     .from("users")
     .select("role")
-    .eq("clerk_user_id", userId)
+    .eq("id", userId)
     .maybeSingle();
   if (!isAdminRole(data?.role as "admin" | "superadmin" | undefined)) {
     throw new Error("Forbidden");

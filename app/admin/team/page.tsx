@@ -3,7 +3,7 @@ import { requireAdmin } from "@/lib/users";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { loadTeamView, type TeamView } from "@/lib/team/server";
 import { TeamTree } from "@/components/team/TeamTree";
-import { linkTeamAccount } from "./actions";
+import { linkTeamAccount, updateTeamPerson } from "./actions";
 
 export const metadata: Metadata = {
   title: "Team relationships",
@@ -72,6 +72,60 @@ export default async function TeamPage() {
         focusId={view.team.focus_person_id}
         canSeeAll
       />
+      <section className="space-y-4 rounded-xl border border-zinc-200 p-5">
+        <h2 className="text-lg font-semibold">Member details</h2>
+        <p className="text-sm text-zinc-500">
+          Add known email addresses and ABO numbers. Emails are admin-only; ABO
+          numbers appear beside people in permitted team views. Saving an email
+          does not link a login account.
+        </p>
+        <div className="space-y-4">
+          {view.people.map((person) => (
+            <form
+              key={person.id}
+              action={updateTeamPerson}
+              className="space-y-3 rounded-lg border border-zinc-200 p-4"
+            >
+              <input type="hidden" name="team_id" value={view.team.id} />
+              <input type="hidden" name="person_id" value={person.id} />
+              <h3 className="font-medium">{person.display_name}</h3>
+              {person.context ? (
+                <p className="text-xs text-zinc-500">{person.context}</p>
+              ) : null}
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="text-sm">
+                  Email
+                  <input
+                    type="email"
+                    name="email"
+                    maxLength={254}
+                    defaultValue={person.email ?? ""}
+                    className="mt-1 block w-full rounded border border-zinc-300 p-2"
+                  />
+                </label>
+                <label className="text-sm">
+                  ABO number
+                  <input
+                    type="text"
+                    name="abo_number"
+                    inputMode="numeric"
+                    pattern="[0-9]{1,20}"
+                    maxLength={20}
+                    defaultValue={person.abo_number ?? ""}
+                    className="mt-1 block w-full rounded border border-zinc-300 p-2"
+                  />
+                </label>
+              </div>
+              <button
+                type="submit"
+                className="rounded bg-zinc-900 px-4 py-2 text-sm text-white"
+              >
+                Save details
+              </button>
+            </form>
+          ))}
+        </div>
+      </section>
       <section className="space-y-4 rounded-xl border border-zinc-200 p-5">
         <h2 className="text-lg font-semibold">Link a verified account</h2>
         <p className="text-sm text-zinc-500">

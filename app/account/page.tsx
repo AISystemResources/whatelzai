@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@/lib/auth/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { hasActiveEntitlement, stitchOrphansToUser } from "@/lib/entitlements";
 
@@ -22,7 +22,7 @@ async function loadEntitlementState(userId: string): Promise<EntitlementState> {
   const { data } = await supabaseAdmin
     .from("entitlements")
     .select("id")
-    .eq("user_id", userId)
+    .eq("app_user_id", userId)
     .eq("product_slug", "playbook")
     .not("revoked_at", "is", null)
     .limit(1)
@@ -38,7 +38,7 @@ async function loadArchetype(userId: string): Promise<{
   const { data: attempt } = await supabaseAdmin
     .from("quiz_attempts")
     .select("archetype_key")
-    .eq("clerk_user_id", userId)
+    .eq("user_id", userId)
     .not("completed_at", "is", null)
     .order("completed_at", { ascending: false })
     .limit(1)
@@ -62,10 +62,7 @@ export default async function AccountPage() {
   if (!userId) redirect("/sign-in?redirect_url=/account");
 
   const user = await currentUser();
-  const email =
-    user?.primaryEmailAddress?.emailAddress ??
-    user?.emailAddresses?.[0]?.emailAddress ??
-    null;
+  const email = user?.email ?? null;
 
   // Defensive stitch on every load — bounded to orphan rows with a matching
   // email (SPR-111's stitchOrphansToUser). Idempotent no-op if nothing to

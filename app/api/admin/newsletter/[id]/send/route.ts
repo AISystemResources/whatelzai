@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { withClerkAdmin } from "@/lib/auth/withAuth";
+import { withSessionAdmin } from "@/lib/auth/withAuth";
 import { sendIssue } from "@/lib/newsletter";
 
 export const dynamic = "force-dynamic";
 
 type Context = { params: Promise<{ id: string }> };
 
-export const POST = withClerkAdmin<Context>(async (_req, { params }) => {
+export const POST = withSessionAdmin<Context>(async (_req, { params }) => {
   const { id } = await params;
   try {
     const result = await sendIssue(id);

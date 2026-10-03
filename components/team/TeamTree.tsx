@@ -41,6 +41,11 @@ export function TeamTree({
               {relation === "self" ? "You / selected person" : relation}
             </span>
           </div>
+          {person.abo_number ? (
+            <p className="mt-1 text-xs font-medium text-zinc-600">
+              ABO {person.abo_number}
+            </p>
+          ) : null}
           {person.context && (
             <p className="mt-1 text-xs text-zinc-500">{person.context}</p>
           )}

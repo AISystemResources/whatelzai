@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/auth/server";
 import { redirect } from "next/navigation";
 import { loadTeamView, type TeamView } from "@/lib/team/server";
 import { TeamTree } from "@/components/team/TeamTree";

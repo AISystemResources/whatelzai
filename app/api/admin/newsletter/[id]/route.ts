@@ -1,19 +1,19 @@
 import { NextResponse } from "next/server";
-import { withClerkAdmin } from "@/lib/auth/withAuth";
+import { withSessionAdmin } from "@/lib/auth/withAuth";
 import { deleteIssue, updateIssue, getIssueById } from "@/lib/newsletter";
 
 export const dynamic = "force-dynamic";
 
 type Context = { params: Promise<{ id: string }> };
 
-export const GET = withClerkAdmin<Context>(async (_req, { params }) => {
+export const GET = withSessionAdmin<Context>(async (_req, { params }) => {
   const { id } = await params;
   const issue = await getIssueById(id);
   if (!issue) return NextResponse.json({ error: "not_found" }, { status: 404 });
   return NextResponse.json({ issue });
 });
 
-export const PATCH = withClerkAdmin<Context>(async (req, { params }) => {
+export const PATCH = withSessionAdmin<Context>(async (req, { params }) => {
   const { id } = await params;
   const body = (await req.json().catch(() => null)) as {
     slug?: unknown;
@@ -49,7 +49,7 @@ export const PATCH = withClerkAdmin<Context>(async (req, { params }) => {
   }
 });
 
-export const DELETE = withClerkAdmin<Context>(async (_req, { params }) => {
+export const DELETE = withSessionAdmin<Context>(async (_req, { params }) => {
   const { id } = await params;
   try {
     await deleteIssue(id);

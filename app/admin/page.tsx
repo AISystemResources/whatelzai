@@ -1,7 +1,7 @@
 import { adminUrl } from "@/lib/admin-url";
 import type { Metadata } from "next";
-import { auth } from "@clerk/nextjs/server";
-import { SignOutButton } from "@clerk/nextjs";
+import { auth } from "@/lib/auth/server";
+import { SignOutButton } from "@/components/auth/AuthControls";
 import { redirect } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { ensureUserRow, isAdminRole } from "@/lib/users";

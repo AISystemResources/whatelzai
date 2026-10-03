@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { relationshipTo, type TeamPerson } from "@/lib/team/model";
+import { TeamNodes } from "./TeamNodes";
 
 export function TeamTree({
   people,
@@ -13,6 +14,7 @@ export function TeamTree({
   canSeeAll?: boolean;
 }) {
   const [selectedId, setSelectedId] = useState(focusId);
+  const [view, setView] = useState<"tree" | "nodes">("tree");
   const focus = people.find((person) => person.id === selectedId);
   const bySponsor = new Map<string | null, TeamPerson[]>();
   for (const person of people) {
@@ -53,6 +55,23 @@ export function TeamTree({
   }
   return (
     <section aria-label="Sponsor tree" className="space-y-6">
+      <div
+        className="inline-flex gap-1 rounded-xl border border-zinc-200 bg-zinc-50 p-1"
+        role="group"
+        aria-label="Team view"
+      >
+        {(["tree", "nodes"] as const).map((option) => (
+          <button
+            key={option}
+            type="button"
+            aria-pressed={view === option}
+            onClick={() => setView(option)}
+            className={`rounded-lg px-4 py-2 text-sm font-medium capitalize focus-visible:outline-2 focus-visible:outline-yellow-500 ${view === option ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500 hover:text-zinc-900"}`}
+          >
+            {option === "tree" ? "Tree view" : "Node view"}
+          </button>
+        ))}
+      </div>
       {canSeeAll && (
         <label className="block text-sm text-zinc-600">
           View relationships from
@@ -102,7 +121,15 @@ export function TeamTree({
         {focus?.display_name ?? "your linked profile"}. A top-level person has
         no recorded upline in this view.
       </p>
-      <ul className="space-y-2">{(bySponsor.get(null) ?? []).map(branch)}</ul>
+      {view === "tree" ? (
+        <ul className="space-y-2">{(bySponsor.get(null) ?? []).map(branch)}</ul>
+      ) : (
+        <TeamNodes
+          people={people}
+          selectedId={selectedId}
+          onSelect={canSeeAll ? setSelectedId : undefined}
+        />
+      )}
       {!canSeeAll && (
         <p className="text-xs text-zinc-500">
           This view contains your direct upline and your downline branch. Counts

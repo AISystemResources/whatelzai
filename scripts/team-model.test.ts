@@ -8,6 +8,11 @@ import {
   visiblePeople,
   type TeamPerson,
 } from "../lib/team/model";
+import {
+  layoutTeamNodes,
+  NODE_HEIGHT,
+  NODE_WIDTH,
+} from "../lib/team/node-layout";
 
 const teamId = randomUUID();
 const ids = Array.from({ length: 11 }, () => randomUUID());
@@ -19,6 +24,44 @@ const people: TeamPerson[] = parents.map((parent, index) => ({
   sponsor_person_id: parent === null ? null : ids[parent],
   context: "Internal description",
 }));
+
+test("node layout keeps duplicate names distinct and sponsors above children without overlapping cards", () => {
+  const layout = layoutTeamNodes(people);
+  assert.equal(layout.nodes.length, 11);
+  assert.equal(layout.edges.length, 10);
+  for (const { parent, child } of layout.edges) {
+    assert.ok(parent.y + NODE_HEIGHT < child.y);
+    assert.equal(child.person.sponsor_person_id, parent.person.id);
+  }
+  for (const node of layout.nodes) {
+    assert.ok(node.x >= 0 && node.x + NODE_WIDTH <= layout.width);
+    assert.ok(node.y >= 0 && node.y + NODE_HEIGHT <= layout.height);
+    for (const other of layout.nodes) {
+      if (node.person.id === other.person.id) continue;
+      assert.ok(
+        Math.abs(node.x - other.x) >= NODE_WIDTH ||
+          Math.abs(node.y - other.y) >= NODE_HEIGHT,
+      );
+    }
+  }
+});
+
+test("node view contains only authorized people and links, and handles multiple roots and empty views", () => {
+  const layout = layoutTeamNodes(visiblePeople(people, ids[2], "member"));
+  assert.deepEqual(
+    new Set(layout.nodes.map((node) => node.person.id)),
+    new Set([ids[1], ids[2]]),
+  );
+  assert.equal(layout.edges.length, 1);
+  const forest = layoutTeamNodes([
+    people[0],
+    { ...people[1], sponsor_person_id: null },
+  ]);
+  assert.equal(forest.edges.length, 0);
+  assert.equal(forest.nodes[0].y, forest.nodes[1].y);
+  assert.ok(Math.abs(forest.nodes[0].x - forest.nodes[1].x) >= NODE_WIDTH);
+  assert.equal(layoutTeamNodes([]).nodes.length, 0);
+});
 
 test("the supplied tree shape has eleven distinct people and ten sponsor links", () => {
   const seed = parseTeamSeed({

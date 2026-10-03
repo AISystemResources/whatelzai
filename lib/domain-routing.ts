@@ -30,8 +30,14 @@ export function domainRoute(hostname: string, pathname: string) {
       : "https://admin.whatelz.ai";
     return { surface, redirect: origin + stripAdminPath(pathname) };
   }
-  if (surface === "public" && pathname === "/member-home") {
-    return { surface, redirect: "https://app.whatelz.ai/" };
+  if (
+    surface === "public" &&
+    (pathname === "/member-home" || pathname === "/team")
+  ) {
+    return {
+      surface,
+      redirect: `https://app.whatelz.ai${pathname === "/member-home" ? "/" : pathname}`,
+    };
   }
   if (surface === "admin" && !infrastructure && !authPage) {
     return {

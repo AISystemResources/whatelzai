@@ -37,6 +37,16 @@ export default async function MemberHome() {
             View purchases →
           </a>
         </div>
+        <div className="mt-6 rounded-2xl border border-zinc-200 p-6">
+          <h2 className="text-lg font-semibold">My team</h2>
+          <p className="mt-2 text-sm text-zinc-600">
+            See your sponsor relationships once your account has been linked to
+            your team profile.
+          </p>
+          <a href="/team" className="mt-4 inline-block underline">
+            View my team →
+          </a>
+        </div>
         <p className="mt-8 text-sm text-zinc-500">
           Product references, seminar learnings and team connections will be
           added here gradually.

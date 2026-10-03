@@ -13,6 +13,7 @@ const NAV: readonly NavItem[] = [
   { href: "/admin/command-center", label: "Command Center" },
   { href: "/admin", label: "Dashboard", exact: true },
   { href: "/admin/profile", label: "My Profile" },
+  { href: "/admin/team", label: "Team" },
   { href: "/admin/services", label: "Services" },
   { href: "/admin/testimonials", label: "Testimonials" },
   { href: "/admin/blog", label: "Blog" },

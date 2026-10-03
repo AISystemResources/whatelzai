@@ -38,6 +38,12 @@ test("auth callbacks and API endpoints are not rewritten into pages", () => {
   }
 });
 test("members have a separate signed-in landing page", () => {
+  assert.equal(
+    domainRoute("whatelz.ai", "/team").redirect,
+    "https://app.whatelz.ai/team",
+  );
+  assert.equal(domainRoute("app.whatelz.ai", "/team").protect, true);
+  assert.equal(domainRoute("admin.whatelz.ai", "/team").rewrite, "/admin/team");
   assert.equal(domainRoute("app.whatelz.ai", "/").rewrite, "/member-home");
   assert.equal(domainRoute("app.whatelz.ai", "/").protect, true);
   assert.equal(domainRoute("app.whatelz.ai", "/account").protect, true);

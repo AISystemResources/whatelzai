@@ -1,4 +1,5 @@
 "use client";
+import { adminUrl } from "@/lib/admin-url";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -12,6 +13,7 @@ const NAV: readonly NavItem[] = [
   { href: "/admin/command-center", label: "Command Center" },
   { href: "/admin", label: "Dashboard", exact: true },
   { href: "/admin/profile", label: "My Profile" },
+  { href: "/admin/team", label: "Team" },
   { href: "/admin/services", label: "Services" },
   { href: "/admin/testimonials", label: "Testimonials" },
   { href: "/admin/blog", label: "Blog" },
@@ -34,6 +36,8 @@ const SECONDARY_NAV: readonly NavItem[] = [
 ];
 
 function isActive(pathname: string, href: string, exact?: boolean): boolean {
+  if (!pathname.startsWith("/admin"))
+    pathname = `/admin${pathname === "/" ? "" : pathname}`;
   if (exact) return pathname === href;
   return pathname === href || pathname.startsWith(href + "/");
 }
@@ -57,7 +61,7 @@ function NavLink({
 }) {
   return (
     <Link
-      href={href}
+      href={adminUrl(href)}
       onClick={onNavigate}
       className={`block border-l-2 px-3 py-2 font-mono text-xs uppercase tracking-widest transition-colors ${
         active
@@ -76,7 +80,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     <>
       <div className="border-b border-zinc-200 px-5 py-6">
         <Link
-          href="/"
+          href="https://whatelz.ai"
           onClick={onNavigate}
           className="font-mono text-xs font-semibold uppercase tracking-widest text-zinc-900 transition-opacity hover:opacity-60"
         >
@@ -106,13 +110,13 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         <MCPConnectHint />
         <div className="flex items-center justify-between gap-3">
           <Link
-            href="/admin/developer"
+            href={adminUrl("/admin/developer")}
             onClick={onNavigate}
             className="font-mono text-[10px] uppercase tracking-widest text-zinc-400 transition-colors hover:text-zinc-900"
           >
             Developer
           </Link>
-          <SignOutButton>
+          <SignOutButton redirectUrl="/sign-in">
             <button className="font-mono text-[10px] uppercase tracking-widest text-zinc-500 transition-colors hover:text-zinc-900">
               ← Sign out
             </button>
@@ -125,10 +129,11 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
 export function AdminSidebar() {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
-
-  // Close drawer on route change.
-  useEffect(() => setOpen(false), [pathname]);
+  const [drawer, setDrawer] = useState({ pathname, open: false });
+  const open = drawer.pathname === pathname && drawer.open;
+  function setOpen(value: boolean) {
+    setDrawer({ pathname, open: value });
+  }
 
   // Lock body scroll while mobile drawer is open.
   useEffect(() => {
@@ -144,11 +149,11 @@ export function AdminSidebar() {
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") setDrawer({ pathname, open: false });
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
+  }, [open, pathname]);
 
   return (
     <>

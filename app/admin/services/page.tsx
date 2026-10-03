@@ -1,3 +1,4 @@
+import { adminUrl } from "@/lib/admin-url";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { listServices, type Service } from "@/lib/services";
@@ -104,7 +105,7 @@ export default async function ServicesAdminPage() {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Link
-                      href={`/admin/services/${s.slug}`}
+                      href={adminUrl(`/admin/services/${s.slug}`)}
                       className="font-mono text-xs uppercase tracking-widest text-zinc-500 hover:text-zinc-900"
                     >
                       Edit →

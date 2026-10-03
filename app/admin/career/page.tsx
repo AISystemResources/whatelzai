@@ -1,3 +1,4 @@
+import { adminUrl } from "@/lib/admin-url";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { listCareer } from "@/lib/career";
@@ -73,7 +74,7 @@ export default async function AdminCareerPage() {
                     {entry.id.slice(0, 8)}
                   </span>
                   <Link
-                    href={`/admin/career/${entry.id}`}
+                    href={adminUrl(`/admin/career/${entry.id}`)}
                     className="font-mono text-xs text-zinc-500 transition-colors hover:text-zinc-900"
                   >
                     Edit content →

@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  env: {
+    NEXT_PUBLIC_ADMIN_ORIGIN:
+      process.env.VERCEL_ENV === "preview" ? "" : "https://admin.whatelz.ai",
+  },
   serverExternalPackages: ["puppeteer-core", "@sparticuz/chromium-min"],
   experimental: {
     // Default is 1MB — too small for mobile photo uploads on /feedback.
@@ -22,6 +26,12 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/services",
+        missing: [
+          {
+            type: "host",
+            value: "(?:admin|app)\\.(?:whatelz\\.ai|localhost)(?::[0-9]+)?",
+          },
+        ],
         destination: "/playbook",
         permanent: true,
       },

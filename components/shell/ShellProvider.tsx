@@ -9,15 +9,21 @@ import { usePathname } from "next/navigation";
 interface Props {
   isAdmin: boolean;
   ownerName: string;
+  surface?: "public" | "admin" | "app";
   children: ReactNode;
 }
 
-export function ShellProvider({ isAdmin, ownerName, children }: Props) {
+export function ShellProvider({
+  isAdmin,
+  ownerName,
+  children,
+  surface = "public",
+}: Props) {
   const path = usePathname();
-  const isPublic = !path.startsWith("/admin");
+  const isPublic = surface === "public" && !path.startsWith("/admin");
   return (
     <>
-      <AppHeader />
+      {isPublic && <AppHeader />}
       <div
         id="site-content"
         tabIndex={-1}
@@ -25,8 +31,8 @@ export function ShellProvider({ isAdmin, ownerName, children }: Props) {
       >
         {children}
       </div>
-      <SiteFooter ownerName={ownerName} />
-      {!isAdmin && <DeviceTracker />}
+      {isPublic && <SiteFooter ownerName={ownerName} />}
+      {isPublic && !isAdmin && <DeviceTracker />}
     </>
   );
 }

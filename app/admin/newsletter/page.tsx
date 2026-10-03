@@ -1,3 +1,4 @@
+import { adminUrl } from "@/lib/admin-url";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { listIssues, subscriberStats } from "@/lib/newsletter";
@@ -31,13 +32,13 @@ export default async function NewsletterAdminPage() {
         </div>
         <div className="flex gap-2">
           <Link
-            href="/admin/newsletter/subscribers"
+            href={adminUrl("/admin/newsletter/subscribers")}
             className="border border-zinc-200 px-4 py-2 font-mono text-xs uppercase tracking-widest text-zinc-600 transition-colors hover:border-zinc-900 hover:text-zinc-900"
           >
             Subscribers
           </Link>
           <Link
-            href="/admin/newsletter/new"
+            href={adminUrl("/admin/newsletter/new")}
             className="border border-zinc-900 px-4 py-2 font-mono text-xs uppercase tracking-widest text-zinc-900 transition-colors hover:bg-zinc-900 hover:text-white"
           >
             + New issue
@@ -121,7 +122,7 @@ function IssueRow({
           })}
         </span>
         <Link
-          href={`/admin/newsletter/${issue.id}`}
+          href={adminUrl(`/admin/newsletter/${issue.id}`)}
           className="font-mono text-xs text-zinc-400 hover:text-zinc-900"
         >
           {issue.status === "draft" ? "Edit →" : "View →"}

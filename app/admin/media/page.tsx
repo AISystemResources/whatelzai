@@ -1,3 +1,4 @@
+import { requireAdmin } from "@/lib/users";
 import type { Metadata } from "next";
 import { revalidatePath } from "next/cache";
 import {
@@ -15,12 +16,14 @@ async function saveAsset(
   patch: Partial<Pick<MediaAsset, "label" | "description" | "destinations">>,
 ) {
   "use server";
+  await requireAdmin();
   await updateMediaAsset(id, patch);
   revalidatePath("/admin/media");
 }
 
 async function removeAsset(id: string) {
   "use server";
+  await requireAdmin();
   await deleteMediaAsset(id);
   revalidatePath("/admin/media");
 }

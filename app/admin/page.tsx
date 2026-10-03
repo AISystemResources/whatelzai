@@ -1,3 +1,4 @@
+import { adminUrl } from "@/lib/admin-url";
 import type { Metadata } from "next";
 import { auth } from "@clerk/nextjs/server";
 import { SignOutButton } from "@clerk/nextjs";
@@ -110,7 +111,7 @@ export default async function DashboardPage() {
           return href ? (
             <a
               key={label}
-              href={href}
+              href={adminUrl(href)}
               className="border border-zinc-200 rounded p-4 hover:border-zinc-400 transition-colors"
             >
               {inner}

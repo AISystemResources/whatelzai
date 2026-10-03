@@ -74,3 +74,8 @@ export async function isCurrentUserAdmin(): Promise<boolean> {
 
   return isAdminRole(data?.role as UserRole | undefined);
 }
+
+// Server Actions must authorize at execution time, independently of layouts.
+export async function requireAdmin(): Promise<void> {
+  if (!(await isCurrentUserAdmin())) throw new Error("Admin access required");
+}

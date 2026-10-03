@@ -1,4 +1,5 @@
 "use client";
+import { adminUrl } from "@/lib/admin-url";
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
@@ -97,7 +98,7 @@ export function NewPrefillForm({ events }: { events: ServiceEvent[] }) {
           </p>
         </div>
         <Link
-          href="/admin/testimonials"
+          href={adminUrl("/admin/testimonials")}
           className="font-mono text-xs uppercase tracking-widest text-zinc-500 transition-colors hover:text-zinc-900"
         >
           ← Back

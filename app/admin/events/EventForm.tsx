@@ -1,4 +1,5 @@
 "use client";
+import { adminUrl } from "@/lib/admin-url";
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -109,7 +110,7 @@ export function EventForm({ initial }: { initial: ServiceEvent | null }) {
           </h1>
         </div>
         <Link
-          href="/admin/events"
+          href={adminUrl("/admin/events")}
           className="font-mono text-xs uppercase tracking-widest text-zinc-500 transition-colors hover:text-zinc-900"
         >
           ← Back

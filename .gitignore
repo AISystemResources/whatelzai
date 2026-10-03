@@ -49,3 +49,6 @@ next-env.d.ts
 # Skills manager
 .agents/
 skills-lock.json
+
+# Private team imports contain real people and sponsor links.
+/supabase/private/

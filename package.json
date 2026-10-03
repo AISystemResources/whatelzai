@@ -11,7 +11,8 @@
     "format:check": "prettier --check .",
     "seed": "node --env-file=.env.local --import tsx scripts/seed-website-docs.ts",
     "seed:quiz": "node --env-file=.env.local --import tsx scripts/seed-quiz.ts",
-    "migrate:sqlite": "node --env-file=.env.local --import tsx scripts/migrate-sqlite-to-supabase.ts"
+    "migrate:sqlite": "node --env-file=.env.local --import tsx scripts/migrate-sqlite-to-supabase.ts",
+    "seed:team": "node --env-file=.env.local --import tsx scripts/seed-team.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.2.7",

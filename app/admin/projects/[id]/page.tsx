@@ -1,3 +1,5 @@
+import { requireAdmin } from "@/lib/users";
+import { adminUrl } from "@/lib/admin-url";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -13,6 +15,7 @@ type Props = { params: Promise<{ id: string }> };
 
 async function saveContent(id: string, content: string) {
   "use server";
+  await requireAdmin();
   await supabaseAdmin
     .from("projects")
     .update({ content, updated_at: new Date().toISOString() })
@@ -28,7 +31,7 @@ export default async function AdminProjectContentPage({ params }: Props) {
     <div className="max-w-3xl space-y-8">
       <div className="border-b border-zinc-200 pb-6">
         <Link
-          href="/admin/projects"
+          href={adminUrl("/admin/projects")}
           className="font-mono text-xs uppercase tracking-widest text-zinc-400 transition-colors hover:text-zinc-900"
         >
           ← Projects

@@ -1,3 +1,4 @@
+import { adminUrl } from "@/lib/admin-url";
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
@@ -37,7 +38,10 @@ export default async function TemplatesListPage() {
   return (
     <div className="space-y-8">
       <nav className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
-        <Link href="/admin/testimonials" className="hover:text-zinc-900">
+        <Link
+          href={adminUrl("/admin/testimonials")}
+          className="hover:text-zinc-900"
+        >
           ← Testimonials
         </Link>
       </nav>
@@ -57,7 +61,7 @@ export default async function TemplatesListPage() {
           </p>
         </div>
         <Link
-          href="/admin/testimonials/templates/new"
+          href={adminUrl("/admin/testimonials/templates/new")}
           className="inline-flex items-center gap-1.5 border border-zinc-900 bg-zinc-900 px-3 py-1.5 font-mono text-xs uppercase tracking-widest text-white transition-colors hover:bg-[var(--accent)] hover:text-zinc-900 hover:border-[var(--accent)]"
         >
           + New template
@@ -68,7 +72,7 @@ export default async function TemplatesListPage() {
         <div className="border border-zinc-200 bg-white p-8 text-sm text-zinc-500">
           No templates yet.{" "}
           <Link
-            href="/admin/testimonials/templates/new"
+            href={adminUrl("/admin/testimonials/templates/new")}
             className="underline underline-offset-4 hover:text-zinc-900"
           >
             Create the first one →
@@ -135,7 +139,7 @@ export default async function TemplatesListPage() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       <Link
-                        href={`/admin/testimonials/templates/${t.id}`}
+                        href={adminUrl(`/admin/testimonials/templates/${t.id}`)}
                         className="font-mono text-xs uppercase tracking-widest text-zinc-500 hover:text-zinc-900"
                       >
                         Open →

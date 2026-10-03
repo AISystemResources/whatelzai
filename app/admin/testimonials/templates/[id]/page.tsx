@@ -1,3 +1,4 @@
+import { adminUrl } from "@/lib/admin-url";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -63,7 +64,7 @@ export default async function TemplateDetailPage({
       <div>
         <nav className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
           <Link
-            href="/admin/testimonials/templates"
+            href={adminUrl("/admin/testimonials/templates")}
             className="hover:text-zinc-900"
           >
             ← Templates
@@ -179,7 +180,7 @@ export default async function TemplateDetailPage({
                     </td>
                     <td className="px-4 py-3 text-right">
                       <Link
-                        href={`/admin/testimonials/${s.id}`}
+                        href={adminUrl(`/admin/testimonials/${s.id}`)}
                         className="font-mono text-xs uppercase tracking-widest text-zinc-500 hover:text-zinc-900"
                       >
                         Review →

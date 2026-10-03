@@ -1,3 +1,4 @@
+import { adminUrl } from "@/lib/admin-url";
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
@@ -26,7 +27,10 @@ export default async function AdminEventsPage() {
   return (
     <div className="space-y-6">
       <nav className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
-        <Link href="/admin/testimonials" className="hover:text-zinc-900">
+        <Link
+          href={adminUrl("/admin/testimonials")}
+          className="hover:text-zinc-900"
+        >
           ← Testimonials
         </Link>
       </nav>
@@ -44,7 +48,7 @@ export default async function AdminEventsPage() {
           </p>
         </div>
         <Link
-          href="/admin/events/new"
+          href={adminUrl("/admin/events/new")}
           className="inline-flex items-center gap-1.5 border border-zinc-900 bg-zinc-900 px-3 py-1.5 font-mono text-xs uppercase tracking-widest text-white transition-colors hover:bg-[var(--accent)] hover:text-zinc-900 hover:border-[var(--accent)]"
         >
           + New event
@@ -60,7 +64,7 @@ export default async function AdminEventsPage() {
           {events.map((e) => (
             <Link
               key={e.id}
-              href={`/admin/events/${e.id}`}
+              href={adminUrl(`/admin/events/${e.id}`)}
               className="block px-4 py-4 transition-colors hover:bg-zinc-50"
             >
               <div className="flex items-start justify-between gap-4">

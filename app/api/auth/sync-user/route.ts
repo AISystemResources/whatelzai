@@ -1,13 +1,10 @@
-import { auth } from "@clerk/nextjs/server";
-import { supabaseAdmin } from "@/lib/supabase-server";
+import { ensureUserRow, isAdminRole } from "@/lib/users";
 import { redirect } from "next/navigation";
+import { adminUrl } from "@/lib/admin-url";
 
 export async function GET() {
-  const { userId } = await auth();
-  if (userId) {
-    await supabaseAdmin
-      .from("system_config")
-      .upsert({ key: "clerk_admin_user_id", value: userId });
-  }
-  redirect("/admin");
+  const user = await ensureUserRow();
+  if (!user) redirect("/sign-in");
+  // Signing in syncs a profile; it must never appoint an administrator.
+  redirect(isAdminRole(user.role) ? adminUrl() : "https://app.whatelz.ai");
 }

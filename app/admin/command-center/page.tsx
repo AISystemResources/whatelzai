@@ -1,3 +1,4 @@
+import { adminUrl } from "@/lib/admin-url";
 import type { Metadata } from "next";
 import { getSelfMetrics } from "@/lib/cockpit-self";
 import {
@@ -60,7 +61,7 @@ export default async function CommandCenterPage() {
           product="whatelz"
           label="whatelz.ai"
           state={selfState}
-          adminHref="/admin"
+          adminHref={adminUrl()}
         />
         <ProductWidget
           product="emdee"

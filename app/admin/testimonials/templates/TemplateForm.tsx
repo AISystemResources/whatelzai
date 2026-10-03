@@ -1,4 +1,5 @@
 "use client";
+import { adminUrl } from "@/lib/admin-url";
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -115,7 +116,7 @@ export function TemplateForm({
     start(async () => {
       try {
         await removeTemplate(initial.id);
-        router.push("/admin/testimonials/templates");
+        router.push(adminUrl("/admin/testimonials/templates"));
       } catch {
         setStatus("error");
       }
@@ -252,7 +253,7 @@ export function TemplateForm({
           </Button>
           <StatusPill status={status} />
           <Link
-            href="/admin/testimonials/templates"
+            href={adminUrl("/admin/testimonials/templates")}
             className="font-mono text-xs uppercase tracking-widest text-zinc-500 hover:text-zinc-900"
           >
             ← All templates

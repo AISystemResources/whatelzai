@@ -1,3 +1,4 @@
+import { requireAdmin } from "@/lib/users";
 import type { Metadata } from "next";
 import crypto from "crypto";
 import { revalidatePath } from "next/cache";
@@ -70,6 +71,7 @@ async function getOrCreateToken(): Promise<string> {
 
 async function rotateToken(): Promise<void> {
   "use server";
+  await requireAdmin();
   const token = generateToken();
   await supabaseAdmin
     .from("system_config")

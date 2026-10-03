@@ -1,3 +1,4 @@
+import { adminUrl } from "@/lib/admin-url";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { listLeadership } from "@/lib/leadership";
@@ -82,7 +83,7 @@ export default async function AdminLeadershipPage() {
                     {entry.id.slice(0, 8)}
                   </span>
                   <Link
-                    href={`/admin/leadership/${entry.id}`}
+                    href={adminUrl(`/admin/leadership/${entry.id}`)}
                     className="font-mono text-xs text-zinc-500 transition-colors hover:text-zinc-900"
                   >
                     Edit content →

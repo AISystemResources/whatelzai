@@ -1,3 +1,4 @@
+import { adminUrl } from "@/lib/admin-url";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { IssueEditor } from "../_components/IssueEditor";
@@ -9,7 +10,7 @@ export default function NewIssuePage() {
     <div className="max-w-3xl space-y-8">
       <div className="border-b border-zinc-200 pb-6">
         <Link
-          href="/admin/newsletter"
+          href={adminUrl("/admin/newsletter")}
           className="font-mono text-xs uppercase tracking-widest text-zinc-400 hover:text-zinc-900"
         >
           ← Newsletter

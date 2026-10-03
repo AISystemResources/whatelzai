@@ -1,4 +1,5 @@
 "use server";
+import { adminUrl } from "@/lib/admin-url";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -48,7 +49,7 @@ export async function removeTestimonial(id: string) {
   await assertAdmin();
   await deleteTestimonial(id);
   afterWrite();
-  redirect("/admin/testimonials");
+  redirect(adminUrl("/admin/testimonials"));
 }
 
 export async function toggleFeatured(id: string, featured: boolean) {
@@ -108,7 +109,7 @@ export async function createPrefillTestimonial(input: {
     created_by_clerk_id: userId,
   });
   afterWrite();
-  redirect(`/admin/testimonials/${t.id}`);
+  redirect(adminUrl(`/admin/testimonials/${t.id}`));
 }
 
 export async function uploadAvatarAction(

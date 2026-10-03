@@ -1,4 +1,5 @@
 "use client";
+import { adminUrl } from "@/lib/admin-url";
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -120,7 +121,7 @@ export function ServiceForm({ initial }: { initial: Service }) {
     start(async () => {
       try {
         await removeService(initial.id);
-        router.push("/admin/services");
+        router.push(adminUrl("/admin/services"));
       } catch {
         setStatus("error");
       }
@@ -142,7 +143,7 @@ export function ServiceForm({ initial }: { initial: Service }) {
           </p>
         </div>
         <Link
-          href="/admin/services"
+          href={adminUrl("/admin/services")}
           className="font-mono text-xs uppercase tracking-widest text-zinc-500 transition-colors hover:text-zinc-900"
         >
           ← Back

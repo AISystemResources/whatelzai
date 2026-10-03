@@ -1,4 +1,5 @@
 "use client";
+import { adminUrl } from "@/lib/admin-url";
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -30,7 +31,7 @@ export function BlogEditor({ initial = {}, action }: BlogEditorProps) {
       if (result?.error) {
         setError(result.error);
       } else {
-        router.push("/admin/blog");
+        router.push(adminUrl("/admin/blog"));
         router.refresh();
       }
     });
@@ -126,7 +127,7 @@ export function BlogEditor({ initial = {}, action }: BlogEditorProps) {
         </button>
         <button
           type="button"
-          onClick={() => router.push("/admin/blog")}
+          onClick={() => router.push(adminUrl("/admin/blog"))}
           className="font-mono text-xs text-zinc-400 hover:text-zinc-900"
         >
           Cancel

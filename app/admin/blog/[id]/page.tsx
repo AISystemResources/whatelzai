@@ -1,3 +1,5 @@
+import { requireAdmin } from "@/lib/users";
+import { adminUrl } from "@/lib/admin-url";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase-server";
@@ -10,6 +12,7 @@ async function updatePost(
   formData: FormData,
 ): Promise<{ error?: string }> {
   "use server";
+  await requireAdmin();
   const title = formData.get("title") as string;
   const slug = formData.get("slug") as string;
   const summary = formData.get("summary") as string;
@@ -37,7 +40,7 @@ async function updatePost(
     .eq("id", id);
 
   if (error) return { error: error.message };
-  redirect("/admin/blog");
+  redirect(adminUrl("/admin/blog"));
 }
 
 export default async function EditPostPage({

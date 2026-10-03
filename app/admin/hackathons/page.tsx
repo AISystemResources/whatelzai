@@ -1,3 +1,4 @@
+import { adminUrl } from "@/lib/admin-url";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { listHackathons } from "@/lib/hackathons";
@@ -30,7 +31,7 @@ export default async function AdminHackathonsPage() {
           </h1>
         </div>
         <Link
-          href="/admin/hackathons/new"
+          href={adminUrl("/admin/hackathons/new")}
           className="border border-zinc-900 px-4 py-2 font-mono text-xs uppercase tracking-widest text-zinc-900 transition-colors hover:bg-zinc-900 hover:text-white"
         >
           + New
@@ -44,7 +45,7 @@ export default async function AdminHackathonsPage() {
           {sorted.map((h) => (
             <Link
               key={h.id}
-              href={`/admin/hackathons/${h.id}`}
+              href={adminUrl(`/admin/hackathons/${h.id}`)}
               className="flex items-center justify-between px-4 py-4 hover:bg-zinc-50 transition-colors"
             >
               <div className="space-y-1">

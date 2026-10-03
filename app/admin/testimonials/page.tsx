@@ -1,3 +1,4 @@
+import { adminUrl } from "@/lib/admin-url";
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
@@ -106,14 +107,14 @@ export default async function AdminTestimonialsPage({
           <p className="mt-3 font-mono text-[10px] uppercase tracking-widest text-zinc-400">
             Attribution source ·{" "}
             <Link
-              href="/admin/events"
+              href={adminUrl("/admin/events")}
               className="underline underline-offset-4 hover:text-zinc-900"
             >
               Manage events →
             </Link>
             {"   "}Group prefill ·{" "}
             <Link
-              href="/admin/testimonials/templates"
+              href={adminUrl("/admin/testimonials/templates")}
               className="underline underline-offset-4 hover:text-zinc-900"
             >
               QR templates →
@@ -121,7 +122,7 @@ export default async function AdminTestimonialsPage({
           </p>
         </div>
         <Link
-          href="/admin/testimonials/new"
+          href={adminUrl("/admin/testimonials/new")}
           className="inline-flex items-center gap-1.5 border border-zinc-900 bg-zinc-900 px-3 py-1.5 font-mono text-xs uppercase tracking-widest text-white transition-colors hover:bg-[var(--accent)] hover:text-zinc-900 hover:border-[var(--accent)]"
         >
           + New prefill

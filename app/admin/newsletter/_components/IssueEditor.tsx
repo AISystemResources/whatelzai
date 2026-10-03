@@ -1,4 +1,5 @@
 "use client";
+import { adminUrl } from "@/lib/admin-url";
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -49,7 +50,7 @@ export function IssueEditor({ initial = {} }: IssueEditorProps) {
       }
       if (!isEdit) {
         const body = (await res.json()) as { issue: { id: string } };
-        router.push(`/admin/newsletter/${body.issue.id}`);
+        router.push(adminUrl(`/admin/newsletter/${body.issue.id}`));
       } else {
         router.refresh();
       }
@@ -98,7 +99,7 @@ export function IssueEditor({ initial = {} }: IssueEditorProps) {
         setError(`Delete failed (${res.status})`);
         return;
       }
-      router.push("/admin/newsletter");
+      router.push(adminUrl("/admin/newsletter"));
     });
   }
 

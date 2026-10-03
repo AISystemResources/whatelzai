@@ -1,4 +1,5 @@
 "use client";
+import { adminUrl } from "@/lib/admin-url";
 
 import Link from "next/link";
 
@@ -32,7 +33,7 @@ export function ProfileTabs({ active }: { active: ProfileTab }) {
           return (
             <li key={t.key}>
               <Link
-                href={t.href}
+                href={adminUrl(t.href)}
                 className={`inline-block border-b-2 px-4 py-3 font-mono text-xs uppercase tracking-widest transition-colors ${
                   isActive
                     ? "border-zinc-900 text-zinc-900"

@@ -1,4 +1,5 @@
 "use server";
+import { adminUrl } from "@/lib/admin-url";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -39,5 +40,5 @@ export async function removeService(id: string) {
   await assertAdmin();
   await deleteService(id);
   afterWrite();
-  redirect("/admin/services");
+  redirect(adminUrl("/admin/services"));
 }

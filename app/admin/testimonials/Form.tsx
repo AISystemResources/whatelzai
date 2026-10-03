@@ -1,4 +1,5 @@
 "use client";
+import { adminUrl } from "@/lib/admin-url";
 
 import { useState, useTransition, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -235,7 +236,7 @@ export function TestimonialForm({
     start(async () => {
       try {
         await removeTestimonial(state.id);
-        router.push("/admin/testimonials");
+        router.push(adminUrl("/admin/testimonials"));
       } catch {
         setStatus("error");
       }
@@ -254,7 +255,7 @@ export function TestimonialForm({
           </h1>
         </div>
         <Link
-          href="/admin/testimonials"
+          href={adminUrl("/admin/testimonials")}
           className="font-mono text-xs uppercase tracking-widest text-zinc-500 transition-colors hover:text-zinc-900"
         >
           ← Back

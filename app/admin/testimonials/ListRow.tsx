@@ -1,4 +1,5 @@
 "use client";
+import { adminUrl } from "@/lib/admin-url";
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
@@ -162,7 +163,7 @@ export function ListRow({
           </>
         )}
         <Link
-          href={`/admin/testimonials/${t.id}`}
+          href={adminUrl(`/admin/testimonials/${t.id}`)}
           className="font-mono text-[10px] uppercase tracking-widest text-zinc-500 transition-colors hover:text-zinc-900"
         >
           {isIncomplete ? "Edit prefill →" : "Edit →"}

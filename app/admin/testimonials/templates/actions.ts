@@ -1,4 +1,5 @@
 "use server";
+import { adminUrl } from "@/lib/admin-url";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -37,12 +38,13 @@ export async function saveTemplate(input: UpsertTemplateInput) {
     : { ...input, created_by_clerk_id: userId };
   const saved = await upsertTemplate(withOwner);
   afterWrite();
-  if (!input.id) redirect(`/admin/testimonials/templates/${saved.id}`);
+  if (!input.id)
+    redirect(adminUrl(`/admin/testimonials/templates/${saved.id}`));
 }
 
 export async function removeTemplate(id: string) {
   await assertAdmin();
   await deleteTemplate(id);
   afterWrite();
-  redirect("/admin/testimonials/templates");
+  redirect(adminUrl("/admin/testimonials/templates"));
 }

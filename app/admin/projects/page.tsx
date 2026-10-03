@@ -1,3 +1,4 @@
+import { adminUrl } from "@/lib/admin-url";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { listProjects } from "@/lib/projects";
@@ -80,7 +81,7 @@ export default async function AdminProjectsPage() {
                     {project.id.slice(0, 8)}
                   </span>
                   <Link
-                    href={`/admin/projects/${project.id}`}
+                    href={adminUrl(`/admin/projects/${project.id}`)}
                     className="font-mono text-xs text-zinc-500 transition-colors hover:text-zinc-900"
                   >
                     Edit content →

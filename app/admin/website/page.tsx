@@ -1,3 +1,4 @@
+import { adminUrl } from "@/lib/admin-url";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabase-server";
@@ -80,7 +81,7 @@ export default async function WebsitePage() {
             <span className="normal-case">({(hackathons ?? []).length})</span>
           </p>
           <Link
-            href="/admin/hackathons"
+            href={adminUrl("/admin/hackathons")}
             className="font-mono text-xs text-zinc-400 hover:text-zinc-900"
           >
             Manage →
@@ -128,7 +129,7 @@ export default async function WebsitePage() {
                     </a>
                   )}
                   <Link
-                    href={`/admin/hackathons/${h.id}`}
+                    href={adminUrl(`/admin/hackathons/${h.id}`)}
                     className="font-mono text-xs text-zinc-400 hover:text-zinc-900"
                   >
                     Edit →
@@ -148,7 +149,7 @@ export default async function WebsitePage() {
             <span className="normal-case">({(careers ?? []).length})</span>
           </p>
           <Link
-            href="/admin/career"
+            href={adminUrl("/admin/career")}
             className="font-mono text-xs text-zinc-400 hover:text-zinc-900"
           >
             Manage →
@@ -207,7 +208,7 @@ export default async function WebsitePage() {
             Blog <span className="normal-case">({(posts ?? []).length})</span>
           </p>
           <Link
-            href="/admin/blog"
+            href={adminUrl("/admin/blog")}
             className="font-mono text-xs text-zinc-400 hover:text-zinc-900"
           >
             Manage →
@@ -253,7 +254,7 @@ export default async function WebsitePage() {
                     </a>
                   )}
                   <Link
-                    href={`/admin/blog/${p.id}`}
+                    href={adminUrl(`/admin/blog/${p.id}`)}
                     className="font-mono text-xs text-zinc-400 hover:text-zinc-900"
                   >
                     Edit →

@@ -1,4 +1,5 @@
 "use client";
+import { adminUrl } from "@/lib/admin-url";
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -58,7 +59,7 @@ export function HackathonForm({ hackathon, onSave, onDelete }: Props) {
     fd.set("writeup", writeup);
     startTransition(async () => {
       await onSave(fd);
-      router.push("/admin/hackathons");
+      router.push(adminUrl("/admin/hackathons"));
       router.refresh();
     });
   }
@@ -69,7 +70,7 @@ export function HackathonForm({ hackathon, onSave, onDelete }: Props) {
     const fd = new FormData();
     startDelete(async () => {
       await onDelete(fd);
-      router.push("/admin/hackathons");
+      router.push(adminUrl("/admin/hackathons"));
       router.refresh();
     });
   }

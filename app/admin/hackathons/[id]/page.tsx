@@ -1,3 +1,4 @@
+import { requireAdmin } from "@/lib/users";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
@@ -17,6 +18,7 @@ type Props = { params: Promise<{ id: string }> };
 
 async function save(id: string | null, fd: FormData) {
   "use server";
+  await requireAdmin();
   const awardsRaw = fd.get("awards") as string;
   let awards = [];
   try {
@@ -61,11 +63,13 @@ async function save(id: string | null, fd: FormData) {
 
 async function remove(id: string) {
   "use server";
+  await requireAdmin();
   await deleteHackathon(id);
 }
 
 async function saveContent(id: string, content: string) {
   "use server";
+  await requireAdmin();
   await supabaseAdmin
     .from("hackathons")
     .update({ content, updated_at: new Date().toISOString() })

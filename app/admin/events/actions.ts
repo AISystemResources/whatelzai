@@ -1,4 +1,5 @@
 "use server";
+import { adminUrl } from "@/lib/admin-url";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -40,12 +41,12 @@ export async function saveEvent(
   await assertAdmin();
   const saved = await upsertServiceEvent(fields);
   afterWrite();
-  if (!fields.id) redirect(`/admin/events/${saved.id}`);
+  if (!fields.id) redirect(adminUrl(`/admin/events/${saved.id}`));
 }
 
 export async function removeEvent(id: string) {
   await assertAdmin();
   await deleteServiceEvent(id);
   afterWrite();
-  redirect("/admin/events");
+  redirect(adminUrl("/admin/events"));
 }

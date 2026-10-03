@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
+import { siteSurface } from "@/lib/domain-routing";
 import { Geist, Geist_Mono, Fraunces } from "next/font/google";
 import "./globals.css";
 import "./editorial.css";
@@ -29,6 +31,14 @@ const SITE_URL = "https://whatelz.ai";
 const SITE_NAME = "whatelz.ai";
 
 export async function generateMetadata(): Promise<Metadata> {
+  const requestHeaders = await headers();
+  const surface = siteSurface(requestHeaders.get("host") ?? "");
+  if (surface !== "public") {
+    return {
+      title: surface === "admin" ? "Whatelz Admin" : "Whatelz Members",
+      robots: { index: false, follow: false },
+    };
+  }
   const s = await getSiteIdentity();
   const title = `${SITE_NAME} — The solopreneur’s playbook`;
   const description =
@@ -116,6 +126,8 @@ async function getIsAdmin(): Promise<boolean> {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const requestHeaders = await headers();
+  const surface = siteSurface(requestHeaders.get("host") ?? "");
   const [isAdmin, s] = await Promise.all([getIsAdmin(), getSiteIdentity()]);
 
   const jsonLd = {
@@ -176,7 +188,11 @@ export default async function RootLayout({
         />
       </head>
       <body className="min-h-full bg-[var(--background)] text-[var(--foreground)]">
-        <ShellProvider isAdmin={isAdmin} ownerName={s.owner_name}>
+        <ShellProvider
+          isAdmin={isAdmin}
+          ownerName={s.owner_name}
+          surface={surface}
+        >
           {children}
         </ShellProvider>
       </body>

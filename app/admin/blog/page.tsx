@@ -1,3 +1,4 @@
+import { adminUrl } from "@/lib/admin-url";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabase-server";
@@ -22,7 +23,7 @@ export default async function AdminBlogPage() {
           </h1>
         </div>
         <Link
-          href="/admin/blog/new"
+          href={adminUrl("/admin/blog/new")}
           className="border border-zinc-900 px-4 py-2 font-mono text-xs uppercase tracking-widest text-zinc-900 transition-colors hover:bg-zinc-900 hover:text-white"
         >
           + New post
@@ -66,7 +67,7 @@ export default async function AdminBlogPage() {
                 {new Date(post.updated_at as string).toLocaleDateString()}
               </span>
               <Link
-                href={`/admin/blog/${post.id}`}
+                href={adminUrl(`/admin/blog/${post.id}`)}
                 className="font-mono text-xs text-zinc-400 hover:text-zinc-900"
               >
                 Edit →

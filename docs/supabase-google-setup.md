@@ -1,6 +1,6 @@
 # Whatelz Google sign-in setup
 
-The feature branch replaces Clerk with Supabase Auth. Production still uses Clerk until the identity migration, Google configuration and cutover are completed. Do not disable or delete the Clerk account before cutover is verified.
+Whatelz uses Supabase Auth for Google sign-in. Keep the legacy Clerk service available until the production cutover has been verified; historical ownership columns remain for old payment-event reconciliation.
 
 ## 1. Create the Google client
 
@@ -48,9 +48,9 @@ For local verification add `http://localhost:3100/auth/callback**`. For the PR p
 
 ## 3. Coordinated cutover
 
-The independent team contact-details migration is already applied. The auth identity migration is still pending production approval. It adds internal ownership columns, preserves old columns for rollback/payment reconciliation, and makes billing/quiz tables server-only.
+The team contact-details and auth identity migrations are applied. On October 7, 2026, the owner approved the auth rollout; CLI access applied the reviewed migration and imported the one verified legacy account. Checks confirmed its internal ID, admin role and quiz ownership were preserved. Google sign-in and logout succeeded on the PR preview. Billing and quiz tables use server-only access, with old ownership columns preserved for payment reconciliation.
 
-1. Approve and apply the reviewed auth migration through Supabase MCP.
+1. For any future environment, review and approve the auth migration, then apply it through authenticated Supabase MCP or the linked CLI. Do not rerun applied migrations.
 2. Run `npm run migrate:auth` using the existing local Clerk verification key and Supabase service key. This one-time script verifies legacy primary emails, pre-provisions Supabase identities, and explicitly maps them to the existing internal user IDs. It preserves roles; normal sign-in never claims a legacy account by email.
 3. Verify Google sign-in on the PR preview using the migrated owner's existing email and an ordinary member account. Verify role enforcement, logout, purchases, callbacks and the member's limited team view.
 4. Merge the PR for Vercel production deployment and repeat those checks on the production hosts. Keep a rollback to the previous Clerk deployment available. The old SDK/credentials are no longer needed by the new app, but retain the old service configuration until the cutover has been verified.

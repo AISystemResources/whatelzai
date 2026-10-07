@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/auth/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { ensureUserRow, isAdminRole, type AppUser } from "@/lib/users";
 import {

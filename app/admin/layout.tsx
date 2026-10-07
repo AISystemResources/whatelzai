@@ -1,4 +1,3 @@
-import { ClerkProvider } from "@clerk/nextjs";
 import { notFound } from "next/navigation";
 import { ensureUserRow, isAdminRole } from "@/lib/users";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
@@ -12,7 +11,7 @@ export default async function AdminLayout({
   if (!user || !isAdminRole(user.role)) notFound();
 
   return (
-    <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up">
+    <>
       <div className="flex min-h-screen flex-col bg-zinc-50 md:flex-row">
         <AdminSidebar />
         <main className="flex-1 overflow-x-hidden bg-white">
@@ -21,6 +20,6 @@ export default async function AdminLayout({
           </div>
         </main>
       </div>
-    </ClerkProvider>
+    </>
   );
 }

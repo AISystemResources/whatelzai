@@ -35,6 +35,20 @@ async function findOfferSlugForPrice(priceId: string): Promise<string | null> {
   return data?.slug ?? null;
 }
 
+async function resolvePaymentUserId(
+  internalId: string | null | undefined,
+  legacyId: string | null | undefined,
+): Promise<string | null> {
+  if (!internalId && !legacyId) return null;
+  const { data, error } = await supabaseAdmin
+    .from("users")
+    .select("id")
+    .eq(internalId ? "id" : "clerk_user_id", internalId ?? legacyId!)
+    .maybeSingle();
+  if (error) throw new Error("Payment owner lookup failed");
+  return data?.id ?? null;
+}
+
 async function syncSubscription(sub: Stripe.Subscription): Promise<void> {
   const clerkId =
     (sub.metadata?.clerk_id as string | undefined) ??
@@ -43,9 +57,10 @@ async function syncSubscription(sub: Stripe.Subscription): Promise<void> {
     "metadata" in sub.customer
       ? ((sub.customer.metadata?.clerk_id as string | undefined) ?? null)
       : null);
-  if (!clerkId) {
+  const userId = await resolvePaymentUserId(sub.metadata?.user_id, clerkId);
+  if (!userId) {
     console.warn(
-      `[stripe] subscription ${sub.id} has no clerk_id in metadata; skipping.`,
+      `[stripe] subscription ${sub.id} has no mapped account owner; skipping.`,
     );
     return;
   }
@@ -72,7 +87,7 @@ async function syncSubscription(sub: Stripe.Subscription): Promise<void> {
     null;
 
   await upsertSubscriptionFromStripe({
-    clerk_id: clerkId,
+    user_id: userId,
     stripe_customer_id: customerId,
     stripe_subscription_id: sub.id,
     stripe_price_id: priceId,
@@ -84,7 +99,7 @@ async function syncSubscription(sub: Stripe.Subscription): Promise<void> {
 }
 
 // One-off (Playbook) grant path. Anonymous checkout is intentional per
-// SPR-110 — user_id is null here and stitched later (SPR-112) on Clerk signup
+// SPR-110 — user_id is null here and stitched later (SPR-112) on Google sign-in
 // via customer_email match. Idempotent on stripe_event_id.
 async function grantOneOffFromSession(
   eventId: string,
@@ -147,7 +162,7 @@ async function grantOneOffFromSession(
   const clerkId = (session.metadata?.clerk_id as string | undefined) ?? null;
 
   await grantEntitlement({
-    user_id: clerkId,
+    app_user_id: await resolvePaymentUserId(session.metadata?.user_id, clerkId),
     stripe_customer_id: customerId,
     customer_email: email,
     product_slug: productSlug,
@@ -196,11 +211,17 @@ export async function POST(req: Request) {
               ? session.subscription
               : session.subscription.id;
           const sub = await stripe.subscriptions.retrieve(subId);
-          if (!sub.metadata?.clerk_id && session.client_reference_id) {
+          if (
+            !sub.metadata?.clerk_id &&
+            !sub.metadata?.user_id &&
+            session.client_reference_id
+          ) {
             await stripe.subscriptions.update(subId, {
               metadata: {
                 ...(sub.metadata ?? {}),
-                clerk_id: session.client_reference_id,
+                ...(session.metadata?.user_id
+                  ? { user_id: session.client_reference_id }
+                  : { clerk_id: session.client_reference_id }),
                 offer_id: (session.metadata?.offer_id as string) ?? "",
               },
             });

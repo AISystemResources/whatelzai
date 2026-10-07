@@ -49,8 +49,8 @@ export interface QuizAttempt {
   answers: Array<{ q_id: string; choice_id: string }>;
   scores: Record<string, number>;
   archetype_key: string | null;
-  clerk_user_id: string | null;
-  clerk_user_email: string | null;
+  user_id: string | null;
+  user_email: string | null;
   started_at: string;
   completed_at: string | null;
   unlocked_at: string | null;
@@ -200,18 +200,19 @@ export async function completeAttempt(input: {
 
 export async function unlockAttempt(input: {
   attempt_id: string;
-  clerk_user_id: string;
-  clerk_user_email: string | null;
+  user_id: string;
+  user_email: string | null;
 }): Promise<QuizAttempt> {
   // Idempotent: setting unlocked_at again is a no-op except for updated_at.
   const { data, error } = await supabaseAdmin
     .from("quiz_attempts")
     .update({
-      clerk_user_id: input.clerk_user_id,
-      clerk_user_email: input.clerk_user_email,
+      user_id: input.user_id,
+      user_email: input.user_email,
       unlocked_at: new Date().toISOString(),
     })
     .eq("id", input.attempt_id)
+    .or(`user_id.is.null,user_id.eq.${input.user_id}`)
     .select()
     .single();
   if (error || !data) throw new Error(error?.message ?? "unlockAttempt failed");

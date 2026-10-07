@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { auth, currentUser } from "@clerk/nextjs/server";
-import { SignInButton } from "@clerk/nextjs";
+import { auth, currentUser } from "@/lib/auth/server";
+import { SignInButton } from "@/components/auth/AuthControls";
 import { getActiveSubscription } from "@/lib/subscription";
 import { getOfferBySlug } from "@/lib/offers";
 import { CheckoutButton } from "./CheckoutButton";
@@ -48,9 +48,7 @@ export default async function MembersPage({
 
   const isMember = Boolean(subscription);
   const firstName =
-    user?.firstName ??
-    user?.emailAddresses?.[0]?.emailAddress?.split("@")[0] ??
-    null;
+    user?.name?.split(" ")[0] ?? user?.email?.split("@")[0] ?? null;
 
   return (
     <main className="editorial-index px-6 py-16 sm:px-8 sm:py-24">
@@ -161,7 +159,7 @@ export default async function MembersPage({
                   </div>
                 )
               ) : (
-                <SignInButton mode="modal">
+                <SignInButton>
                   <button className="inline-flex items-center gap-2 border border-zinc-900 bg-zinc-900 px-5 py-3 font-mono text-xs uppercase tracking-widest text-white transition-colors hover:bg-[var(--accent)] hover:text-zinc-900 hover:border-[var(--accent)]">
                     Sign in to subscribe →
                   </button>

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/auth/server";
 import { getArchetype, getQuizBySlug } from "@/lib/quizzes";
 
 export const dynamic = "force-dynamic";

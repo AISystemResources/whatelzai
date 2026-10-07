@@ -1,6 +1,6 @@
 import { supabaseAdmin } from "@/lib/supabase-server";
 
-export type AuditActorType = "token" | "clerk" | "anon";
+export type AuditActorType = "token" | "clerk" | "user" | "anon";
 
 export interface AuditEvent {
   tokenId?: string | null;

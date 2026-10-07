@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/auth/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { hasActiveEntitlement } from "@/lib/entitlements";
 import { getReadingOrderForArchetype } from "@/lib/playbook-chapters";
@@ -19,7 +19,7 @@ async function loadArchetypeSlug(userId: string): Promise<string | null> {
   const { data } = await supabaseAdmin
     .from("quiz_attempts")
     .select("archetype_key")
-    .eq("clerk_user_id", userId)
+    .eq("user_id", userId)
     .not("completed_at", "is", null)
     .order("completed_at", { ascending: false })
     .limit(1)

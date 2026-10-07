@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/auth/server";
 import { findActiveToken, touchTokenUsage, type AuthToken } from "./tokens";
 import { matchesScope } from "./scopes";
 import { recordAudit } from "./audit";
@@ -90,9 +90,9 @@ export function withAuth(
   };
 }
 
-// Gate for admin-UI-only endpoints. Uses Clerk session, requires admin role.
+// Gate for admin-UI-only endpoints. Uses Supabase session, requires admin role.
 // Accepts an optional second arg so dynamic routes ({ params }) work unchanged.
-export function withClerkAdmin<TArg = unknown>(
+export function withSessionAdmin<TArg = unknown>(
   handler: (req: Request, arg: TArg) => Promise<Response> | Response,
 ): (req: Request, arg: TArg) => Promise<Response> {
   return async (req: Request, arg: TArg) => {
@@ -102,7 +102,7 @@ export function withClerkAdmin<TArg = unknown>(
     const { data } = await supabaseAdmin
       .from("users")
       .select("id, role")
-      .eq("clerk_user_id", userId)
+      .eq("id", userId)
       .maybeSingle();
 
     if (!data || !isAdminRole(data.role as UserRole | undefined)) {

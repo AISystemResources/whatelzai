@@ -146,3 +146,16 @@ test("invalid identities, missing sponsors, cross-team links and cycles are reje
     /Cross-team/,
   );
 });
+
+test("member and manager serialization strips contact email while preserving visible ABO text", () => {
+  const enriched = people.map((person) => ({
+    ...person,
+    email: "person@example.test",
+    abo_number: "00012345",
+  }));
+  for (const role of ["member", "manager"] as const) {
+    const result = visiblePeople(enriched, ids[2], role);
+    assert.ok(result.every((person) => person.email === null));
+    assert.ok(result.every((person) => person.abo_number === "00012345"));
+  }
+});

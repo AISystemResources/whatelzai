@@ -4,7 +4,7 @@ import { adminUrl } from "@/lib/admin-url";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { SignOutButton } from "@clerk/nextjs";
+import { SignOutButton } from "@/components/auth/AuthControls";
 import { MCPConnectHint } from "./MCPConnectHint";
 
 type NavItem = { href: string; label: string; exact?: boolean };

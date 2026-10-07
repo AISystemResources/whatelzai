@@ -6,6 +6,12 @@ const personSchema = z.object({
   display_name: z.string().trim().min(1).max(120),
   sponsor_person_id: z.uuid().nullable(),
   context: z.string().trim().max(240).nullable(),
+  email: z.email().max(254).nullable().optional(),
+  abo_number: z
+    .string()
+    .regex(/^[0-9]{1,20}$/)
+    .nullable()
+    .optional(),
 });
 
 export const teamSeedSchema = z.object({
@@ -119,6 +125,7 @@ export function visiblePeople(
     .map((person) => ({
       ...person,
       context: role === "manager" ? person.context : null,
+      email: null,
       sponsor_person_id:
         person.sponsor_person_id && allowed.has(person.sponsor_person_id)
           ? person.sponsor_person_id

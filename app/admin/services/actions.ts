@@ -3,7 +3,7 @@ import { adminUrl } from "@/lib/admin-url";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/auth/server";
 import { isAdminRole } from "@/lib/users";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { deleteService, upsertService, type Service } from "@/lib/services";
@@ -14,7 +14,7 @@ async function assertAdmin(): Promise<string> {
   const { data } = await supabaseAdmin
     .from("users")
     .select("role")
-    .eq("clerk_user_id", userId)
+    .eq("id", userId)
     .maybeSingle();
   if (!isAdminRole(data?.role as "admin" | "superadmin" | undefined)) {
     throw new Error("Forbidden");

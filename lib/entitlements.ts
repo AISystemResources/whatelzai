@@ -2,7 +2,7 @@ import { supabaseAdmin } from "./supabase-server";
 
 export interface Entitlement {
   id: string;
-  user_id: string | null;
+  app_user_id: string | null;
   stripe_customer_id: string;
   customer_email: string;
   product_slug: string;
@@ -16,7 +16,7 @@ export interface Entitlement {
 }
 
 export interface GrantEntitlementInput {
-  user_id: string | null;
+  app_user_id: string | null;
   stripe_customer_id: string;
   customer_email: string;
   product_slug: string;
@@ -33,7 +33,7 @@ export async function grantEntitlement(
   const { data, error } = await supabaseAdmin
     .from("entitlements")
     .insert({
-      user_id: input.user_id,
+      app_user_id: input.app_user_id,
       stripe_customer_id: input.stripe_customer_id,
       customer_email: input.customer_email.toLowerCase(),
       product_slug: input.product_slug,
@@ -72,7 +72,7 @@ export async function hasActiveEntitlement(
   const { data, error } = await supabaseAdmin
     .from("entitlements")
     .select("id")
-    .eq("user_id", userId)
+    .eq("app_user_id", userId)
     .eq("product_slug", productSlug)
     .is("revoked_at", null)
     .limit(1)
@@ -81,7 +81,7 @@ export async function hasActiveEntitlement(
   return Boolean(data);
 }
 
-// Bind orphan (user_id IS NULL) entitlements to a Clerk user on signup, by
+// Bind unowned entitlements to an app user after verified sign-in, by
 // case-insensitive email match. SPR-112 calls this from the post-signup path.
 export async function stitchOrphansToUser(
   userId: string,
@@ -89,7 +89,8 @@ export async function stitchOrphansToUser(
 ): Promise<number> {
   const { data, error } = await supabaseAdmin
     .from("entitlements")
-    .update({ user_id: userId })
+    .update({ app_user_id: userId })
+    .is("app_user_id", null)
     .is("user_id", null)
     .eq("customer_email", email.toLowerCase())
     .select("id");

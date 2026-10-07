@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
-import { withClerkAdmin } from "@/lib/auth/withAuth";
+import { auth } from "@/lib/auth/server";
+import { withSessionAdmin } from "@/lib/auth/withAuth";
 import { recordAudit } from "@/lib/auth/audit";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { getClientIp } from "@/lib/rate-limit";
@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 type Context = { params: Promise<{ id: string }> };
 
-export const POST = withClerkAdmin<Context>(async (req, { params }) => {
+export const POST = withSessionAdmin<Context>(async (req, { params }) => {
   const { id } = await params;
   if (!id) return NextResponse.json({ error: "id_required" }, { status: 400 });
 
@@ -32,7 +32,7 @@ export const POST = withClerkAdmin<Context>(async (req, { params }) => {
   const { userId } = await auth();
   const row = data as { id: string; name: string };
   void recordAudit({
-    actorType: "clerk",
+    actorType: "user",
     actorId: userId ?? null,
     action: "tokens:revoke",
     resourceType: "auth_token",

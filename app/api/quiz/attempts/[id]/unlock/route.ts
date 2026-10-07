@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@/lib/auth/server";
 import { getAttempt, unlockAttempt } from "@/lib/quizzes";
 import { subscribe } from "@/lib/newsletter";
 
 export const dynamic = "force-dynamic";
 
 // POST /api/quiz/attempts/[id]/unlock
-// Requires Clerk session. Sets clerk_user_id + unlocked_at on the attempt,
+// Requires Supabase session. Sets user_id + unlocked_at on the attempt,
 // auto-subscribes the signed-in email to the newsletter (source='quiz'),
 // returns { ok: true, archetype_key } for the client redirect.
 export async function POST(
@@ -31,18 +31,14 @@ export async function POST(
   }
 
   const user = await currentUser();
-  const email =
-    user?.primaryEmailAddress?.emailAddress ??
-    user?.emailAddresses?.[0]?.emailAddress ??
-    null;
-  const name =
-    [user?.firstName, user?.lastName].filter(Boolean).join(" ") || null;
+  const email = user?.email ?? null;
+  const name = user?.name ?? null;
 
   // Idempotent — repeated unlocks bump updated_at only.
   const unlocked = await unlockAttempt({
     attempt_id: id,
-    clerk_user_id: userId,
-    clerk_user_email: email,
+    user_id: userId,
+    user_email: email,
   });
 
   // Fire-and-forget subscribe. Failure never blocks the unlock.

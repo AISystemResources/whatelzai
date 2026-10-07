@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
-import { withClerkAdmin } from "@/lib/auth/withAuth";
+import { auth } from "@/lib/auth/server";
+import { withSessionAdmin } from "@/lib/auth/withAuth";
 import { generateToken, hashToken } from "@/lib/auth/tokens";
 import { ALL_SCOPES, OWNER_SCOPE } from "@/lib/auth/scopes";
 import { recordAudit } from "@/lib/auth/audit";
@@ -20,7 +20,7 @@ function isValidScope(scope: string): boolean {
   );
 }
 
-export const GET = withClerkAdmin(async () => {
+export const GET = withSessionAdmin(async () => {
   const { data, error } = await supabaseAdmin
     .from("auth_tokens")
     .select(
@@ -33,7 +33,7 @@ export const GET = withClerkAdmin(async () => {
   return NextResponse.json({ tokens: data ?? [] });
 });
 
-export const POST = withClerkAdmin(async (req: Request) => {
+export const POST = withSessionAdmin(async (req: Request) => {
   const body = (await req.json().catch(() => null)) as {
     name?: unknown;
     scopes?: unknown;
@@ -69,7 +69,7 @@ export const POST = withClerkAdmin(async (req: Request) => {
   const { data: userRow } = await supabaseAdmin
     .from("users")
     .select("id")
-    .eq("clerk_user_id", userId!)
+    .eq("id", userId!)
     .single();
   if (!userRow) {
     return NextResponse.json({ error: "user_not_found" }, { status: 500 });
@@ -106,7 +106,7 @@ export const POST = withClerkAdmin(async (req: Request) => {
   };
 
   void recordAudit({
-    actorType: "clerk",
+    actorType: "user",
     actorId: userId!,
     action: "tokens:issue",
     resourceType: "auth_token",

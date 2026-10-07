@@ -39,7 +39,9 @@ export async function loadTeamView(
   if (!admin && !link) return null;
   const { data, error: peopleError } = await supabaseAdmin
     .from("business_team_people")
-    .select("id,team_id,display_name,sponsor_person_id,context")
+    .select(
+      "id,team_id,display_name,sponsor_person_id,context,email,abo_number",
+    )
     .eq("team_id", team.id)
     .order("created_at")
     .order("id");
@@ -52,6 +54,6 @@ export async function loadTeamView(
     team,
     focusId,
     canSeeAll,
-    people: canSeeAll ? people : visiblePeople(people, focusId, "member"),
+    people: admin ? people : visiblePeople(people, focusId, link!.access_role),
   };
 }

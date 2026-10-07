@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
-import { withClerkAdmin } from "@/lib/auth/withAuth";
+import { withSessionAdmin } from "@/lib/auth/withAuth";
 import { createIssue, listIssues } from "@/lib/newsletter";
 
 export const dynamic = "force-dynamic";
 
-export const GET = withClerkAdmin(async () => {
+export const GET = withSessionAdmin(async () => {
   const issues = await listIssues(true);
   return NextResponse.json({ issues });
 });
 
-export const POST = withClerkAdmin(async (req) => {
+export const POST = withSessionAdmin(async (req) => {
   const body = (await req.json().catch(() => null)) as {
     slug?: unknown;
     title?: unknown;

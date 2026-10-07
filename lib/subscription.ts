@@ -12,7 +12,7 @@ export type SubscriptionStatus =
 
 export interface Subscription {
   id: string;
-  clerk_id: string;
+  user_id: string;
   stripe_customer_id: string;
   stripe_subscription_id: string;
   stripe_price_id: string;
@@ -30,13 +30,13 @@ export interface Subscription {
 const LIVE_STATUSES: SubscriptionStatus[] = ["active", "trialing", "past_due"];
 
 export async function getActiveSubscription(
-  clerkId: string,
+  userId: string,
 ): Promise<Subscription | null> {
-  if (!clerkId) return null;
+  if (!userId) return null;
   const { data, error } = await supabaseAdmin
     .from("subscriptions")
     .select("*")
-    .eq("clerk_id", clerkId)
+    .eq("user_id", userId)
     .in("status", LIVE_STATUSES)
     .order("current_period_end", { ascending: false, nullsFirst: false })
     .limit(1)
@@ -57,13 +57,13 @@ export async function getSubscriptionByStripeId(
   return data as Subscription | null;
 }
 
-export async function findCustomerIdForClerkUser(
-  clerkId: string,
+export async function findCustomerIdForUser(
+  userId: string,
 ): Promise<string | null> {
   const { data, error } = await supabaseAdmin
     .from("subscriptions")
     .select("stripe_customer_id")
-    .eq("clerk_id", clerkId)
+    .eq("user_id", userId)
     .limit(1)
     .maybeSingle();
   if (error || !data) return null;
@@ -71,7 +71,7 @@ export async function findCustomerIdForClerkUser(
 }
 
 export async function upsertSubscriptionFromStripe(input: {
-  clerk_id: string;
+  user_id: string;
   stripe_customer_id: string;
   stripe_subscription_id: string;
   stripe_price_id: string;
@@ -81,7 +81,7 @@ export async function upsertSubscriptionFromStripe(input: {
   cancel_at_period_end: boolean;
 }): Promise<void> {
   const payload = {
-    clerk_id: input.clerk_id,
+    user_id: input.user_id,
     stripe_customer_id: input.stripe_customer_id,
     stripe_subscription_id: input.stripe_subscription_id,
     stripe_price_id: input.stripe_price_id,

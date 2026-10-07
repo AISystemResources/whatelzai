@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/auth/server";
 import { getStripe, isStripeConfigured } from "@/lib/stripe-server";
-import { findCustomerIdForClerkUser } from "@/lib/subscription";
+import { findCustomerIdForUser } from "@/lib/subscription";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +19,7 @@ export async function POST() {
     return NextResponse.json({ error: "Sign in required" }, { status: 401 });
   }
 
-  const customerId = await findCustomerIdForClerkUser(userId);
+  const customerId = await findCustomerIdForUser(userId);
   if (!customerId) {
     return NextResponse.json(
       { error: "No Stripe customer for this account yet." },

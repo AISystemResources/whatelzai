@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
-import { withClerkAdmin } from "@/lib/auth/withAuth";
+import { auth } from "@/lib/auth/server";
+import { withSessionAdmin } from "@/lib/auth/withAuth";
 import { generateToken, hashToken } from "@/lib/auth/tokens";
 import { recordAudit } from "@/lib/auth/audit";
 import { SAFE_DEFAULT_SCOPES } from "@/lib/auth/scopes";
@@ -15,7 +15,7 @@ type Context = { params: Promise<{ id: string }> };
 // elevated-scope) token and immediately issues a new one carrying only
 // SAFE_DEFAULT_SCOPES. Preserves the original user_id and name (with a
 // -safe suffix) so audit lineage is obvious.
-export const POST = withClerkAdmin<Context>(async (req, { params }) => {
+export const POST = withSessionAdmin<Context>(async (req, { params }) => {
   const { id } = await params;
   if (!id) return NextResponse.json({ error: "id_required" }, { status: 400 });
 
@@ -84,7 +84,7 @@ export const POST = withClerkAdmin<Context>(async (req, { params }) => {
   const ip = getClientIp(req);
   const userAgent = req.headers.get("user-agent");
   void recordAudit({
-    actorType: "clerk",
+    actorType: "user",
     actorId: userId ?? null,
     action: "tokens:rotate",
     resourceType: "auth_token",

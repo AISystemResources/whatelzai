@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef } from "react";
 import { relationshipTo, type TeamPerson } from "@/lib/team/model";
+import { fitNodeCamera } from "@/lib/team/node-zoom";
 import { useNodeGestures } from "./useNodeGestures";
 import {
   layoutTeamNodes,
@@ -19,9 +20,19 @@ export function TeamNodes({
   onSelect?: (id: string) => void;
 }) {
   const layout = useMemo(() => layoutTeamNodes(people), [people]);
-  const [zoom, setZoom] = useState(1);
   const viewport = useRef<HTMLDivElement>(null);
-  const suppressClickUntil = useNodeGestures(viewport, zoom, setZoom);
+  const {
+    camera,
+    zoomAt: zoomCamera,
+    updateCamera,
+    suppressClickUntil,
+  } = useNodeGestures(viewport);
+  const { zoom } = camera;
+  const zoomAt = (value: number) =>
+    zoomCamera(value, {
+      x: (viewport.current?.clientWidth ?? 0) / 2,
+      y: (viewport.current?.clientHeight ?? 0) / 2,
+    });
   const focus = people.find((person) => person.id === selectedId);
   const controlClass =
     "rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-500";
@@ -30,8 +41,8 @@ export function TeamNodes({
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p id="team-node-help" className="text-xs text-zinc-500">
-          Sponsors sit above their downlines. Scroll to explore. Pinch with two
-          fingers to zoom.
+          Sponsors sit above their downlines. Drag or scroll to explore. Pinch
+          with two fingers to zoom.
           {onSelect ? " Select a person to change perspective." : ""}
         </p>
         <div className="flex items-center gap-2" aria-label="Node view zoom">
@@ -40,7 +51,7 @@ export function TeamNodes({
             className={controlClass}
             aria-label="Zoom out"
             disabled={zoom <= 0.25}
-            onClick={() => setZoom((value) => Math.max(0.25, value - 0.25))}
+            onClick={() => zoomAt(zoom - 0.25)}
           >
             −
           </button>
@@ -55,7 +66,7 @@ export function TeamNodes({
             className={controlClass}
             aria-label="Zoom in"
             disabled={zoom >= 1.5}
-            onClick={() => setZoom((value) => Math.min(1.5, value + 0.25))}
+            onClick={() => zoomAt(zoom + 0.25)}
           >
             +
           </button>
@@ -63,17 +74,16 @@ export function TeamNodes({
             type="button"
             className={controlClass}
             onClick={() => {
-              setZoom(
-                Math.max(
-                  0.25,
-                  Math.min(
-                    1,
-                    (viewport.current?.clientWidth ?? layout.width) /
-                      layout.width,
+              const element = viewport.current;
+              if (element)
+                updateCamera(
+                  fitNodeCamera(
+                    layout.width,
+                    layout.height,
+                    element.clientWidth,
+                    element.clientHeight,
                   ),
-                ),
-              );
-              viewport.current?.scrollTo({ left: 0, top: 0 });
+                );
             }}
           >
             Fit
@@ -81,7 +91,16 @@ export function TeamNodes({
           <button
             type="button"
             className={controlClass}
-            onClick={() => setZoom(1)}
+            onClick={() => {
+              const element = viewport.current;
+              updateCamera({
+                zoom: 1,
+                x: ((element?.clientWidth ?? layout.width) - layout.width) / 2,
+                y:
+                  ((element?.clientHeight ?? layout.height) - layout.height) /
+                  2,
+              });
+            }}
           >
             Reset
           </button>
@@ -93,25 +112,22 @@ export function TeamNodes({
         aria-label="Team relationship nodes"
         aria-describedby="team-node-help"
         tabIndex={0}
-        style={{ touchAction: "pan-x pan-y" }}
+        style={{ touchAction: "none" }}
         onClickCapture={(event) => {
           if (event.detail !== 0 && Date.now() < suppressClickUntil.current) {
             event.preventDefault();
             event.stopPropagation();
           }
         }}
-        className="max-h-[560px] overflow-auto rounded-xl border border-zinc-200 bg-zinc-50 focus-visible:outline-2 focus-visible:outline-yellow-500"
+        className="h-[420px] sm:h-[560px] relative overflow-hidden cursor-grab active:cursor-grabbing select-none rounded-xl border border-zinc-200 bg-zinc-50 focus-visible:outline-2 focus-visible:outline-yellow-500"
       >
-        <div
-          className="relative"
-          style={{ width: layout.width * zoom, height: layout.height * zoom }}
-        >
+        <div className="absolute inset-0">
           <div
             className="absolute origin-top-left"
             style={{
               width: layout.width,
               height: layout.height,
-              transform: `scale(${zoom})`,
+              transform: `translate(${camera.x}px, ${camera.y}px) scale(${zoom})`,
             }}
           >
             <svg

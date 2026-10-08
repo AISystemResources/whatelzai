@@ -1,6 +1,37 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { anchoredNodeScroll, clampNodeZoom } from "../lib/team/node-zoom";
+import {
+  anchoredNodeScroll,
+  clampNodeZoom,
+  zoomNodeCamera,
+  fitNodeCamera,
+} from "../lib/team/node-zoom";
+
+test("camera zoom keeps the world coordinate under a moving pinch midpoint", () => {
+  const next = zoomNodeCamera(
+    { x: -320, y: -120, zoom: 1 },
+    1.5,
+    { x: 200, y: 180 },
+    { x: 230, y: 190 },
+  );
+  assert.equal((230 - next.x) / next.zoom, 520);
+  assert.equal((190 - next.y) / next.zoom, 300);
+});
+
+test("camera can navigate beyond the graph bounds without scroll clamping", () => {
+  const next = zoomNodeCamera(
+    { x: 300, y: 200, zoom: 1 },
+    0.5,
+    { x: 100, y: 100 },
+    { x: 100, y: 100 },
+  );
+  assert.deepEqual(next, { x: 200, y: 150, zoom: 0.5 });
+});
+
+test("Fit considers both canvas dimensions and centers the tree", () => {
+  const fit = fitNodeCamera(1000, 1000, 1200, 532);
+  assert.deepEqual(fit, { zoom: 0.5, x: 350, y: 16 });
+});
 
 test("pinch preserves the diagram point under the fingers while the midpoint moves", () => {
   const scroll = anchoredNodeScroll(

@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import { relationshipTo, type TeamPerson } from "@/lib/team/model";
+import { useNodeGestures } from "./useNodeGestures";
 import {
   layoutTeamNodes,
   NODE_HEIGHT,
@@ -20,6 +21,7 @@ export function TeamNodes({
   const layout = useMemo(() => layoutTeamNodes(people), [people]);
   const [zoom, setZoom] = useState(1);
   const viewport = useRef<HTMLDivElement>(null);
+  const suppressClickUntil = useNodeGestures(viewport, zoom, setZoom);
   const focus = people.find((person) => person.id === selectedId);
   const controlClass =
     "rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-500";
@@ -28,7 +30,8 @@ export function TeamNodes({
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p id="team-node-help" className="text-xs text-zinc-500">
-          Sponsors sit above their downlines. Scroll to explore.
+          Sponsors sit above their downlines. Scroll to explore. Pinch with two
+          fingers to zoom.
           {onSelect ? " Select a person to change perspective." : ""}
         </p>
         <div className="flex items-center gap-2" aria-label="Node view zoom">
@@ -90,6 +93,13 @@ export function TeamNodes({
         aria-label="Team relationship nodes"
         aria-describedby="team-node-help"
         tabIndex={0}
+        style={{ touchAction: "pan-x pan-y" }}
+        onClickCapture={(event) => {
+          if (event.detail !== 0 && Date.now() < suppressClickUntil.current) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+        }}
         className="max-h-[560px] overflow-auto rounded-xl border border-zinc-200 bg-zinc-50 focus-visible:outline-2 focus-visible:outline-yellow-500"
       >
         <div

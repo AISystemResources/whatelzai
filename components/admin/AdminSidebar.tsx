@@ -5,34 +5,39 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SignOutButton } from "@/components/auth/AuthControls";
-import { MCPConnectHint } from "./MCPConnectHint";
 
 type NavItem = { href: string; label: string; exact?: boolean };
 
 const NAV: readonly NavItem[] = [
-  { href: "/admin/command-center", label: "Command Center" },
-  { href: "/admin", label: "Dashboard", exact: true },
-  { href: "/admin/profile", label: "My Profile" },
-  { href: "/admin/team", label: "Team" },
-  { href: "/admin/services", label: "Services" },
-  { href: "/admin/testimonials", label: "Testimonials" },
-  { href: "/admin/blog", label: "Blog" },
-  { href: "/admin/newsletter", label: "Newsletter" },
-  { href: "/admin/tokens", label: "Tokens" },
+  { href: "/admin/command-center", label: "Overview" },
+  { href: "/admin/ai-business", label: "AI Business" },
+  { href: "/admin/network-marketing", label: "Network Marketing" },
+  { href: "/admin/day-job", label: "Day Job" },
+  { href: "/admin/settings", label: "Settings" },
 ];
 
-// Kept so mobile top bar can still resolve section labels for the pages
-// that live outside the primary sidebar (Events, Developer, per-section
-// content pages nested under My Profile).
+// Existing tools stay at their original URLs, grouped under their venture.
 const SECONDARY_NAV: readonly NavItem[] = [
-  { href: "/admin/projects", label: "Projects" },
-  { href: "/admin/career", label: "Career" },
-  { href: "/admin/hackathons", label: "Hackathons" },
-  { href: "/admin/leadership", label: "Leadership" },
-  { href: "/admin/mentorship", label: "Mentorship" },
-  { href: "/admin/events", label: "Events" },
-  { href: "/admin/developer", label: "Developer" },
-  { href: "/admin/landing", label: "Edit homepage" },
+  { href: "/admin", label: "AI Business", exact: true },
+  { href: "/admin/services", label: "AI Business" },
+  { href: "/admin/testimonials", label: "AI Business" },
+  { href: "/admin/blog", label: "AI Business" },
+  { href: "/admin/newsletter", label: "AI Business" },
+  { href: "/admin/team", label: "Network Marketing" },
+  { href: "/admin/profile", label: "Settings" },
+  { href: "/admin/tokens", label: "Settings" },
+  { href: "/admin/projects", label: "AI Business" },
+  { href: "/admin/career", label: "AI Business" },
+  { href: "/admin/hackathons", label: "AI Business" },
+  { href: "/admin/leadership", label: "AI Business" },
+  { href: "/admin/mentorship", label: "AI Business" },
+  { href: "/admin/events", label: "AI Business" },
+  { href: "/admin/developer", label: "Settings" },
+  { href: "/admin/landing", label: "AI Business" },
+  { href: "/admin/media", label: "AI Business" },
+  { href: "/admin/presence", label: "AI Business" },
+  { href: "/admin/resume", label: "AI Business" },
+  { href: "/admin/website", label: "AI Business" },
 ];
 
 function isActive(pathname: string, href: string, exact?: boolean): boolean {
@@ -62,6 +67,7 @@ function NavLink({
   return (
     <Link
       href={adminUrl(href)}
+      aria-current={active ? "page" : undefined}
       onClick={onNavigate}
       className={`block border-l-2 px-3 py-2 font-mono text-xs uppercase tracking-widest transition-colors ${
         active
@@ -91,14 +97,14 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         </p>
       </div>
 
-      <nav className="flex-1 overflow-y-auto py-4">
+      <nav aria-label="Admin sections" className="flex-1 overflow-y-auto py-4">
         <ul className="space-y-0.5">
           {NAV.map((item) => (
             <li key={item.href}>
               <NavLink
                 href={item.href}
                 label={item.label}
-                active={isActive(pathname, item.href, item.exact)}
+                active={currentSectionLabel(pathname) === item.label}
                 onNavigate={onNavigate}
               />
             </li>
@@ -107,14 +113,13 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       </nav>
 
       <div className="space-y-4 border-t border-zinc-200 px-5 py-4">
-        <MCPConnectHint />
         <div className="flex items-center justify-between gap-3">
           <Link
-            href={adminUrl("/admin/developer")}
+            href={adminUrl("/admin/settings")}
             onClick={onNavigate}
             className="font-mono text-[10px] uppercase tracking-widest text-zinc-400 transition-colors hover:text-zinc-900"
           >
-            Developer
+            Account
           </Link>
           <SignOutButton redirectUrl="/sign-in">
             <button className="font-mono text-[10px] uppercase tracking-widest text-zinc-500 transition-colors hover:text-zinc-900">

@@ -266,8 +266,8 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
     }),
 
   // Command Center snapshot — same data the /admin/command-center page renders.
-  // scope: 'self' (default) returns whatelz.ai only. 'all' proxies EMDEE +
-  // DoubleLead owner-metrics endpoints too using the server-side tokens.
+  // scope: 'self' (default) returns whatelz.ai only. 'all' includes EMDEE
+  // owner metrics using the server-side token.
   "system.metrics": async (a) => {
     const scope = (a.scope as string | undefined) ?? "self";
     if (scope === "self") {
@@ -280,7 +280,6 @@ const TOOLS: Record<string, (args: ToolArgs) => Promise<unknown>> = {
     return {
       whatelz: self,
       emdee: remote.emdee,
-      doublelead: remote.doublelead,
     };
   },
 
@@ -543,7 +542,7 @@ const TOOL_SCHEMAS = [
         key: {
           type: "string",
           description:
-            "Stable identifier, e.g. 'morning-briefing' or 'doublelead-dau'. Upserts overwrite.",
+            "Stable identifier, e.g. 'morning-briefing' or 'emdee-dau'. Upserts overwrite.",
         },
         title: { type: "string" },
         body_markdown: {
@@ -959,7 +958,7 @@ const TOOL_SCHEMAS = [
   {
     name: "system.metrics",
     description:
-      "Command Center snapshot — same data the /admin/command-center page renders. Pass scope='self' (default) for whatelz.ai only, or scope='all' to also proxy EMDEE + DoubleLead owner-metrics (returns { whatelz, emdee, doublelead }; remote widgets carry status 'available' | 'pending' | 'error').",
+      "Overview snapshot — same data the /admin/command-center page renders. Pass scope='self' (default) for whatelz.ai only, or scope='all' to include EMDEE owner metrics (returns { whatelz, emdee }; the remote widget carries status 'available' | 'pending' | 'error').",
     inputSchema: {
       type: "object",
       properties: {

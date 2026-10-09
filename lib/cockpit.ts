@@ -8,7 +8,7 @@
 
 const DEFAULT_TIMEOUT_MS = 2500;
 
-export type ProductKey = "whatelz" | "emdee" | "doublelead";
+export type ProductKey = "whatelz" | "emdee";
 
 export interface OwnerMetrics {
   product: ProductKey | string;
@@ -53,12 +53,6 @@ const REMOTES: RemoteConfig[] = [
     origin: process.env.EMDEE_ORIGIN,
     token: process.env.EMDEE_OWNER_METRICS_TOKEN,
     label: "EMDEE",
-  },
-  {
-    key: "doublelead",
-    origin: process.env.DOUBLELEAD_ORIGIN,
-    token: process.env.DOUBLELEAD_OWNER_METRICS_TOKEN,
-    label: "DoubleLead",
   },
 ];
 
@@ -109,13 +103,13 @@ async function fetchRemote(
 // Fetches all remote products in parallel. Each renders independently —
 // slow/failed one doesn't hold up others.
 export async function fetchRemoteWidgets(): Promise<
-  Record<ProductKey, WidgetState<OwnerMetrics>>
+  Record<Exclude<ProductKey, "whatelz">, WidgetState<OwnerMetrics>>
 > {
   const results = await Promise.all(
     REMOTES.map(async (r) => [r.key, await fetchRemote(r)] as const),
   );
   const map = Object.fromEntries(results) as Record<
-    ProductKey,
+    Exclude<ProductKey, "whatelz">,
     WidgetState<OwnerMetrics>
   >;
   // whatelz key is set by the caller (local aggregator). Return only remotes.

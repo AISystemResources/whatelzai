@@ -46,17 +46,16 @@ export default async function CommandCenterPage() {
           Overview
         </h1>
         <p className="mt-3 max-w-3xl text-zinc-600">
-          Cross-product health for whatelz.ai, EMDEE, and DoubleLead. Read-only
-          view fed by each product&apos;s internal owner-metrics endpoint. Fresh
-          on every page load; individual widgets degrade gracefully if a remote
-          endpoint is unreachable.
+          Your AI business at a glance: whatelz.ai and EMDEE. Metrics refresh on
+          every page load. Each product shows its connection status when data is
+          unavailable.
         </p>
         <p className="mt-3 font-mono text-[10px] uppercase tracking-widest text-zinc-400">
           Loaded {now.toLocaleString("en-SG")}
         </p>
       </header>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <ProductWidget
           product="whatelz"
           label="whatelz.ai"
@@ -69,20 +68,7 @@ export default async function CommandCenterPage() {
           state={remoteWidgets.emdee}
           adminHref="https://emdee.tech/admin"
         />
-        <ProductWidget
-          product="doublelead"
-          label="DoubleLead"
-          state={remoteWidgets.doublelead}
-          adminHref="https://doublelead.io/admin"
-        />
       </div>
-
-      <footer className="border-t border-zinc-100 pt-6">
-        <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">
-          Phase 1 · Remote widgets pending SPRINT-XXX in EMDEE + DoubleLead
-          repos
-        </p>
-      </footer>
     </div>
   );
 }

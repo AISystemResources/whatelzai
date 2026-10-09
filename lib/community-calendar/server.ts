@@ -1,9 +1,28 @@
 import "server-only";
-import { ensureUserRow } from "@/lib/users";
+import { ensureUserRow, isAdminRole } from "@/lib/users";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { expandMonth, type CalendarRecord } from "./ical";
-export async function loadCommunityCalendar(month: string) {
-  if (!(await ensureUserRow())) throw new Error("Sign-in required");
+import {
+  filterCalendarEvents,
+  calendarView,
+  isPersona,
+  type Persona,
+} from "./personas";
+export async function loadCommunityCalendar(month: string, preview?: string) {
+  const user = await ensureUserRow();
+  if (!user) throw new Error("Sign-in required");
+  const { data: membership, error: membershipError } = await supabaseAdmin
+    .from("community_calendar_memberships")
+    .select("persona")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (membershipError) throw new Error("Calendar membership unavailable");
+  const persona: Persona = isPersona(membership?.persona)
+    ? membership.persona
+    : "Guest";
+  const canManage = isAdminRole(user.role);
+  const viewingAs = calendarView(persona, canManage, preview);
+  const access = { persona, viewingAs, canManage };
   const { data: snapshot, error } = await supabaseAdmin
     .from("community_calendar_imports")
     .select("id,imported_at,message_count,record_count")
@@ -12,7 +31,7 @@ export async function loadCommunityCalendar(month: string) {
     .limit(1)
     .maybeSingle();
   if (error) throw new Error("Calendar unavailable");
-  if (!snapshot) return { events: [], snapshot: null };
+  if (!snapshot) return { events: [], snapshot: null, ...access };
   const { data, error: recordError } = await supabaseAdmin
     .from("community_calendar_records")
     .select(
@@ -23,7 +42,11 @@ export async function loadCommunityCalendar(month: string) {
   if (recordError || !data || data.length !== snapshot.record_count)
     throw new Error("Calendar import incomplete");
   return {
-    events: expandMonth(data as CalendarRecord[], month),
+    events: filterCalendarEvents(
+      expandMonth(data as CalendarRecord[], month),
+      viewingAs,
+    ),
+    ...access,
     snapshot: {
       imported_at: snapshot.imported_at,
       message_count: snapshot.message_count,

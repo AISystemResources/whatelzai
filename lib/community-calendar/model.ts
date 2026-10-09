@@ -47,6 +47,9 @@ export function localDay(iso: string) {
 export function currentMonth(now = new Date()) {
   return localDay(now.toISOString()).slice(0, 7);
 }
+export function eventHasEnded(event: CalendarOccurrence, now: string) {
+  return new Date(event.end).getTime() <= new Date(now).getTime();
+}
 export function validMonth(value: string | undefined) {
   return !!value && /^(20\d{2})-(0[1-9]|1[0-2])$/.test(value);
 }

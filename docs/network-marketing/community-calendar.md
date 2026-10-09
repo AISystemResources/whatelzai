@@ -16,6 +16,12 @@ The server expands recurring rules, EXDATE and date-specific overrides for the r
 
 Both tables have RLS and no anon/authenticated grants. Only the server service role imports/reads; page and loader independently require a verified application user. ICS, source message IDs and revision fields remain server-side. Clients get event title, location, dates, category and recurrence marker. Data is never publicly cached. Import metadata is hidden until its records verify.
 
+Calendar visibility now follows explicitly confirmed personas in private `community_calendar_memberships`. Admins assign signed-in accounts at `/admin/calendar-access`; default is Guest. Oracle is reserved for Dick Lim with explicit confirmation and a unique single-account constraint. Application admins can review all events or preview a persona without changing their account. Query parameters cannot elevate a non-admin. Names, team links, ABO number fields and editable auth metadata do not confer club access.
+
+Badminton/Captain Ball: Oracle, Catalyst, Spark; Guests need Catalyst invitation to attend. Monday/Wednesday classes, HQ tour/Shopping Tour, HQH and Intro/Gather/Collab: Oracle/Catalyst. Intro/Gather/Collab eligibility for Sparks/Guests awaits Edmund’s clarification. Unknown titles fail closed for members and show “Audience to confirm” in founder/admin review. Seeing a guest-eligible event is not an invitation or RSVP; there is no attendance/invitation ledger yet. Rules live in `lib/community-calendar/personas.ts` and must be confirmed before widening.
+
+Today is the full local UTC+8 date, refreshed every minute while open. Day cells expose `aria-current=date`; the current date is yellow and selected dates have a separate blue outline. Past days are grey. Events stay relevant through their end time; ended events move into an expandable reference section unless a particular date is selected.
+
 Run calendar and routing regression tests, typecheck, changed-file lint, format and production build. Verify database counts and grants; verify anonymous redirect and signed-in desktop/mobile month navigation, filters, date selection and agenda. Rollback by removing calendar links/page; retain imported data.
 
 ## Initial snapshot — 10 October 2026 (Malaysia/Singapore)

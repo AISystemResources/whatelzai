@@ -1,8 +1,16 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  personas,
+  personaDescriptions,
+  audienceLabel,
+  eventAudience,
+  type Persona,
+} from "@/lib/community-calendar/personas";
 import {
   activityTypes,
+  eventHasEnded,
   localDay,
   occursOn,
   shiftMonth,
@@ -31,12 +39,18 @@ function schedule(event: CalendarOccurrence) {
 }
 export function CommunityCalendar({
   month,
-  today,
+  initialNow,
+  persona,
+  viewingAs,
+  canManage,
   events,
   snapshot,
 }: {
   month: string;
-  today: string;
+  initialNow: string;
+  persona: Persona;
+  viewingAs: Persona | "Admin";
+  canManage: boolean;
   events: CalendarOccurrence[];
   snapshot: {
     imported_at: string;
@@ -44,6 +58,14 @@ export function CommunityCalendar({
     record_count: number;
   } | null;
 }) {
+  const [now, setNow] = useState(initialNow);
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date().toISOString()), 60_000);
+    return () => clearInterval(timer);
+  }, []);
+  const today = localDay(now);
+  const calendarHref = (m: string, p = viewingAs) =>
+    `/calendar?month=${m}${canManage && p !== "Admin" ? `&persona=${p}` : ""}`;
   const [category, setCategory] = useState<ActivityType>("All activities");
   const [query, setQuery] = useState("");
   const [view, setView] = useState<"month" | "agenda">("month");
@@ -66,8 +88,100 @@ export function CommunityCalendar({
     month: "long",
     year: "numeric",
   }).format(new Date(`${month}-01T00:00:00Z`));
+  const upcoming = listed.filter((e) => !eventHasEnded(e, now));
+  const past = listed.filter((e) => eventHasEnded(e, now));
+  function eventCard(e: CalendarOccurrence, ended = false) {
+    const audience = eventAudience(e.title);
+    return (
+      <article
+        key={e.id}
+        className={`min-w-0 rounded-xl border p-5 ${ended ? "border-zinc-300 bg-zinc-100 text-zinc-600" : "border-zinc-200 bg-white"}`}
+      >
+        <div className="flex flex-wrap gap-2 text-xs text-zinc-500">
+          <span>{e.category}</span>
+          {e.recurring ? <span>· Recurring schedule</span> : null}
+          {ended ? (
+            <span className="font-semibold">· Past · Reference only</span>
+          ) : null}
+          {!ended && occursOn(e, today) ? (
+            <span className="rounded bg-yellow-100 px-2 font-semibold text-zinc-900">
+              Today
+            </span>
+          ) : null}
+        </div>
+        <h4 className="mt-2 break-words text-lg font-semibold">{e.title}</h4>
+        <p className="mt-3 text-sm leading-relaxed">{schedule(e)}</p>
+        <p className="mt-2 break-words text-sm text-zinc-500">
+          {e.location || "Venue not specified"}
+        </p>
+        <p className="mt-4 text-xs font-medium text-zinc-600">
+          {audienceLabel(e.title)}
+        </p>
+        {audience.guestInvitation ? (
+          <p className="mt-1 text-xs text-zinc-500">
+            Guests: invitation from a Catalyst required.
+          </p>
+        ) : null}
+      </article>
+    );
+  }
   return (
     <section className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-yellow-300 bg-yellow-50 p-4">
+        <p className="font-semibold">
+          Today · {dateLabel.format(new Date(now))}, {today.slice(0, 4)}{" "}
+          <span className="block text-xs font-normal text-zinc-600">
+            Malaysia / Singapore · UTC+8
+          </span>
+        </p>
+        <span className="text-sm">
+          {viewingAs === "Admin"
+            ? "Admin review · All events"
+            : canManage
+              ? `Preview as ${viewingAs}`
+              : `Your persona: ${persona}`}
+        </span>
+      </div>
+      <details className="rounded-xl border p-4">
+        <summary className="cursor-pointer font-medium">
+          Who can attend? · Founder’s Club personas
+        </summary>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          {personas.map((p) => (
+            <div key={p}>
+              <h3 className="font-semibold">{p === "Guest" ? "Guests" : p}</h3>
+              <p className="mt-1 text-sm text-zinc-600">
+                {personaDescriptions[p]}
+              </p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-4 text-sm text-zinc-600">
+          Seeing an activity is not a booking or invitation. Arrange guest
+          attendance with a Catalyst.
+        </p>
+      </details>
+      {canManage ? (
+        <div className="flex flex-wrap items-center gap-3 text-sm">
+          <span className="font-medium">Review calendar as</span>
+          {(["Admin", ...personas] as const).map((p) => (
+            <Link
+              key={p}
+              href={calendarHref(month, p)}
+              aria-current={viewingAs === p ? "page" : undefined}
+              className={`rounded-lg border px-3 py-2 ${viewingAs === p ? "bg-zinc-900 text-white" : ""}`}
+            >
+              {p === "Admin" ? "Admin · All" : p}
+            </Link>
+          ))}
+          <Link
+            href="https://admin.whatelz.ai/calendar-access"
+            className="underline"
+          >
+            Manage personas →
+          </Link>
+        </div>
+      ) : null}
       <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm leading-relaxed text-zinc-600">
         {snapshot ? (
           <>
@@ -85,7 +199,7 @@ export function CommunityCalendar({
         <div className="flex items-center gap-3">
           <Link
             aria-label="Previous month"
-            href={`/calendar?month=${shiftMonth(month, -1)}`}
+            href={calendarHref(shiftMonth(month, -1))}
             className="rounded-lg border px-3 py-2"
           >
             ←
@@ -93,7 +207,7 @@ export function CommunityCalendar({
           <h2 className="min-w-40 text-lg font-semibold">{monthLabel}</h2>
           <Link
             aria-label="Next month"
-            href={`/calendar?month=${shiftMonth(month, 1)}`}
+            href={calendarHref(shiftMonth(month, 1))}
             className="rounded-lg border px-3 py-2"
           >
             →
@@ -101,10 +215,10 @@ export function CommunityCalendar({
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
-            href={`/calendar?month=${today}`}
+            href={calendarHref(today.slice(0, 7))}
             className="rounded-lg border px-3 py-2 text-sm"
           >
-            This month
+            Today
           </Link>
           {(["month", "agenda"] as const).map((v) => (
             <button
@@ -175,11 +289,22 @@ export function CommunityCalendar({
                   onClick={() =>
                     setSelectedDay(selectedDay === day ? null : day)
                   }
-                  aria-label={`${day}, ${items.length} events`}
+                  aria-label={`${day}${day === today ? ", Today" : day < today ? ", Past day — reference only" : ""}, ${items.length} events`}
+                  aria-current={day === today ? "date" : undefined}
                   aria-pressed={selectedDay === day}
-                  className={`min-h-20 min-w-0 border-t border-r border-zinc-100 p-1.5 text-left sm:min-h-32 sm:p-3 ${selectedDay === day ? "bg-yellow-100" : "hover:bg-zinc-50"}`}
+                  className={`min-h-20 min-w-0 border-t border-r border-zinc-200 p-1.5 text-left sm:min-h-32 sm:p-3 ${day === today ? "bg-yellow-50 ring-2 ring-inset ring-yellow-400" : day < today ? "bg-zinc-100 text-zinc-500 hover:bg-zinc-200" : "bg-white hover:bg-zinc-50"} ${selectedDay === day ? "outline-2 -outline-offset-2 outline-blue-500" : ""}`}
                 >
-                  <span className="text-sm font-medium">{i + 1}</span>
+                  <span
+                    className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-sm font-medium ${day === today ? "bg-yellow-300 font-bold text-zinc-900" : ""}`}
+                  >
+                    {i + 1}
+                  </span>
+                  {day === today ? (
+                    <span className="hidden text-xs font-bold text-zinc-900 sm:inline">
+                      {" "}
+                      Today
+                    </span>
+                  ) : null}
                   <span className="mt-2 block text-[10px] text-zinc-500 sm:hidden">
                     {items.length
                       ? `${items.length} event${items.length > 1 ? "s" : ""}`
@@ -189,7 +314,7 @@ export function CommunityCalendar({
                     {items.slice(0, 2).map((e) => (
                       <span
                         key={e.id}
-                        className="block truncate rounded bg-zinc-100 px-1 py-1 text-[11px]"
+                        className={`block truncate rounded px-1 py-1 text-[11px] ${eventHasEnded(e, now) ? "bg-zinc-200 text-zinc-500" : "bg-zinc-100 text-zinc-900"}`}
                       >
                         {e.title}
                       </span>
@@ -210,9 +335,9 @@ export function CommunityCalendar({
         <h3 className="text-lg font-semibold">
           {selectedDay
             ? dateLabel.format(new Date(`${selectedDay}T12:00:00+08:00`))
-            : "Month’s events"}{" "}
+            : "Upcoming events"}{" "}
           <span className="text-sm font-normal text-zinc-500">
-            ({listed.length})
+            ({selectedDay ? listed.length : upcoming.length})
           </span>
         </h3>
         {selectedDay ? (
@@ -225,25 +350,26 @@ export function CommunityCalendar({
         ) : null}
       </div>
       <div aria-live="polite" className="grid gap-3 sm:grid-cols-2">
-        {listed.map((e) => (
-          <article
-            key={e.id}
-            className="min-w-0 rounded-xl border border-zinc-200 p-5"
-          >
-            <div className="flex flex-wrap gap-2 text-xs text-zinc-500">
-              <span>{e.category}</span>
-              {e.recurring ? <span>· Recurring schedule</span> : null}
-            </div>
-            <h4 className="mt-2 break-words text-lg font-semibold">
-              {e.title}
-            </h4>
-            <p className="mt-3 text-sm leading-relaxed">{schedule(e)}</p>
-            <p className="mt-2 break-words text-sm text-zinc-500">
-              {e.location || "Venue not specified"}
-            </p>
-          </article>
-        ))}
+        {(selectedDay ? listed : upcoming).map((e) =>
+          eventCard(e, eventHasEnded(e, now)),
+        )}
       </div>
+      {!selectedDay && past.length ? (
+        <details className="rounded-xl border border-zinc-300 bg-zinc-100 p-4">
+          <summary className="cursor-pointer font-medium text-zinc-600">
+            Past events · Reference only ({past.length})
+          </summary>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {past.map((e) => eventCard(e, true))}
+          </div>
+        </details>
+      ) : null}
+      {!selectedDay && upcoming.length === 0 && listed.length > 0 ? (
+        <p className="text-sm text-zinc-500">
+          No upcoming events in this selection. Past events remain available
+          below for reference.
+        </p>
+      ) : null}
       {listed.length === 0 ? (
         <p className="rounded-xl border border-dashed p-8 text-center text-zinc-500">
           No imported events match this selection.

@@ -56,6 +56,16 @@ export default async function MemberHome() {
             Explore products →
           </a>
         </div>
+        <div className="mt-6 rounded-2xl border border-zinc-200 p-6">
+          <h2 className="text-lg font-semibold">Founder’s Club calendar</h2>
+          <p className="mt-2 text-sm text-zinc-600">
+            Explore upcoming community activities, Intro, Gather, Collab and
+            learning events.
+          </p>
+          <a href="/calendar" className="mt-4 inline-block underline">
+            View calendar →
+          </a>
+        </div>
         <p className="mt-8 text-sm text-zinc-500">
           Seminar learnings, pipeline activities and team culture will be added
           here gradually.

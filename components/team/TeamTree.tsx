@@ -49,6 +49,16 @@ export function TeamTree({
           {person.context && (
             <p className="mt-1 text-xs text-zinc-500">{person.context}</p>
           )}
+          {person.current_level ? (
+            <p className="mt-2 text-xs font-medium text-zinc-700">
+              Level: {person.current_level}
+            </p>
+          ) : null}
+          {person.next_goal ? (
+            <p className="mt-1 text-xs text-zinc-600">
+              Next: {person.next_goal}
+            </p>
+          ) : null}
         </div>
         {children.length > 0 && (
           <ul className="ml-3 mt-1 space-y-1 border-l border-zinc-200 pl-3 sm:ml-5 sm:pl-5">

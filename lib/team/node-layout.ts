@@ -1,7 +1,7 @@
 import { type TeamPerson } from "./model";
 
 export const NODE_WIDTH = 240;
-export const NODE_HEIGHT = 128;
+export const NODE_HEIGHT = 176;
 const GAP = 28;
 const LEVEL = NODE_HEIGHT + 64;
 const PADDING = 24;

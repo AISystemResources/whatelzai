@@ -147,15 +147,23 @@ test("invalid identities, missing sponsors, cross-team links and cycles are reje
   );
 });
 
-test("member and manager serialization strips contact email while preserving visible ABO text", () => {
+test("member and manager serialization hides contact and private progress notes while preserving level, goal and ABO", () => {
   const enriched = people.map((person) => ({
     ...person,
     email: "person@example.test",
     abo_number: "00012345",
+    current_level: "Example level",
+    next_goal: "Example goal",
+    progress_notes: "Private administrator notes",
   }));
   for (const role of ["member", "manager"] as const) {
     const result = visiblePeople(enriched, ids[2], role);
     assert.ok(result.every((person) => person.email === null));
+    assert.ok(result.every((person) => person.progress_notes === null));
+    assert.ok(
+      result.every((person) => person.current_level === "Example level"),
+    );
+    assert.ok(result.every((person) => person.next_goal === "Example goal"));
     assert.ok(result.every((person) => person.abo_number === "00012345"));
   }
 });

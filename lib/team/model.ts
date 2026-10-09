@@ -6,6 +6,9 @@ const personSchema = z.object({
   display_name: z.string().trim().min(1).max(120),
   sponsor_person_id: z.uuid().nullable(),
   context: z.string().trim().max(240).nullable(),
+  current_level: z.string().trim().max(120).nullable().optional(),
+  next_goal: z.string().trim().max(240).nullable().optional(),
+  progress_notes: z.string().trim().max(1000).nullable().optional(),
   email: z.email().max(254).nullable().optional(),
   abo_number: z
     .string()
@@ -126,6 +129,7 @@ export function visiblePeople(
       ...person,
       context: role === "manager" ? person.context : null,
       email: null,
+      progress_notes: null,
       sponsor_person_id:
         person.sponsor_person_id && allowed.has(person.sponsor_person_id)
           ? person.sponsor_person_id

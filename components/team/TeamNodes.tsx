@@ -178,6 +178,22 @@ export function TeamNodes({
                         {person.context}
                       </span>
                     ) : null}
+                    {person.current_level ? (
+                      <span
+                        className="mt-2 block truncate text-xs font-medium text-zinc-700"
+                        title={person.current_level}
+                      >
+                        Level: {person.current_level}
+                      </span>
+                    ) : null}
+                    {person.next_goal ? (
+                      <span
+                        className="mt-1 block truncate text-xs text-zinc-600"
+                        title={person.next_goal}
+                      >
+                        Next: {person.next_goal}
+                      </span>
+                    ) : null}
                   </>
                 );
                 const cardClass = `block h-full w-full rounded-xl border-2 px-4 py-3 text-left ${selected ? "border-yellow-400 bg-yellow-50" : "border-zinc-200 bg-white"}`;
@@ -218,6 +234,16 @@ export function TeamNodes({
         <p className="text-sm text-zinc-600">
           {focus.display_name}: {focus.context}
         </p>
+      ) : null}
+      {focus?.current_level || focus?.next_goal || focus?.progress_notes ? (
+        <div className="space-y-1 rounded-lg border border-zinc-200 bg-white p-3 text-sm text-zinc-600">
+          <p className="font-medium text-zinc-900">{focus.display_name}</p>
+          <p>Current level: {focus.current_level || "Not recorded"}</p>
+          <p>Next goal: {focus.next_goal || "Not recorded"}</p>
+          {focus.progress_notes ? (
+            <p className="whitespace-pre-wrap">{focus.progress_notes}</p>
+          ) : null}
+        </div>
       ) : null}
     </div>
   );

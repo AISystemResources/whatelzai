@@ -116,6 +116,36 @@ export default async function TeamPage() {
                   />
                 </label>
               </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="text-sm">
+                  Current level
+                  <input
+                    name="current_level"
+                    maxLength={120}
+                    defaultValue={person.current_level ?? ""}
+                    className="mt-1 block w-full rounded border border-zinc-300 p-2"
+                  />
+                </label>
+                <label className="text-sm">
+                  Next goal
+                  <input
+                    name="next_goal"
+                    maxLength={240}
+                    defaultValue={person.next_goal ?? ""}
+                    className="mt-1 block w-full rounded border border-zinc-300 p-2"
+                  />
+                </label>
+              </div>
+              <label className="block text-sm">
+                Progress notes (admin-only)
+                <textarea
+                  name="progress_notes"
+                  maxLength={1000}
+                  rows={2}
+                  defaultValue={person.progress_notes ?? ""}
+                  className="mt-1 block w-full rounded border border-zinc-300 p-2"
+                />
+              </label>
               <button
                 type="submit"
                 className="rounded bg-zinc-900 px-4 py-2 text-sm text-white"

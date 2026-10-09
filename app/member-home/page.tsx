@@ -46,9 +46,19 @@ export default async function MemberHome() {
             View my team →
           </a>
         </div>
+        <div className="mt-6 rounded-2xl border border-zinc-200 p-6">
+          <h2 className="text-lg font-semibold">Product catalogue</h2>
+          <p className="mt-2 text-sm text-zinc-600">
+            Explore Malaysia and Singapore product references, prices and
+            published PV/BV.
+          </p>
+          <a href="/catalogue" className="mt-4 inline-block underline">
+            Explore products →
+          </a>
+        </div>
         <p className="mt-8 text-sm text-zinc-500">
-          Product references, seminar learnings and team connections will be
-          added here gradually.
+          Seminar learnings, pipeline activities and team culture will be added
+          here gradually.
         </p>
       </main>
     </>

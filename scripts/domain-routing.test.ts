@@ -60,3 +60,11 @@ test("local previews keep admin access, and host matching is exact", () => {
   assert.equal(siteSurface("admin.whatelz.ai.attacker.test"), "public");
   assert.equal(siteSurface("ADMIN.WHATELZ.AI:443"), "admin");
 });
+test("product references belong to the protected member surface", () => {
+  assert.equal(
+    domainRoute("whatelz.ai", "/catalogue").redirect,
+    "https://app.whatelz.ai/catalogue",
+  );
+  assert.equal(domainRoute("app.whatelz.ai", "/catalogue").protect, true);
+  assert.equal(domainRoute("app.whatelz.ai", "/catalogue").rewrite, undefined);
+});

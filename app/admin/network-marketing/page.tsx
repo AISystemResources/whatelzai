@@ -10,6 +10,12 @@ export default function NetworkMarketingPage() {
       description="Manage your team here and open the shared member workspace for community activities."
       links={[
         {
+          href: "https://app.whatelz.ai/catalogue",
+          label: "Product catalogue",
+          description:
+            "Browse Malaysia and Singapore price references and source-backed PV/BV explanations.",
+        },
+        {
           href: "/admin/team",
           label: "Team management",
           description:

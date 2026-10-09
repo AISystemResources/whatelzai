@@ -34,7 +34,9 @@ export function domainRoute(hostname: string, pathname: string) {
   }
   if (
     surface === "public" &&
-    (pathname === "/member-home" || pathname === "/team")
+    (pathname === "/member-home" ||
+      pathname === "/team" ||
+      pathname === "/catalogue")
   ) {
     return {
       surface,

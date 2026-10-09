@@ -292,3 +292,7 @@ The team contact-details migration is applied. The Supabase identity migration w
 ## Member product references (SPR-117)
 
 The signed-in `app.whatelz.ai/catalogue` provides MY/SG product references, market switching, SKU/name search, category/brand filters, AP/RP and published PV/BV. It has no checkout. Member home and admin Network Marketing link to it. Source snapshots retain dates, checksums, page numbers and raw numeric cells; ambiguous rows remain excluded in review queues. Never derive PV/BV from prices, tax or exchange rates. The product_catalogue tables have RLS and no anon/authenticated grants; server reads require a verified application user. Evidence and refresh procedure: `docs/network-marketing/product-reference.md`. Mirrored in EMDEE INSTRUCTIONS under “Member product references (SPR-117)”.
+
+## Community calendar (SPR-118)
+
+The signed-in `app.whatelz.ai/calendar` is an imported Founder’s Club schedule with month/agenda views and activity/search filters. Preserve recurring schedules, exception dates, UTC+8, update sequence and cancellations using pinned ical.js 2.2.1. Import only allowlisted schedule fields; never share attendees, RSVP tokens or meeting credentials. Private tables have RLS/no anon/authenticated grants; page and loader require verified users independently. No RSVP or live sync. Source exports stay under ignored `supabase/private/`. Procedure: `docs/network-marketing/community-calendar.md`. Mirrored in EMDEE INSTRUCTIONS under “Community calendar (SPR-118)”.

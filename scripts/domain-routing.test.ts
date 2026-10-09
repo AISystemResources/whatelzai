@@ -68,3 +68,11 @@ test("product references belong to the protected member surface", () => {
   assert.equal(domainRoute("app.whatelz.ai", "/catalogue").protect, true);
   assert.equal(domainRoute("app.whatelz.ai", "/catalogue").rewrite, undefined);
 });
+test("community calendar belongs to the protected member surface", () => {
+  assert.equal(
+    domainRoute("whatelz.ai", "/calendar").redirect,
+    "https://app.whatelz.ai/calendar",
+  );
+  assert.equal(domainRoute("app.whatelz.ai", "/calendar").protect, true);
+  assert.equal(domainRoute("app.whatelz.ai", "/calendar").rewrite, undefined);
+});

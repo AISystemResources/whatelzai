@@ -13,14 +13,14 @@ export const metadata: Metadata = {
 export default async function CalendarPage({
   searchParams,
 }: {
-  searchParams: Promise<{ month?: string }>;
+  searchParams: Promise<{ month?: string; persona?: string }>;
 }) {
   if (!(await ensureUserRow())) redirect("/sign-in?redirect_url=/calendar");
   const params = await searchParams;
   const month = validMonth(params.month) ? params.month! : currentMonth();
   let calendar;
   try {
-    calendar = await loadCommunityCalendar(month);
+    calendar = await loadCommunityCalendar(month, params.persona);
   } catch {
     return (
       <main className="mx-auto max-w-5xl px-6 py-12">
@@ -56,7 +56,7 @@ export default async function CalendarPage({
       <CommunityCalendar
         key={month}
         month={month}
-        today={currentMonth()}
+        initialNow={new Date().toISOString()}
         {...calendar}
       />
     </main>

@@ -8,7 +8,7 @@ import {
 } from "@/lib/cockpit";
 import { ProductWidget } from "./_components/ProductWidget";
 
-export const metadata: Metadata = { title: "Command Center — Admin" };
+export const metadata: Metadata = { title: "Overview — Admin" };
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -43,7 +43,7 @@ export default async function CommandCenterPage() {
           Admin
         </p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
-          Command Center
+          Overview
         </h1>
         <p className="mt-3 max-w-3xl text-zinc-600">
           Cross-product health for whatelz.ai, EMDEE, and DoubleLead. Read-only

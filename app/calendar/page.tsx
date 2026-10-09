@@ -54,7 +54,7 @@ export default async function CalendarPage({
         </p>
       </header>
       <CommunityCalendar
-        key={month}
+        key={`${month}:${calendar.viewingAs}`}
         month={month}
         initialNow={new Date().toISOString()}
         {...calendar}

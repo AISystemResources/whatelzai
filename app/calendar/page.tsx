@@ -1,3 +1,4 @@
+import { MemberNav } from "@/components/culture/MemberNav";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
@@ -36,11 +37,7 @@ export default async function CalendarPage({
   }
   return (
     <main className="mx-auto max-w-6xl space-y-8 px-5 py-10 sm:px-8">
-      <nav className="flex gap-5 text-sm underline underline-offset-4">
-        <Link href="/">← Member home</Link>
-        <Link href="/team">My team</Link>
-        <Link href="/catalogue">Products</Link>
-      </nav>
+      <MemberNav current="/calendar" />
       <header>
         <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
           Network Marketing · Community

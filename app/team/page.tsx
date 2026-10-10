@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { MemberNav } from "@/components/culture/MemberNav";
 import type { Metadata } from "next";
 import { auth } from "@/lib/auth/server";
 import { redirect } from "next/navigation";
@@ -22,17 +22,13 @@ export default async function MyTeamPage() {
         <p className="mt-4 text-zinc-500">
           Team information is temporarily unavailable.
         </p>
-        <Link href="/" className="mt-6 inline-block underline">
-          Back to member home
-        </Link>
+        <MemberNav current="/team" />
       </main>
     );
   }
   return (
     <main className="mx-auto max-w-3xl space-y-8 px-6 py-12">
-      <Link href="/" className="text-sm underline">
-        Back to member home
-      </Link>
+      <MemberNav current="/team" />
       <header>
         <h1 className="text-3xl font-semibold">My team</h1>
         <p className="mt-3 text-zinc-500">

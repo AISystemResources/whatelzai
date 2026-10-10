@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { relationshipTo, type TeamPerson } from "@/lib/team/model";
 import { fitNodeCamera } from "@/lib/team/node-zoom";
 import { useNodeGestures } from "./useNodeGestures";
@@ -14,10 +14,16 @@ export function TeamNodes({
   people,
   selectedId,
   onSelect,
+  editingId,
+  quickEdit = false,
+  fitOnMount = false,
 }: {
   people: TeamPerson[];
   selectedId: string;
   onSelect?: (id: string) => void;
+  editingId?: string | null;
+  quickEdit?: boolean;
+  fitOnMount?: boolean;
 }) {
   const layout = useMemo(() => layoutTeamNodes(people), [people]);
   const viewport = useRef<HTMLDivElement>(null);
@@ -27,6 +33,20 @@ export function TeamNodes({
     updateCamera,
     suppressClickUntil,
   } = useNodeGestures(viewport);
+  const fitted = useRef(false);
+  useEffect(() => {
+    const element = viewport.current;
+    if (!fitOnMount || fitted.current || !element) return;
+    fitted.current = true;
+    updateCamera(
+      fitNodeCamera(
+        layout.width,
+        layout.height,
+        element.clientWidth,
+        element.clientHeight,
+      ),
+    );
+  }, [fitOnMount, layout.width, layout.height, updateCamera]);
   const { zoom } = camera;
   const zoomAt = (value: number) =>
     zoomCamera(value, {
@@ -43,7 +63,11 @@ export function TeamNodes({
         <p id="team-node-help" className="text-xs text-zinc-500">
           Sponsors sit above their downlines. Drag or scroll to explore. Pinch
           with two fingers to zoom.
-          {onSelect ? " Select a person to change perspective." : ""}
+          {quickEdit
+            ? " Tap once to edit. Tap again or double-click to open the profile."
+            : onSelect
+              ? " Select a person to change perspective."
+              : ""}
         </p>
         <div className="flex items-center gap-2" aria-label="Node view zoom">
           <button
@@ -215,6 +239,9 @@ export function TeamNodes({
                           .filter(Boolean)
                           .join(" — ")}
                         aria-pressed={selected}
+                        aria-expanded={
+                          quickEdit ? editingId === person.id : undefined
+                        }
                         onClick={() => onSelect(person.id)}
                         className={`${cardClass} hover:border-yellow-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-500`}
                       >
@@ -230,12 +257,13 @@ export function TeamNodes({
           </div>
         </div>
       </div>
-      {focus?.context ? (
+      {!quickEdit && focus?.context ? (
         <p className="text-sm text-zinc-600">
           {focus.display_name}: {focus.context}
         </p>
       ) : null}
-      {focus?.current_level || focus?.next_goal || focus?.progress_notes ? (
+      {!quickEdit &&
+      (focus?.current_level || focus?.next_goal || focus?.progress_notes) ? (
         <div className="space-y-1 rounded-lg border border-zinc-200 bg-white p-3 text-sm text-zinc-600">
           <p className="font-medium text-zinc-900">{focus.display_name}</p>
           <p>Current level: {focus.current_level || "Not recorded"}</p>

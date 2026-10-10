@@ -73,3 +73,20 @@ export async function updateTeamPerson(form: FormData): Promise<void> {
   revalidatePath("/admin/team");
   revalidatePath("/team");
 }
+
+export async function saveTeamPerson(
+  _previous: { error?: string; success?: string },
+  form: FormData,
+): Promise<{ error?: string; success?: string }> {
+  await requireAdmin();
+  try {
+    await updateTeamPerson(form);
+  } catch {
+    return {
+      error:
+        "Details could not be saved. Check the email and ABO number, then try again.",
+    };
+  }
+  revalidatePath(`/admin/team/${form.get("person_id")}`);
+  return { success: "Details saved." };
+}

@@ -6,6 +6,7 @@ const items = [
   { href: "/catalogue", label: "Products" },
   { href: "/calendar", label: "Calendar" },
   { href: "/culture", label: "Culture" },
+  { href: "/leads", label: "Leads" },
 ];
 
 export function MemberNav({ current }: { current: string }) {

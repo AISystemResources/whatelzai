@@ -10,6 +10,12 @@ export default function NetworkMarketingPage() {
       description="Manage your team here and open the shared member workspace for community activities."
       links={[
         {
+          href: "https://app.whatelz.ai/culture",
+          label: "Culture",
+          description:
+            "Explore 超凡 sayings and future 顺育 and Founder’s Club teachings.",
+        },
+        {
           href: "/admin/calendar-access",
           label: "Founder’s Club access",
           description:

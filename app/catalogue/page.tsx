@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { MemberNav } from "@/components/culture/MemberNav";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ensureUserRow } from "@/lib/users";
@@ -17,9 +17,7 @@ export default async function CataloguePage() {
   } catch {
     return (
       <main className="mx-auto max-w-5xl px-6 py-12">
-        <Link href="/" className="underline">
-          Back to member home
-        </Link>
+        <MemberNav current="/catalogue" />
         <h1 className="mt-8 text-3xl font-semibold">Product catalogue</h1>
         <p className="mt-4">
           The catalogue is temporarily unavailable. Please try again shortly.
@@ -29,9 +27,7 @@ export default async function CataloguePage() {
   }
   return (
     <main className="mx-auto max-w-5xl space-y-8 px-5 py-10 sm:px-8">
-      <Link href="/" className="text-sm underline underline-offset-4">
-        ← Member home
-      </Link>
+      <MemberNav current="/catalogue" />
       <header>
         <p className="text-xs font-medium uppercase tracking-widest text-zinc-500">
           Network Marketing · Product reference

@@ -37,7 +37,8 @@ export function domainRoute(hostname: string, pathname: string) {
     (pathname === "/member-home" ||
       pathname === "/team" ||
       pathname === "/catalogue" ||
-      pathname === "/calendar")
+      pathname === "/calendar" ||
+      pathname === "/culture")
   ) {
     return {
       surface,

@@ -1,3 +1,4 @@
+import { MemberNav } from "@/components/culture/MemberNav";
 import { SignOutButton } from "@/components/auth/AuthControls";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
@@ -21,6 +22,9 @@ export default async function MemberHome() {
           </a>
           <SignOutButton />
         </header>
+        <div className="mt-6">
+          <MemberNav current="/" />
+        </div>
         <h1 className="mt-12 text-3xl font-semibold">
           Welcome{user.name ? `, ${user.name}` : ""}
         </h1>
@@ -66,9 +70,19 @@ export default async function MemberHome() {
             View calendar →
           </a>
         </div>
+        <div className="mt-6 rounded-2xl border border-zinc-200 p-6">
+          <h2 className="text-lg font-semibold">Culture</h2>
+          <p className="mt-2 text-sm text-zinc-600">
+            Wise words from 超凡, with 顺育 and Founder’s Club collections to
+            come.
+          </p>
+          <a href="/culture" className="mt-4 inline-block underline">
+            Explore culture →
+          </a>
+        </div>
         <p className="mt-8 text-sm text-zinc-500">
-          Seminar learnings, pipeline activities and team culture will be added
-          here gradually.
+          Seminar learnings and pipeline activities will be added here
+          gradually.
         </p>
       </main>
     </>

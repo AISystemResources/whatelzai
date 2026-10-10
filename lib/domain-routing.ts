@@ -38,7 +38,9 @@ export function domainRoute(hostname: string, pathname: string) {
       pathname === "/team" ||
       pathname === "/catalogue" ||
       pathname === "/calendar" ||
-      pathname === "/culture")
+      pathname === "/culture" ||
+      pathname === "/leads" ||
+      pathname.startsWith("/leads/"))
   ) {
     return {
       surface,

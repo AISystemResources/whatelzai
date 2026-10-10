@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { MemberNav } from "@/components/culture/MemberNav";
 import { SignOutButton } from "@/components/auth/AuthControls";
 import type { Metadata } from "next";
@@ -79,6 +80,16 @@ export default async function MemberHome() {
           <a href="/culture" className="mt-4 inline-block underline">
             Explore culture →
           </a>
+        </div>
+        <div className="mt-6 rounded-2xl border border-zinc-200 p-6">
+          <h2 className="text-lg font-semibold">Leads</h2>
+          <p className="mt-2 text-sm text-zinc-600">
+            Your private namelist, personal stories, activity history and next
+            follow-ups.
+          </p>
+          <Link href="/leads" className="mt-4 inline-block underline">
+            Open leads →
+          </Link>
         </div>
         <p className="mt-8 text-sm text-zinc-500">
           Seminar learnings and pipeline activities will be added here

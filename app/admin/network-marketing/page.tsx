@@ -10,6 +10,12 @@ export default function NetworkMarketingPage() {
       description="Manage your team here and open the shared member workspace for community activities."
       links={[
         {
+          href: "https://app.whatelz.ai/leads",
+          label: "Leads",
+          description:
+            "Open your private prospect profiles and next follow-ups.",
+        },
+        {
           href: "https://app.whatelz.ai/culture",
           label: "Culture",
           description:

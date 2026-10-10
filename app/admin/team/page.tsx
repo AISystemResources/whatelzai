@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/users";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { loadTeamView, type TeamView } from "@/lib/team/server";
-import { TeamTree } from "@/components/team/TeamTree";
-import { linkTeamAccount, updateTeamPerson } from "./actions";
+import { AdminTeamCanvas } from "@/components/team/AdminTeamCanvas";
+import { linkTeamAccount } from "./actions";
 
 export const metadata: Metadata = {
   title: "Team relationships",
@@ -56,7 +56,7 @@ export default async function TeamPage() {
     (user) => !linkedUsers.has(user.id),
   );
   return (
-    <div className="max-w-3xl space-y-10">
+    <div className="max-w-6xl space-y-8">
       <header>
         <p className="text-xs uppercase tracking-widest text-zinc-400">Team</p>
         <h1 className="mt-2 text-3xl font-semibold">{view.team.name}</h1>
@@ -67,97 +67,15 @@ export default async function TeamPage() {
           grant admin access.
         </p>
       </header>
-      <TeamTree
+      <AdminTeamCanvas
         people={view.people}
         focusId={view.team.focus_person_id}
-        canSeeAll
+        teamId={view.team.id}
       />
-      <section className="space-y-4 rounded-xl border border-zinc-200 p-5">
-        <h2 className="text-lg font-semibold">Member details</h2>
-        <p className="text-sm text-zinc-500">
-          Add known email addresses and ABO numbers. Emails are admin-only; ABO
-          numbers appear beside people in permitted team views. Saving an email
-          does not link a login account.
-        </p>
-        <div className="space-y-4">
-          {view.people.map((person) => (
-            <form
-              key={person.id}
-              action={updateTeamPerson}
-              className="space-y-3 rounded-lg border border-zinc-200 p-4"
-            >
-              <input type="hidden" name="team_id" value={view.team.id} />
-              <input type="hidden" name="person_id" value={person.id} />
-              <h3 className="font-medium">{person.display_name}</h3>
-              {person.context ? (
-                <p className="text-xs text-zinc-500">{person.context}</p>
-              ) : null}
-              <div className="grid gap-3 sm:grid-cols-2">
-                <label className="text-sm">
-                  Email
-                  <input
-                    type="email"
-                    name="email"
-                    maxLength={254}
-                    defaultValue={person.email ?? ""}
-                    className="mt-1 block w-full rounded border border-zinc-300 p-2"
-                  />
-                </label>
-                <label className="text-sm">
-                  ABO number
-                  <input
-                    type="text"
-                    name="abo_number"
-                    inputMode="numeric"
-                    pattern="[0-9]{1,20}"
-                    maxLength={20}
-                    defaultValue={person.abo_number ?? ""}
-                    className="mt-1 block w-full rounded border border-zinc-300 p-2"
-                  />
-                </label>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <label className="text-sm">
-                  Current level
-                  <input
-                    name="current_level"
-                    maxLength={120}
-                    defaultValue={person.current_level ?? ""}
-                    className="mt-1 block w-full rounded border border-zinc-300 p-2"
-                  />
-                </label>
-                <label className="text-sm">
-                  Next goal
-                  <input
-                    name="next_goal"
-                    maxLength={240}
-                    defaultValue={person.next_goal ?? ""}
-                    className="mt-1 block w-full rounded border border-zinc-300 p-2"
-                  />
-                </label>
-              </div>
-              <label className="block text-sm">
-                Progress notes (admin-only)
-                <textarea
-                  name="progress_notes"
-                  maxLength={1000}
-                  rows={2}
-                  defaultValue={person.progress_notes ?? ""}
-                  className="mt-1 block w-full rounded border border-zinc-300 p-2"
-                />
-              </label>
-              <button
-                type="submit"
-                className="rounded bg-zinc-900 px-4 py-2 text-sm text-white"
-              >
-                Save details
-              </button>
-            </form>
-          ))}
-        </div>
-      </section>
-      <section className="space-y-4 rounded-xl border border-zinc-200 p-5">
-        <h2 className="text-lg font-semibold">Link a verified account</h2>
+      <details className="space-y-4 rounded-xl border border-zinc-200 p-5">
+        <summary className="cursor-pointer text-lg font-semibold">
+          Link a verified account
+        </summary>
         <p className="text-sm text-zinc-500">
           Confirm the account belongs to the person before linking. Matching
           names alone are not proof. Members see their direct upline and
@@ -243,7 +161,7 @@ export default async function TeamPage() {
             ))}
           </ul>
         )}
-      </section>
+      </details>
     </div>
   );
 }

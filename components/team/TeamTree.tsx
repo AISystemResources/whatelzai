@@ -8,13 +8,19 @@ export function TeamTree({
   people,
   focusId,
   canSeeAll = false,
+  initialView = "tree",
+  onPersonActivate,
+  editingId,
 }: {
   people: TeamPerson[];
   focusId: string;
   canSeeAll?: boolean;
+  initialView?: "tree" | "nodes";
+  onPersonActivate?: (id: string) => void;
+  editingId?: string | null;
 }) {
   const [selectedId, setSelectedId] = useState(focusId);
-  const [view, setView] = useState<"tree" | "nodes">("tree");
+  const [view, setView] = useState<"tree" | "nodes">(initialView);
   const focus = people.find((person) => person.id === selectedId);
   const bySponsor = new Map<string | null, TeamPerson[]>();
   for (const person of people) {
@@ -28,10 +34,21 @@ export function TeamTree({
   function branch(person: TeamPerson) {
     const children = bySponsor.get(person.id) ?? [];
     const relation = relationshipTo(people, selectedId, person.id);
+    const Card = onPersonActivate ? "button" : "div";
     return (
       <li key={person.id} className="py-2">
-        <div
-          className={`rounded-xl border px-4 py-3 ${person.id === selectedId ? "border-yellow-400 bg-yellow-50" : "border-zinc-200 bg-white"}`}
+        <Card
+          type={onPersonActivate ? "button" : undefined}
+          onClick={
+            onPersonActivate
+              ? () => {
+                  setSelectedId(person.id);
+                  onPersonActivate(person.id);
+                }
+              : undefined
+          }
+          aria-expanded={onPersonActivate ? editingId === person.id : undefined}
+          className={`block w-full text-left rounded-xl border px-4 py-3 ${person.id === selectedId ? "border-yellow-400 bg-yellow-50" : "border-zinc-200 bg-white"}`}
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="font-medium text-zinc-900">
@@ -59,7 +76,7 @@ export function TeamTree({
               Next: {person.next_goal}
             </p>
           ) : null}
-        </div>
+        </Card>
         {children.length > 0 && (
           <ul className="ml-3 mt-1 space-y-1 border-l border-zinc-200 pl-3 sm:ml-5 sm:pl-5">
             {children.map(branch)}
@@ -142,7 +159,17 @@ export function TeamTree({
         <TeamNodes
           people={people}
           selectedId={selectedId}
-          onSelect={canSeeAll ? setSelectedId : undefined}
+          onSelect={
+            canSeeAll
+              ? (id) => {
+                  setSelectedId(id);
+                  onPersonActivate?.(id);
+                }
+              : undefined
+          }
+          editingId={onPersonActivate ? editingId : undefined}
+          quickEdit={Boolean(onPersonActivate)}
+          fitOnMount={Boolean(onPersonActivate)}
         />
       )}
       {!canSeeAll && (

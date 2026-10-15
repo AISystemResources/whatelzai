@@ -22,6 +22,7 @@ export function SiteFooter({ ownerName }: { ownerName: string }) {
             <Link href="/playbook">The playbook</Link>
             <Link href="/about">My story</Link>
             <Link href="/projects">Things I’m building</Link>
+            <Link href="/activities">Activities</Link>
             <Link href="/blog">Field notes</Link>
             <Link href="/contact">Say hello ↗</Link>
           </nav>

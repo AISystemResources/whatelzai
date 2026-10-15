@@ -5,6 +5,7 @@ import { useRef } from "react";
 import { ThemeToggle } from "./ThemeToggle";
 
 const explore = [
+  ["/activities", "Activities", "Come curious. Meet people."],
   ["/about", "The person", "Meet Edmund"],
   ["/projects", "The work", "Things I’m building"],
   ["/blog", "The notes", "Thinking out loud"],
@@ -40,10 +41,12 @@ export function AppHeader() {
             My story
           </Link>
           <Link
-            href="/blog"
-            aria-current={pathname.startsWith("/blog") ? "page" : undefined}
+            href="/activities"
+            aria-current={
+              pathname.startsWith("/activities") ? "page" : undefined
+            }
           >
-            Field notes
+            Activities
           </Link>
           <details
             ref={menu}

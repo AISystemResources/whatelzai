@@ -48,6 +48,7 @@ ${SITE_URL}
 
 ## Primary pages
 - [Home](${SITE_URL}/): who ${firstName} is and what ${firstName} builds
+- [Activities](${SITE_URL}/activities): small AI gatherings in Singapore; confirmed dates and expressions of interest
 - [About](${SITE_URL}/about): what whatelz.ai is
 - [The Playbook](${SITE_URL}/playbook): The Solopreneur's AI Playbook — Mindset + Skillset, S$9 lifetime access
 - [Projects](${SITE_URL}/projects): shipped AI systems and side projects

@@ -2,6 +2,7 @@ import "server-only";
 import { createHash, randomBytes } from "node:crypto";
 import { headers } from "next/headers";
 import { readConnection, storeConnection } from "./connections";
+import { emdeeCall, type Envelope } from "./emdee-client";
 export { DAILY_PARENT } from "./paths";
 export const EMDEE_ORIGIN = "https://emdee.tech";
 type Pending = {
@@ -121,11 +122,19 @@ export async function finishEmdeeConnection(owner: string, url: URL) {
     token.expires_in <= 0
   )
     throw new Error("EMDEE returned an invalid credential.");
-  await storeConnection(owner, "emdee", {
+  const credentials = {
     token: token.access_token,
     expiresAt: Date.now() + token.expires_in * 1000,
     parentPath: pending.parentPath,
+  };
+  // A valid token can belong to the wrong account. Verify the actual Daily hub
+  // before replacing the working connection or reporting a successful setup.
+  const parent = await emdeeCall<Envelope>(credentials, "get_doc", {
+    path: pending.parentPath,
   });
+  if (!/^[a-f0-9]{16}$/.test(parent.doc_content_hash))
+    throw new Error("This EMDEE account could not verify the Daily hub.");
+  await storeConnection(owner, "emdee", credentials);
   // Consume local state as well as the provider's single-use code.
   await storeConnection(owner, "emdee-pkce", {
     ...pending,

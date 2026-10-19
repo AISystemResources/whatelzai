@@ -1,5 +1,6 @@
 import "server-only";
 import { z } from "zod";
+import { apiGenerationEnabled } from "./settings";
 import { type BriefKind, type Task } from "./model";
 
 export const dailyInstructions = `You help Edmund make informed decisions and follow through.
@@ -70,6 +71,10 @@ async function generateMarkdown(
   input: unknown,
   instructions: string,
 ) {
+  if (!apiGenerationEnabled())
+    throw new Error(
+      "API generation is disabled. Your ChatGPT daily tasks write directly to EMDEE.",
+    );
   const key = connection.key;
   const model = connection.model;
   if (!key || !model)

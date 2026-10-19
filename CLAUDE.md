@@ -337,3 +337,25 @@ configured owner's stored role; admin session policy remains intact. SQL stores
 only execution metadata, never Markdown. See docs/daily/README.md. This explicitly
 requested schedule supersedes the old blanket prohibition on in-repo jobs; daily
 08:00/21:00 generation is still disabled. — codex, 2026-10-19
+
+
+## Subscription-first personal Daily (SPR-127)
+
+Personal Daily uses the existing ChatGPT cloud tasks at 04:30 and 21:00
+Asia/Singapore. They read/write canonical EMDEE Morning/Evening records and verify
+readback; Whatelzai loads the saved Notes when Today opens or refreshes. Progress
+is never inferred as completed, and saving a brief never accepts commitments.
+Both Run now tests saved records that production Today successfully displayed.
+This verifies the tested execution path, not future unattended runs.
+
+API generation defaults off unless DAILY_API_GENERATION_ENABLED is exactly true.
+Daily actions, the shared generation module and weekly cron fail closed before
+inference; the weekly job returns disabled before reserving attempts. Credentials
+remain encrypted for eventual opt-in use. Monday API synthesis is paused; no
+ChatGPT weekly replacement is configured. This supersedes earlier descriptions
+of enabled weekly API generation and unchanged daily ChatGPT instructions.
+
+OAuth setup must verify the selected EMDEE parent with the new credential before
+storing it; a valid token for the wrong account must not count as a successful
+connection. Never copy a personal CLI/chat token into application configuration.
+See docs/daily/README.md. — codex, 2026-10-19

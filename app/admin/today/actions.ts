@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { dailyOwner, loadDailyTasks } from "@/lib/daily/server";
+import { apiGenerationEnabled } from "@/lib/daily/settings";
 import {
   briefSchema,
   taskSchema,
@@ -133,6 +134,11 @@ export async function prepareDraft(
   if (!parsed.success || parsed.data.day !== singaporeDay())
     return {
       error: "AI preparation is available for today only. Reload the page.",
+    };
+  if (!apiGenerationEnabled())
+    return {
+      error:
+        "API generation is disabled. Your ChatGPT daily tasks write directly to EMDEE.",
     };
   const connection = await openaiConnection(owner);
   if (!connection)

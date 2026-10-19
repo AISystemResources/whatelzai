@@ -27,7 +27,9 @@ AES-256-GCM with a fresh nonce. Losing/changing the key requires reconnecting.
 On `/today/connections`, connect EMDEE with OAuth PKCE. Registration and callback
 origins are constrained to the admin host, the current Vercel preview deployment,
 or the explicit development origin. State is owner-bound, encrypted, valid for
-10 minutes and consumed on success. Tokens expire according to EMDEE; reconnect
+10 minutes and consumed on success. The callback reads the chosen parent before storing the credential; a token for a
+different account or an unreadable hub fails setup without replacing the connection.
+Tokens expire according to EMDEE; reconnect
 rather than pretending an expired token works. No personal CLI/chat credential
 is copied into deployment configuration.
 
@@ -45,7 +47,11 @@ project folder at migration inventory (2026-10-19). The old hub is retained as a
 historical pointer; no narrative was deleted. Parent updates and document edits use strict
 observed hashes. New documents are linked atomically with `create_child`.
 
-Configure your own OpenAI project key and chosen model ID in the owner-only UI.
+Personal generation uses the existing ChatGPT subscription, not an API key. Stored
+OpenAI credentials remain encrypted for future use; they are not invoked while
+`DAILY_API_GENERATION_ENABLED` is absent or false. Explicit server-side opt-in is
+required for both daily preparation and weekly generation. If enabled, configure
+your own OpenAI project key and chosen model ID in the owner-only UI.
 Model access is checked without inference, and the key is never redisplayed.
 The chosen model must support the Responses API and structured outputs. No model
 or spend has been selected on Edmund's behalf. Disconnecting removes stored
@@ -64,7 +70,7 @@ unless moved to a later check-in or dropped. Deferred work remains accessible.
 Actions use revision guards. Up to 100 unfinished tasks and 100 current-day
 completions are loaded; nothing outside those bounds is claimed as exhaustive.
 
-AI preparation is manual, produces an editable draft, never mutates tasks and
+When explicitly enabled, API preparation is manual, produces an editable draft, never mutates tasks and
 never saves the draft until Edmund submits it. Sources: operational records,
 yesterday's EMDEE closeout, and supplied notes. Calendar/email/book search are
 explicitly unavailable. Source documents are data, not execution authority.
@@ -73,10 +79,22 @@ provider calls have a 45-second timeout, 2,000 output-token cap, 60,000-characte
 input cap and `store:false`. These bounds do not promise a dollar-denominated
 budget or a fixed token price. Run records retain metadata, never brief bodies.
 
-08:00/21:00 schedules are **not enabled**. Existing ChatGPT schedules are unchanged.
-Validate manual use and connections before scheduling. This is a bounded daily
-workflow in the established Next.js stack, with reusable domain/provider modules;
-it is not an endless agent loop or a new eve application.
+The existing ChatGPT cloud tasks run at **04:30** (Morning Brief) and **21:00**
+(Night Debrief), Asia/Singapore. Their instructions now read/write the canonical
+EMDEE records directly through the connected document tools, then read back before
+claiming success. Missing tools or failed writes produce an explicit save failure
+and retain the draft in chat. No API inference fallback is permitted. Morning
+reads yesterday’s evening handoff; evening reads today’s morning and saves a
+provisional reflection before waiting for answers. Unknown progress remains unknown.
+Repeated runs preserve existing records; explicit updates and the real night run
+can refine a provisional test using fresh section hashes.
+
+Whatelzai reads these records when Today opens or refreshes. It does not trigger
+ChatGPT runs, mirror chat history, or automatically change commitments. Manual
+EMDEE editing remains available. Both cloud tasks were tested with Run now on
+2026-10-19; the resulting records were independently read from EMDEE and displayed
+in production Today. Future unattended executions are not claimed verified by
+those tests. The separate 03:00 EMDEE Distill task was not changed.
 
 ## Verification
 
@@ -88,6 +106,11 @@ attempt limits. Remote table checks confirm service access and anonymous denial.
 No private notes, credentials or actual customer data belong in test fixtures.
 
 ## Weekly condensation (SPR-126)
+
+**Paused in personal subscription-first mode.** The route returns `disabled` after
+owner verification, before reserving attempts or reading provider credentials.
+No ChatGPT weekly replacement has been configured. The behavior below applies
+only when API generation is explicitly enabled.
 
 Every Monday at **08:00 Asia/Singapore**, Vercel invokes
 `/api/cron/daily-weekly` on the public deployment origin (`0 0 * * 1`, UTC).
@@ -117,4 +140,4 @@ rather than silently dropping records. Model/key stay on the existing connection
 
 Renew expired EMDEE authorization in Connections. Without it the scheduled run
 fails visibly; the 30-day authorization is not an indefinite unattended grant.
-Daily morning/evening generation remains manual. Existing ChatGPT jobs are untouched.
+The personal daily ChatGPT tasks remain independent of this optional API job.

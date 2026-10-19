@@ -8,6 +8,7 @@ import { DAILY_PARENT } from "@/lib/daily/paths";
 import { singaporeDay, previousDay, type Brief } from "@/lib/daily/model";
 import { adminUrl } from "@/lib/admin-url";
 import { BriefEditor, NewTask, TaskRow } from "./Forms";
+import { apiGenerationEnabled } from "@/lib/daily/settings";
 export const metadata: Metadata = {
   title: "Today — Admin",
   robots: { index: false, follow: false },
@@ -100,6 +101,13 @@ export default async function TodayPage() {
           {sourceError}
         </p>
       ) : null}
+      {!apiGenerationEnabled() ? (
+        <p className="rounded-xl bg-yellow-50 p-4 text-sm leading-6">
+          ChatGPT prepares your morning brief at 4:30am and evening debrief at
+          9pm Singapore time. Saved EMDEE entries appear here when you open or
+          refresh this page. API generation is off.
+        </p>
+      ) : null}
       <section className="rounded-2xl border border-zinc-200 p-5">
         <h2 className="text-lg font-semibold">Yesterday’s handoff</h2>
         {yesterday?.exists ? (
@@ -143,7 +151,7 @@ export default async function TodayPage() {
                   kind={kind}
                   brief={brief}
                   connected={connected}
-                  aiReady={!!ai}
+                  aiReady={!!ai && apiGenerationEnabled()}
                 />
               )}
             </section>
@@ -211,9 +219,9 @@ export default async function TodayPage() {
       ) : null}
       <p className="text-xs leading-5 text-zinc-500">
         Showing up to 100 unfinished commitments and 100 completions. Briefs
-        live in EMDEE; operational status lives here. Manual preparation is
-        available now; 8am and 9pm automation comes after the daily flow is
-        verified.
+        live in EMDEE; operational status lives here. Your scheduled ChatGPT
+        tasks save these records to EMDEE. Refresh after a run to see the latest
+        saved changes.
       </p>
     </div>
   );

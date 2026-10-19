@@ -192,71 +192,73 @@ export function BriefEditor({
           ? "What deserves your attention today? Review yesterday’s handoff, decide what matters, and make room for it."
           : "What actually happened? Capture the wins, name the friction, and decide what carries into tomorrow."}
       </p>
-      <details className="rounded-xl border border-zinc-200 p-4">
-        <summary className="cursor-pointer text-sm font-medium">
-          Prepare with AI
-        </summary>
-        <div className="mt-4 space-y-3">
-          <p className="text-xs leading-5 text-zinc-500">
-            Uses your commitments and yesterday’s EMDEE closeout. Email,
-            calendar and book search are not connected. Up to three attempts per
-            brief per day; each call has a 2,000-token output cap. Review before
-            saving.
-          </p>
-          <label className="block text-sm">
-            Anything else to consider?
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              maxLength={8000}
-              rows={3}
-              className={`${field} mt-1`}
-              placeholder={
-                isMorning
-                  ? "Available time, energy, fixed commitments…"
-                  : "What happened that your task list doesn’t show?"
-              }
-            />
-          </label>
-          {body ? (
-            <label className="flex items-start gap-2 text-xs text-zinc-600">
-              <input
-                type="checkbox"
-                checked={confirmReplace}
-                onChange={(e) => setConfirmReplace(e.target.checked)}
-                className="mt-0.5"
-              />
-              Replace the editor’s current text with a new draft. The saved
-              EMDEE document will stay unchanged until I save.
-            </label>
-          ) : null}
-          <button
-            type="button"
-            disabled={
-              !aiReady || !connected || pending || (!!body && !confirmReplace)
-            }
-            onClick={() =>
-              startTransition(async () => {
-                const result = await prepareDraft({ day, kind, notes });
-                if (result.body) {
-                  setBody(result.body);
-                  setConfirmReplace(false);
-                }
-                setDraftState(result);
-              })
-            }
-            className="rounded-full bg-yellow-300 px-4 py-2 text-sm font-medium text-zinc-950 disabled:opacity-40"
-          >
-            {pending ? "Preparing…" : "Prepare a draft"}
-          </button>
-          {!aiReady || !connected ? (
-            <p className="text-xs text-zinc-500">
-              Connect EMDEE and OpenAI in Connections to enable preparation.
+      {aiReady ? (
+        <details className="rounded-xl border border-zinc-200 p-4">
+          <summary className="cursor-pointer text-sm font-medium">
+            Prepare with AI
+          </summary>
+          <div className="mt-4 space-y-3">
+            <p className="text-xs leading-5 text-zinc-500">
+              Uses your commitments and yesterday’s EMDEE closeout. Email,
+              calendar and book search are not connected. Up to three attempts
+              per brief per day; each call has a 2,000-token output cap. Review
+              before saving.
             </p>
-          ) : null}
-          <Feedback state={draftState} />
-        </div>
-      </details>
+            <label className="block text-sm">
+              Anything else to consider?
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                maxLength={8000}
+                rows={3}
+                className={`${field} mt-1`}
+                placeholder={
+                  isMorning
+                    ? "Available time, energy, fixed commitments…"
+                    : "What happened that your task list doesn’t show?"
+                }
+              />
+            </label>
+            {body ? (
+              <label className="flex items-start gap-2 text-xs text-zinc-600">
+                <input
+                  type="checkbox"
+                  checked={confirmReplace}
+                  onChange={(e) => setConfirmReplace(e.target.checked)}
+                  className="mt-0.5"
+                />
+                Replace the editor’s current text with a new draft. The saved
+                EMDEE document will stay unchanged until I save.
+              </label>
+            ) : null}
+            <button
+              type="button"
+              disabled={
+                !aiReady || !connected || pending || (!!body && !confirmReplace)
+              }
+              onClick={() =>
+                startTransition(async () => {
+                  const result = await prepareDraft({ day, kind, notes });
+                  if (result.body) {
+                    setBody(result.body);
+                    setConfirmReplace(false);
+                  }
+                  setDraftState(result);
+                })
+              }
+              className="rounded-full bg-yellow-300 px-4 py-2 text-sm font-medium text-zinc-950 disabled:opacity-40"
+            >
+              {pending ? "Preparing…" : "Prepare a draft"}
+            </button>
+            {!aiReady || !connected ? (
+              <p className="text-xs text-zinc-500">
+                Connect EMDEE and OpenAI in Connections to enable preparation.
+              </p>
+            ) : null}
+            <Feedback state={draftState} />
+          </div>
+        </details>
+      ) : null}
       <label className="block text-sm font-medium" htmlFor={`${kind}-body`}>
         {isMorning ? "Morning brief" : "Evening closeout"}
       </label>

@@ -33,14 +33,23 @@ function load(
     require: (name: string) =>
       name === "server-only"
         ? {}
-        : name === "./paths"
-          ? paths
-          : name === "./emdee-client" && !(name in mocks)
-            ? load("lib/daily/emdee-client.ts", mocks, extra)
-            : name in mocks
-              ? mocks[name]
-              : requireNode(name),
-    process: { env: { DAILY_INTEGRATION_KEY: "a".repeat(64) } },
+        : name === "@/lib/daily/settings"
+          ? load("lib/daily/settings.ts", mocks, extra)
+          : name === "./settings"
+            ? load("lib/daily/settings.ts", mocks, extra)
+            : name === "./paths"
+              ? paths
+              : name === "./emdee-client" && !(name in mocks)
+                ? load("lib/daily/emdee-client.ts", mocks, extra)
+                : name in mocks
+                  ? mocks[name]
+                  : requireNode(name),
+    process: {
+      env: {
+        DAILY_INTEGRATION_KEY: "a".repeat(64),
+        DAILY_API_GENERATION_ENABLED: "true",
+      },
+    },
     Buffer,
     URL,
     URLSearchParams,
@@ -690,4 +699,121 @@ test("weekly cron fails closed without secret, does not execute on HEAD, and onl
     200,
   );
   assert.equal(calls, 1);
+});
+
+test("personal API generation is off by default and never calls the provider", async () => {
+  let calls = 0;
+  const api = load(
+    "lib/daily/agent.ts",
+    { "./model": model },
+    {
+      process: { env: {} },
+      fetch: async () => {
+        calls++;
+        throw Error("unexpected inference");
+      },
+    },
+  );
+  await assert.rejects(
+    async () =>
+      api.generateWeeklyDraft(
+        { key: "test", model: "chosen-model" },
+        {
+          week: "2026-W42",
+          start: "2026-10-12",
+          end: "2026-10-18",
+          sources: [],
+          missing: [],
+        },
+      ),
+    /API generation is disabled/,
+  );
+  await assert.rejects(
+    async () =>
+      api.generateDailyDraft(
+        { key: "test", model: "chosen-model" },
+        {
+          day: "2026-10-19",
+          kind: "morning",
+          tasks: { active: [], completed: [] },
+          previousCloseout: null,
+          notes: "",
+        },
+      ),
+    /API generation is disabled/,
+  );
+  assert.equal(calls, 0);
+});
+test("OAuth does not store a wrong-account credential when the actual Daily hub cannot be read", async () => {
+  const saved: string[] = [];
+  const pending = {
+    state: "valid-state",
+    verifier: "test",
+    clientId: "test-client",
+    callback: "https://admin.whatelz.ai/api/admin/daily/emdee/callback",
+    created: Date.now(),
+    parentPath: paths.DAILY_PARENT,
+  };
+  const api = load(
+    "lib/daily/oauth.ts",
+    {
+      "next/headers": {},
+      "./connections": {
+        readConnection: async () => pending,
+        storeConnection: async (_owner: string, provider: string) => {
+          saved.push(provider);
+        },
+      },
+      "./emdee-client": {
+        emdeeCall: async () => {
+          throw Error("no such doc");
+        },
+      },
+    },
+    {
+      fetch: async () =>
+        Response.json({ access_token: "test-token", expires_in: 3600 }),
+    },
+  );
+  await assert.rejects(
+    async () =>
+      api.finishEmdeeConnection(
+        OWNER,
+        new URL(pending.callback + "?state=valid-state&code=test-code"),
+      ),
+    /no such doc/,
+  );
+  assert.equal(saved.length, 0);
+});
+test("a disabled weekly job checks the owner but reserves no run and accesses no provider", async () => {
+  const api = load(
+    "lib/daily/weekly.ts",
+    {
+      "@/lib/supabase-server": {
+        supabaseAdmin: {
+          from: (table: string) => {
+            assert.equal(table, "users");
+            return {
+              select: () => ({
+                eq: () => ({
+                  maybeSingle: async () => ({
+                    data: { id: OWNER, role: "admin" },
+                    error: null,
+                  }),
+                }),
+              }),
+            };
+          },
+        },
+      },
+      "@/lib/admin-policy": { isOwnerUser: () => true },
+      "./connections": {},
+      "./emdee-client": {},
+      "./model": model,
+      "./weekly-model": weeklyModel,
+      "./agent": {},
+    },
+    { process: { env: {} } },
+  );
+  assert.equal(await api.runWeekly(OWNER), "disabled");
 });

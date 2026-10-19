@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { dailyOwner } from "@/lib/daily/server";
 import { emdeeConnection, openaiConnection } from "@/lib/daily/connections";
 import { DAILY_PARENT } from "@/lib/daily/paths";
+import { apiGenerationEnabled } from "@/lib/daily/settings";
 import { adminUrl } from "@/lib/admin-url";
 import { EmdeeConnectForm, OpenAIConnectForm, DisconnectForm } from "../Forms";
 export const metadata: Metadata = {
@@ -55,7 +56,8 @@ export default async function DailyConnections({
           className="rounded-xl bg-red-50 p-4 text-sm text-red-800"
         >
           EMDEE authorization was cancelled, expired or could not be completed.
-          Start the connection again.
+          Check that you signed into the EMDEE account containing Personal →
+          Daily, then start the connection again.
         </p>
       ) : null}
       <section className="space-y-4 rounded-2xl border border-zinc-200 p-6">
@@ -98,6 +100,13 @@ export default async function DailyConnections({
             {ai ? `Connected · ${ai.model}` : "Not connected"}
           </span>
         </div>
+        {!apiGenerationEnabled() ? (
+          <p className="rounded-xl bg-yellow-50 p-3 text-sm">
+            API generation is disabled for your personal workspace. Your ChatGPT
+            subscription prepares the briefs; this connection is retained for
+            future API-backed use.
+          </p>
+        ) : null}
         <OpenAIConnectForm model={ai?.model} />
         {ai ? <DisconnectForm provider="openai" /> : null}
       </section>

@@ -7,6 +7,7 @@ import { previousWeek } from "@/lib/daily/weekly-model";
 import { DAILY_PARENT } from "@/lib/daily/paths";
 import { adminUrl } from "@/lib/admin-url";
 import { WeeklyForm } from "./WeeklyForm";
+import { apiGenerationEnabled } from "@/lib/daily/settings";
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 export const metadata = {
@@ -21,7 +22,8 @@ export default async function WeeklyPage() {
     emdeeConnection(owner),
     openaiConnection(owner),
   ]);
-  const ready = emdee?.parentPath === DAILY_PARENT && !!ai;
+  const apiEnabled = apiGenerationEnabled();
+  const ready = apiEnabled && emdee?.parentPath === DAILY_PARENT && !!ai;
   let body = "",
     readError = false;
   if (emdee?.parentPath === DAILY_PARENT && run?.status === "completed") {
@@ -50,9 +52,19 @@ export default async function WeeklyPage() {
         </p>
       </header>
       <p className="text-sm leading-6">
-        Every Monday at 8am Singapore time, the previous Monday–Sunday entries
-        are condensed into one weekly reflection under Personal → Daily → Weeks.
-        Daily originals stay in Morning and Evening.
+        {apiEnabled ? (
+          <>
+            Every Monday at 8am Singapore time, the previous Monday–Sunday
+            entries are condensed into one weekly reflection under Personal →
+            Daily → Weeks. Daily originals stay in Morning and Evening.
+          </>
+        ) : (
+          <>
+            Weekly API generation is paused while your personal workflow uses
+            ChatGPT. Daily originals stay in Morning and Evening; existing
+            weekly reflections remain readable.
+          </>
+        )}
       </p>
       <p role="status" className="text-sm">
         Last week: {run?.status ?? "not prepared yet"}
@@ -65,7 +77,7 @@ export default async function WeeklyPage() {
           safe. Check Connections before retrying.
         </p>
       ) : null}
-      {!ready ? (
+      {apiEnabled && !ready ? (
         <p className="text-sm">
           Connect EMDEE to Personal Daily and OpenAI in{" "}
           <Link
@@ -77,14 +89,16 @@ export default async function WeeklyPage() {
           to enable weekly preparation.
         </p>
       ) : null}
-      <WeeklyForm
-        disabled={
-          !ready ||
-          run?.status === "completed" ||
-          run?.status === "empty" ||
-          (run?.attempts ?? 0) >= 3
-        }
-      />
+      {apiEnabled ? (
+        <WeeklyForm
+          disabled={
+            !ready ||
+            run?.status === "completed" ||
+            run?.status === "empty" ||
+            (run?.attempts ?? 0) >= 3
+          }
+        />
+      ) : null}
       {readError ? (
         <p role="alert">
           The saved summary could not be read. Check EMDEE before retrying.
@@ -97,8 +111,9 @@ export default async function WeeklyPage() {
       ) : null}
       <p className="text-xs text-zinc-500">
         Expired authorization or unavailable sources stop the run. Renew EMDEE
-        access in Connections when needed. Daily 8am/9pm preparation schedules
-        remain disabled.
+        access in Connections when needed. Your personal ChatGPT tasks run at
+        4:30am and 9pm Singapore time. API preparation remains off unless
+        explicitly enabled.
       </p>
     </div>
   );

@@ -7,6 +7,7 @@ import { briefPath } from "./model";
 import { branchParent, DAILY_PARENT, DAILY_TITLE } from "./paths";
 import { previousWeek, type WeeklySource } from "./weekly-model";
 import { generateWeeklyDraft } from "./agent";
+import { apiGenerationEnabled } from "./settings";
 
 type Run = {
   status: "running" | "completed" | "failed" | "empty";
@@ -43,6 +44,7 @@ export async function runWeekly(
     .maybeSingle();
   if (userError || !isOwnerUser(user))
     throw new Error("Owner access required.");
+  if (!apiGenerationEnabled()) return "disabled";
   const week = previousWeek(now);
   const prior = await weeklyStatus(owner, now);
   if (prior?.status === "completed" || prior?.status === "empty")

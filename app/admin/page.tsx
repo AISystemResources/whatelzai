@@ -1,10 +1,11 @@
+import { isOwnerUser } from "@/lib/admin-policy";
 import { adminUrl } from "@/lib/admin-url";
 import type { Metadata } from "next";
 import { auth } from "@/lib/auth/server";
 import { SignOutButton } from "@/components/auth/AuthControls";
 import { redirect } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase-server";
-import { ensureUserRow, isAdminRole } from "@/lib/users";
+import { ensureUserRow } from "@/lib/users";
 import { BriefingCards } from "@/components/admin/BriefingCards";
 
 export const metadata: Metadata = { title: "Dashboard — whatelz.ai" };
@@ -16,7 +17,7 @@ export default async function DashboardPage() {
   const appUser = await ensureUserRow();
   const email = appUser?.email ?? "";
 
-  if (!isAdminRole(appUser?.role)) {
+  if (!isOwnerUser(appUser)) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
         <p className="font-mono text-xs tracking-widest text-zinc-400 uppercase">

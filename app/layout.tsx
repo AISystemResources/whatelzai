@@ -7,7 +7,8 @@ import "./editorial.css";
 import "./themes.css";
 import { ShellProvider } from "@/components/shell/ShellProvider";
 import { getSiteIdentity } from "@/lib/site-identity";
-import { ensureUserRow, isAdminRole } from "@/lib/users";
+import { ensureUserRow } from "@/lib/users";
+import { isOwnerUser } from "@/lib/admin-policy";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -112,12 +113,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-// Upserts the current Clerk user into the users table on every request and returns
-// whether they're an admin. New sign-ins land as 'unauthorized' by default.
+// Syncs the verified Supabase account and exposes admin navigation only to
+// the configured owner. New sign-ins never acquire administrative access.
 async function getIsAdmin(): Promise<boolean> {
   try {
     const user = await ensureUserRow();
-    return isAdminRole(user?.role);
+    return isOwnerUser(user);
   } catch {
     return false;
   }

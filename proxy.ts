@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import type { NextRequest } from "next/server";
 import { authCookieOptions } from "@/lib/auth/redirect";
 import { NextResponse } from "next/server";
-import { isAdminRole } from "@/lib/users";
+import { isOwnerUser, isAdminRequest } from "@/lib/admin-policy";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { domainRoute } from "@/lib/domain-routing";
 
@@ -50,36 +50,41 @@ export default async function proxy(req: NextRequest) {
     if (
       user ||
       route.protect ||
+      req.nextUrl.pathname.startsWith("/api/admin") ||
       req.nextUrl.pathname.startsWith("/auth/") ||
       req.nextUrl.pathname.startsWith("/sign-")
     )
       response.headers.set("Cache-Control", "private, no-store");
     return response;
   }
-  if (route.protect) {
+  const adminRequest = isAdminRequest(route.surface, req.nextUrl.pathname);
+  const protectedAdminApi =
+    req.nextUrl.pathname === "/api/admin" ||
+    req.nextUrl.pathname.startsWith("/api/admin/");
+  if (route.protect || protectedAdminApi) {
     const userId = user?.email_confirmed_at ? user.id : null;
     if (!userId) {
+      if (protectedAdminApi)
+        return finish(
+          NextResponse.json({ error: "not_signed_in" }, { status: 401 }),
+        );
       const visibleUrl = new URL(req.url);
       visibleUrl.host = req.headers.get("host") ?? req.nextUrl.host;
       const signIn = new URL("/sign-in", visibleUrl);
       signIn.searchParams.set("redirect_url", visibleUrl.toString());
       return finish(NextResponse.redirect(signIn));
     }
-    // Server Actions run independently of the layout's role check.
-    const adminRequest =
-      route.surface === "admin" ||
-      req.nextUrl.pathname === "/admin" ||
-      req.nextUrl.pathname.startsWith("/admin/");
-    if (adminRequest && req.method !== "GET" && req.method !== "HEAD") {
+    // Gate reads and writes before private pages or actions can execute.
+    if (adminRequest) {
       const { data, error } = await supabaseAdmin
         .from("users")
-        .select("role")
+        .select("id, role")
         .eq("supabase_auth_user_id", userId)
         .maybeSingle();
-      if (error || !isAdminRole(data?.role))
+      if (error || !isOwnerUser(data))
         return finish(
           NextResponse.json(
-            { error: "Admin access required" },
+            { error: "Owner access required" },
             { status: 403 },
           ),
         );

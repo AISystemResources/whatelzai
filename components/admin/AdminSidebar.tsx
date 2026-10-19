@@ -9,7 +9,8 @@ import { SignOutButton } from "@/components/auth/AuthControls";
 type NavItem = { href: string; label: string; exact?: boolean };
 
 const NAV: readonly NavItem[] = [
-  { href: "/admin/command-center", label: "Overview" },
+  { href: "/admin", label: "Overview", exact: true },
+  { href: "/admin/today", label: "Today" },
   { href: "/admin/ai-business", label: "AI Business" },
   { href: "/admin/network-marketing", label: "Network Marketing" },
   { href: "/admin/day-job", label: "Day Job" },
@@ -18,7 +19,7 @@ const NAV: readonly NavItem[] = [
 
 // Existing tools stay at their original URLs, grouped under their venture.
 const SECONDARY_NAV: readonly NavItem[] = [
-  { href: "/admin", label: "AI Business", exact: true },
+  { href: "/admin/site-dashboard", label: "AI Business" },
   { href: "/admin/services", label: "AI Business" },
   { href: "/admin/testimonials", label: "AI Business" },
   { href: "/admin/blog", label: "AI Business" },

@@ -5,7 +5,7 @@ export const metadata: Metadata = { title: "AI Business — Admin" };
 
 const links = [
   {
-    href: "/admin",
+    href: "/admin/site-dashboard",
     label: "Website dashboard",
     description: "Manage website sections and review content activity.",
   },

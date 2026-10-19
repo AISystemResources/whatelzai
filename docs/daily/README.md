@@ -33,12 +33,14 @@ is copied into deployment configuration.
 
 The requested OAuth scopes permit document reads and writes only to the chosen
 parent document and briefing folder. EMDEE's own consent/agent scope checks remain
-in charge. Default parent is `edmund/01-personal/08-DAILY.md`, with separate
-`08-daily/01-MORNING.md`, `02-EVENING.md` and `03-WEEKS.md` hubs.
+in charge. Default parent is `edmund/01-personal/01-DAILY.md`, with separate
+`01-daily/01-MORNING.md`, `02-EVENING.md` and `03-WEEKS.md` hubs.
 Briefs are date-named children of the matching Morning/Evening hub. Existing
 project-folder credentials remain intact until reauthorization, but cannot save
 new briefs. Reconnect to consent to writes within Personal Daily; no write access
-to the rest of Personal is requested. No saved daily entries existed in the old
+to the rest of Personal is requested. Personal branches now run Daily, Books, Role Models, Philosophy, Dream, Diary,
+Discipline and Brain (01–08), following Edmund’s explicit ordering.
+No saved daily entries existed in the old
 project folder at migration inventory (2026-10-19). The old hub is retained as a
 historical pointer; no narrative was deleted. Parent updates and document edits use strict
 observed hashes. New documents are linked atomically with `create_child`.

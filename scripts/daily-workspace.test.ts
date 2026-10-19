@@ -374,11 +374,11 @@ test("atomic slot reservations cap AI preparation at three attempts, including p
 test("personal briefs use distinct Morning/Evening branches while legacy connections retain their paths", () => {
   assert.equal(
     model.briefPath(paths.DAILY_PARENT, "2026-10-19", "morning"),
-    "edmund/01-personal/08-daily/01-morning/2026-10-19-MORNING.md",
+    "edmund/01-personal/01-daily/01-morning/2026-10-19-MORNING.md",
   );
   assert.equal(
     model.briefPath(paths.DAILY_PARENT, "2026-10-19", "evening"),
-    "edmund/01-personal/08-daily/02-evening/2026-10-19-EVENING.md",
+    "edmund/01-personal/01-daily/02-evening/2026-10-19-EVENING.md",
   );
   assert.equal(
     model.briefPath(paths.LEGACY_DAILY_PARENT, "2026-10-19", "morning"),

@@ -25,12 +25,14 @@ export default async function WeeklyPage() {
   const apiEnabled = apiGenerationEnabled();
   const ready = apiEnabled && emdee?.parentPath === DAILY_PARENT && !!ai;
   let body = "",
+    saved = false,
     readError = false;
-  if (emdee?.parentPath === DAILY_PARENT && run?.status === "completed") {
+  if (emdee?.parentPath === DAILY_PARENT) {
     try {
       const doc = await readEmdee(emdee, week.path);
       body = doc?.content?.split(/^## Notes\s*$/m)[1]?.trim() ?? "";
-      if (!doc) readError = true;
+      saved = !!doc;
+      if (!doc && run?.status === "completed") readError = true;
     } catch {
       readError = true;
     }
@@ -60,18 +62,27 @@ export default async function WeeklyPage() {
           </>
         ) : (
           <>
-            Weekly API generation is paused while your personal workflow uses
-            ChatGPT. Daily originals stay in Morning and Evening; existing
-            weekly reflections remain readable.
+            ChatGPT prepares your weekly reflection every Monday at 3am
+            Singapore time, covering the previous Monday–Sunday. Daily originals
+            stay in Morning and Evening. Open or refresh this page after a run
+            to read the saved EMDEE summary. API generation is off.
           </>
         )}
       </p>
       <p role="status" className="text-sm">
-        Last week: {run?.status ?? "not prepared yet"}
-        {run ? ` · ${run.attempts}/3 attempts` : ""}
-        {run?.source_count != null ? ` · ${run.source_count}/14 entries` : ""}.
+        Last week:{" "}
+        {saved
+          ? "saved in EMDEE"
+          : apiEnabled
+            ? (run?.status ?? "not prepared yet")
+            : "not prepared yet"}
+        {apiEnabled && run ? ` · ${run.attempts}/3 API attempts` : ""}
+        {apiEnabled && run?.source_count != null
+          ? ` · ${run.source_count}/14 entries`
+          : ""}
+        .
       </p>
-      {run?.status === "failed" ? (
+      {apiEnabled && run?.status === "failed" && !saved ? (
         <p role="alert" className="rounded-xl bg-amber-50 p-4 text-sm">
           The run needs attention at {run.error_code}. Your original entries are
           safe. Check Connections before retrying.

@@ -359,3 +359,17 @@ OAuth setup must verify the selected EMDEE parent with the new credential before
 storing it; a valid token for the wrong account must not count as a successful
 connection. Never copy a personal CLI/chat token into application configuration.
 See docs/daily/README.md. — codex, 2026-10-19
+
+
+## ChatGPT weekly reflection (SPR-128)
+
+The personal cloud task Weekly - EMDEE Reflection runs Mondays at 03:00
+Asia/Singapore (first natural run 2026-10-26), superseding the previous paused
+weekly plan. It reads the prior complete Monday–Sunday, saves one combined
+WEEK-YYYY-Www child under EMDEE Daily/Weeks, verifies readback and retains
+originals. Coverage and missing entries remain explicit; unavailable sources fail
+closed and unknown outcomes stay unknown. API generation remains off.
+The weekly page discovers the canonical EMDEE document independently of SQL
+API-run status so externally written summaries display correctly. Existing API
+metadata remains separate; the old daily 03:00 Distill is unchanged.
+See docs/daily/README.md. — codex, 2026-10-19

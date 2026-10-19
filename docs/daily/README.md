@@ -109,8 +109,16 @@ No private notes, credentials or actual customer data belong in test fixtures.
 
 **Paused in personal subscription-first mode.** The route returns `disabled` after
 owner verification, before reserving attempts or reading provider credentials.
-No ChatGPT weekly replacement has been configured. The behavior below applies
-only when API generation is explicitly enabled.
+The behavior below applies only when API generation is explicitly enabled.
+
+The independent ChatGPT task **Weekly - EMDEE Reflection** runs every Monday at
+**03:00 Asia/Singapore**, starting 2026-10-26. It reads the previous complete
+Monday–Sunday Morning/Evening records, saves one combined summary under Weeks and
+verifies readback. Missing coverage is explicit; originals stay intact. The
+weekly page reads the canonical EMDEE path directly, including summaries created
+outside Whatelzai, without requiring an API-run SQL record. An unavailable source
+is a failure rather than an empty week; repeated runs preserve existing summaries.
+The existing daily 03:00 EMDEE Distill is unchanged.
 
 Every Monday at **08:00 Asia/Singapore**, Vercel invokes
 `/api/cron/daily-weekly` on the public deployment origin (`0 0 * * 1`, UTC).

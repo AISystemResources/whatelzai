@@ -1,5 +1,6 @@
+import { isOwnerUser } from "@/lib/admin-policy";
 import "server-only";
-import { ensureUserRow, isAdminRole } from "@/lib/users";
+import { ensureUserRow } from "@/lib/users";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { expandMonth, type CalendarRecord } from "./ical";
 import {
@@ -20,7 +21,7 @@ export async function loadCommunityCalendar(month: string, preview?: string) {
   const persona: Persona = isPersona(membership?.persona)
     ? membership.persona
     : "Guest";
-  const canManage = isAdminRole(user.role);
+  const canManage = isOwnerUser(user);
   const viewingAs = calendarView(persona, canManage, preview);
   const access = { persona, viewingAs, canManage };
   const { data: snapshot, error } = await supabaseAdmin

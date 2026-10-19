@@ -1,5 +1,6 @@
+import { isOwnerUser } from "@/lib/admin-policy";
 import { notFound } from "next/navigation";
-import { ensureUserRow, isAdminRole } from "@/lib/users";
+import { ensureUserRow } from "@/lib/users";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 
 export default async function AdminLayout({
@@ -8,7 +9,7 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const user = await ensureUserRow();
-  if (!user || !isAdminRole(user.role)) notFound();
+  if (!user || !isOwnerUser(user)) notFound();
 
   return (
     <>

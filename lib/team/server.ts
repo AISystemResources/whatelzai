@@ -1,6 +1,7 @@
+import { isOwnerUser } from "@/lib/admin-policy";
 import "server-only";
 import { supabaseAdmin } from "@/lib/supabase-server";
-import { ensureUserRow, isAdminRole } from "@/lib/users";
+import { ensureUserRow } from "@/lib/users";
 import { validatePeople, visiblePeople, type TeamPerson } from "./model";
 
 export type Team = {
@@ -28,7 +29,7 @@ export async function loadTeamView(
     .maybeSingle();
   if (error) throw new Error("Team data is unavailable");
   if (!team) return null;
-  const admin = isAdminRole(user.role);
+  const admin = isOwnerUser(user);
   const { data: link, error: linkError } = await supabaseAdmin
     .from("business_team_accounts")
     .select("person_id,access_role")

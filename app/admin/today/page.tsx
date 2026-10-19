@@ -4,6 +4,7 @@ import Link from "next/link";
 import { dailyOwner, loadDailyTasks } from "@/lib/daily/server";
 import { emdeeConnection, openaiConnection } from "@/lib/daily/connections";
 import { loadBrief } from "@/lib/daily/emdee";
+import { DAILY_PARENT } from "@/lib/daily/paths";
 import { singaporeDay, previousDay, type Brief } from "@/lib/daily/model";
 import { adminUrl } from "@/lib/admin-url";
 import { BriefEditor, NewTask, TaskRow } from "./Forms";
@@ -20,7 +21,7 @@ export default async function TodayPage() {
     emdeeConnection(owner),
     openaiConnection(owner),
   ]);
-  const connected = !!emdee?.parentPath;
+  const connected = emdee?.parentPath === DAILY_PARENT;
   let morning: Brief | null = null,
     evening: Brief | null = null,
     yesterday: Brief | null = null;
@@ -78,11 +79,17 @@ export default async function TodayPage() {
           Connections · {connected ? "EMDEE connected" : "Connect EMDEE"}
         </Link>
       </div>
+      <Link
+        href={adminUrl("/admin/today/weekly")}
+        className="inline-block text-sm underline underline-offset-4"
+      >
+        Weekly reflection →
+      </Link>
       {!connected ? (
         <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6">
-          Your commitments are ready to use. Connect EMDEE to save your briefs
-          in your brain, and OpenAI when you want help preparing them. No daily
-          schedules are enabled.
+          Your commitments are ready to use. Connect or reconnect EMDEE to
+          Personal → Daily to save your briefs in your brain, and OpenAI when
+          you want help preparing them. No daily schedules are enabled.
         </p>
       ) : null}
       {sourceError ? (

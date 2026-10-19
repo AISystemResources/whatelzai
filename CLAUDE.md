@@ -324,3 +324,16 @@ Product metrics are independent authenticated connections into this personal com
 ## Daily workspace and admin navigation (SPR-124)
 
 Admin `/` is Overview. `/command-center` redirects home; the former root website dashboard is `/site-dashboard` under AI Business. `Today` is `/today` with owner-only morning/evening editors, explicit operational commitments and connections. Canonical Markdown stays in EMDEE; SQL holds operational records and encrypted connection credentials only. Use the shared sole-owner policy, never a second productivity-only owner setting. Read docs/daily/README.md for OAuth, encryption, task lifecycle, source boundaries and run limits. Manual workflow only; no 8am/9pm schedules are enabled and existing ChatGPT schedules are unchanged. — codex, 2026-10-19
+
+## Personal Daily and weekly reflection (SPR-126)
+
+Canonical briefs live in EMDEE Personal `08-DAILY`, with `01-MORNING`, `02-EVENING`
+and `03-WEEKS` children. Reauthorize the folder in Connections; old project-scoped
+tokens cannot save new briefs. Vercel runs one combined prior Monday–Sunday
+reflection every Monday at 08:00 Singapore. Originals remain intact; summaries
+include source links/hashes and missing coverage. `/today/weekly` shows status and
+bounded manual retry. The cron endpoint requires CRON_SECRET, production and the
+configured owner's stored role; admin session policy remains intact. SQL stores
+only execution metadata, never Markdown. See docs/daily/README.md. This explicitly
+requested schedule supersedes the old blanket prohibition on in-repo jobs; daily
+08:00/21:00 generation is still disabled. — codex, 2026-10-19

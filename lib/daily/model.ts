@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { branchParent, DAILY_PARENT } from "./paths";
 
 export const lanes = ["day-job", "ai-business", "network-marketing"] as const;
 export const laneLabels = {
@@ -69,5 +70,6 @@ export function briefPath(
 ): string {
   if (!z.iso.date().safeParse(day).success)
     throw new Error("Invalid brief date.");
-  return `${parent.slice(0, -3).toLowerCase()}/${day}-${kind.toUpperCase()}.md`;
+  const target = parent === DAILY_PARENT ? branchParent(parent, kind) : parent;
+  return `${target.slice(0, -3).toLowerCase()}/${day}-${kind.toUpperCase()}.md`;
 }

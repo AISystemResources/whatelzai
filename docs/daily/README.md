@@ -33,8 +33,14 @@ is copied into deployment configuration.
 
 The requested OAuth scopes permit document reads and writes only to the chosen
 parent document and briefing folder. EMDEE's own consent/agent scope checks remain
-in charge. Default parent is the dedicated `DAILY-BRIEFINGS.md` project hub;
-other parents must already exist. Parent updates and document edits use strict
+in charge. Default parent is `edmund/01-personal/08-DAILY.md`, with separate
+`08-daily/01-MORNING.md`, `02-EVENING.md` and `03-WEEKS.md` hubs.
+Briefs are date-named children of the matching Morning/Evening hub. Existing
+project-folder credentials remain intact until reauthorization, but cannot save
+new briefs. Reconnect to consent to writes within Personal Daily; no write access
+to the rest of Personal is requested. No saved daily entries existed in the old
+project folder at migration inventory (2026-10-19). The old hub is retained as a
+historical pointer; no narrative was deleted. Parent updates and document edits use strict
 observed hashes. New documents are linked atomically with `create_child`.
 
 Configure your own OpenAI project key and chosen model ID in the owner-only UI.
@@ -78,3 +84,35 @@ credential encryption/tampering, EMDEE optimistic writes/readback, unavailable
 sources, owner denial, OAuth PKCE/scopes/state, provider request bounds and failed
 attempt limits. Remote table checks confirm service access and anonymous denial.
 No private notes, credentials or actual customer data belong in test fixtures.
+
+## Weekly condensation (SPR-126)
+
+Every Monday at **08:00 Asia/Singapore**, Vercel invokes
+`/api/cron/daily-weekly` on the public deployment origin (`0 0 * * 1`, UTC).
+The endpoint independently checks `CRON_SECRET`, production environment and the
+configured owner's current stored role. It does not bypass admin session guards.
+Provision CRON_SECRET in production; never expose it to clients. HEAD does not run
+work. Vercel only activates configured cron jobs on production deployments.
+
+One combined `WEEK-YYYY-Www.md` is created beneath `03-weeks/`, using the previous
+complete Singapore Monday–Sunday (at most 14 entries). Morning and Evening
+originals remain intact, with source links/hashes and exact missing coverage
+appended to the synthesis. There are no deletes, reparenting or task mutations.
+No-source weeks skip inference and record `empty`; unavailable sources fail closed.
+Sources are read again before publication to detect concurrent changes. Summaries
+are snapshots; later edits/backfills do not silently rewrite completed summaries.
+
+`daily_weekly_runs` stores only owner/week/status, up to three attempts including
+failures, source count and document reference. Its owner/week primary key and
+conditional revision updates prevent concurrent generation. A fresh running job
+cannot be reclaimed; an interrupted job needs a manual retry after ten minutes.
+Automatic cron invocations do not retry failed jobs or spend again. The owner can
+inspect/retry at `/today/weekly`. A successful EMDEE write is recovered after a
+crash without another model call. A run killed before persisting its output may
+require another bounded generation attempt. The provider receives at most 60,000
+input characters, a 2,000-output-token cap and `store:false`; oversized weeks fail
+rather than silently dropping records. Model/key stay on the existing connection.
+
+Renew expired EMDEE authorization in Connections. Without it the scheduled run
+fails visibly; the 30-day authorization is not an indefinite unattended grant.
+Daily morning/evening generation remains manual. Existing ChatGPT jobs are untouched.

@@ -327,7 +327,7 @@ Admin `/` is Overview. `/command-center` redirects home; the former root website
 
 ## Personal Daily and weekly reflection (SPR-126)
 
-Canonical briefs live in EMDEE Personal `08-DAILY`, with `01-MORNING`, `02-EVENING`
+Canonical briefs live in EMDEE Personal `01-DAILY` (the first Personal branch), with `01-MORNING`, `02-EVENING`
 and `03-WEEKS` children. Reauthorize the folder in Connections; old project-scoped
 tokens cannot save new briefs. Vercel runs one combined prior Monday–Sunday
 reflection every Monday at 08:00 Singapore. Originals remain intact; summaries

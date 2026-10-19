@@ -2,8 +2,7 @@ import "server-only";
 import { createHash, randomBytes } from "node:crypto";
 import { headers } from "next/headers";
 import { readConnection, storeConnection } from "./connections";
-export const DAILY_PARENT =
-  "edmund/03-projects/02-whatelz_ai/DAILY-BRIEFINGS.md";
+export { DAILY_PARENT } from "./paths";
 export const EMDEE_ORIGIN = "https://emdee.tech";
 type Pending = {
   state: string;

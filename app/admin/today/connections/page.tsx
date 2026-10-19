@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { dailyOwner } from "@/lib/daily/server";
 import { emdeeConnection, openaiConnection } from "@/lib/daily/connections";
-import { DAILY_PARENT } from "@/lib/daily/oauth";
+import { DAILY_PARENT } from "@/lib/daily/paths";
 import { adminUrl } from "@/lib/admin-url";
 import { EmdeeConnectForm, OpenAIConnectForm, DisconnectForm } from "../Forms";
 export const metadata: Metadata = {
@@ -78,7 +78,17 @@ export default async function DailyConnections({
             . Reconnect when needed.
           </p>
         ) : null}
-        <EmdeeConnectForm parentPath={emdee?.parentPath ?? DAILY_PARENT} />
+        {emdee?.parentPath !== DAILY_PARENT ? (
+          <p className="rounded-xl bg-yellow-50 p-3 text-sm">
+            Reconnect to use Personal → Daily. Your existing connection remains
+            active until you approve the new folder.
+          </p>
+        ) : (
+          <p className="text-sm text-zinc-600">
+            Personal → Daily → Morning / Evening / Weeks
+          </p>
+        )}
+        <EmdeeConnectForm parentPath={DAILY_PARENT} />
         {emdee ? <DisconnectForm provider="emdee" /> : null}
       </section>
       <section className="space-y-4 rounded-2xl border border-zinc-200 p-6">

@@ -70,6 +70,11 @@ test("member route rejects disabled, cross-origin and inactive calls before prov
         },
         "@/lib/member-ai/model": model,
         "@/lib/member-ai/agent": {},
+        "@/lib/fcos/resources": {
+          readFcosResource: async () => {
+            throw Error("must not read resources before authorization");
+          },
+        },
         "@/lib/member-ai/emdee": {},
         "@/lib/daily/model": {},
       },

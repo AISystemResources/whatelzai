@@ -1,0 +1,111 @@
+import "server-only";
+import { sourceQuerySchema } from "./model";
+import { fcosOwner } from "./server";
+import { supabaseAdmin } from "@/lib/supabase-server";
+import { loadCatalogue } from "@/lib/catalogue/server";
+import { loadCommunityCalendar } from "@/lib/community-calendar/server";
+import { todayUtc8 } from "@/lib/leads/model";
+import ultra from "@/content/culture/ultra.json";
+export async function readFcosResource(input: unknown) {
+  const { source, query } = sourceQuerySchema.parse(input);
+  const owner = await fcosOwner();
+  const match = (value: string) =>
+    value.toLocaleLowerCase().includes(query.toLocaleLowerCase());
+  const filter = `%${query.replace(/[\\%_]/g, "\\$&")}%`;
+  if (source === "leads") {
+    const { data, error } = await supabaseAdmin
+      .from("member_leads")
+      .select(
+        "id,name,region,membership,stage,goal,story,interests,concerns,notes,next_action,follow_up_on",
+      )
+      .eq("owner_id", owner)
+      .ilike("name", filter)
+      .order("name")
+      .limit(5);
+    if (error) throw Error("Your leads are unavailable.");
+    return {
+      items: data?.map((lead) => ({
+        ...lead,
+        story: lead.story.slice(0, 400),
+        notes: lead.notes.slice(0, 400),
+        interests: lead.interests.slice(0, 200),
+        concerns: lead.concerns.slice(0, 200),
+        next_action: lead.next_action.slice(0, 300),
+        url: `/leads/${lead.id}`,
+      })),
+      coverage:
+        "At most 5 of your own matching leads. Dates are recorded follow-ups, not confirmed completion.",
+    };
+  }
+  if (source === "briefings") {
+    const { data, error } = await supabaseAdmin
+      .from("member_briefings")
+      .select(
+        "id,title,kind,status,event_name,observations,reflections,next_steps",
+      )
+      .eq("owner_id", owner)
+      .ilike("title", filter)
+      .order("updated_at", { ascending: false })
+      .limit(3);
+    if (error) throw Error("Your notes are unavailable.");
+    return {
+      items: data?.map((note) => ({
+        ...note,
+        observations: note.observations.slice(0, 900),
+        reflections: note.reflections.slice(0, 900),
+        next_steps: note.next_steps.slice(0, 600),
+        url: `/briefings/${note.id}`,
+      })),
+      coverage:
+        "Your private notes only; drafts and reviewed records are distinguished.",
+    };
+  }
+  if (source === "products") {
+    const data = await loadCatalogue();
+    return {
+      items: data.listings
+        .filter((x) => match(x.name) || match(x.sku))
+        .slice(0, 6),
+      sources: data.sources.map(
+        ({ id, market, currency, edition_date, source_url }) => ({
+          id,
+          market,
+          currency,
+          edition_date,
+          source_url,
+        }),
+      ),
+      url: "/catalogue",
+      coverage:
+        "Published catalogue snapshot. No checkout, live stock, medical diagnosis or inferred PV/BV.",
+    };
+  }
+  if (source === "culture") {
+    return {
+      items: ultra.quotes
+        .filter((x) => match(x.text))
+        .slice(0, 6)
+        .map(({ id, text, chapters }) => ({ id, text, chapters })),
+      url: "/culture",
+      attribution:
+        "User-provided Ultra compilation; attribution not independently verified.",
+    };
+  }
+  const calendar = await loadCommunityCalendar(todayUtc8().slice(0, 7));
+  return {
+    items: calendar.events
+      .filter(
+        (x) => new Date(x.start).getTime() >= Date.now() && match(x.title),
+      )
+      .slice(0, 6)
+      .map(({ title, start, end, location }) => ({
+        title,
+        start,
+        end,
+        location,
+      })),
+    url: "/calendar",
+    coverage:
+      "Permitted upcoming events in the current month from an imported snapshot. No RSVP or guaranteed availability.",
+  };
+}

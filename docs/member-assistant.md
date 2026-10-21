@@ -66,3 +66,7 @@ RLS/privilege denial and quota rejection in an isolated Postgres fixture before
 applying the additive migration. Verify mobile layout and a bounded live reply
 before enabling other pilot accounts. Never commit real pilot names, account
 identifiers, email addresses, credentials or private transcripts as fixtures.
+
+On narrow screens the conversation and composer precede the supporting panels;
+a compact allowance link jumps to usage and conversations. Currency balances
+use cents while usage receipts keep micro-dollar precision.

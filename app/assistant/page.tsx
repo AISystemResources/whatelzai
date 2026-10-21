@@ -60,8 +60,17 @@ export default async function AssistantPage({
           </button>
         </form>
       </header>
+      <p className="mb-5 rounded-xl bg-yellow-50 px-4 py-3 text-sm lg:hidden">
+        {money(Math.max(0, allowance - used - held))} remaining this month ·{" "}
+        <a href="#assistant-details" className="underline">
+          Usage & conversations
+        </a>
+      </p>
       <div className="grid min-w-0 gap-6 lg:grid-cols-[230px_minmax(0,1fr)]">
-        <aside className="min-w-0 space-y-5">
+        <aside
+          id="assistant-details"
+          className="order-2 min-w-0 space-y-5 lg:order-1"
+        >
           <section className="rounded-2xl bg-zinc-950 p-5 text-white">
             <h2 className="text-sm font-medium">Your monthly AI allowance</h2>
             <p className="mt-3 text-2xl font-semibold">
@@ -69,7 +78,7 @@ export default async function AssistantPage({
               <span className="text-sm font-normal text-zinc-400">left</span>
             </p>
             <p className="mt-2 text-xs text-zinc-300">
-              {money(used)} used · {money(held)} reserved
+              {money(used, 6)} used · {money(held, 6)} reserved
             </p>
             <p className="mt-2 text-xs text-zinc-400">
               {money(allowance)} monthly. Renews on the 1st, Singapore time.
@@ -138,7 +147,7 @@ export default async function AssistantPage({
             </Link>
           </section>
         </aside>
-        <section className="min-w-0">
+        <section className="order-1 min-w-0 lg:order-2">
           {workspace.selected ? (
             <Chat
               key={workspace.selected}

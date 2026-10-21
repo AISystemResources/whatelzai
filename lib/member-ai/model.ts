@@ -47,10 +47,10 @@ export type ChatMessage = {
   body: string;
   proposals: Proposal[];
 };
-export function money(micro: number) {
+export function money(micro: number, precision = 2) {
   return new Intl.NumberFormat("en", {
     style: "currency",
     currency: "USD",
-    maximumFractionDigits: 5,
+    maximumFractionDigits: precision,
   }).format(micro / 1000000);
 }

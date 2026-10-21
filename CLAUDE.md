@@ -33,7 +33,7 @@ Instructions for any AI coding agent (Claude Code, Cursor, Aider, ...) working o
 - **Auth:** Supabase Auth (Google OAuth, `@supabase/ssr`)
 - **Data:** Supabase (Postgres) — `@supabase/supabase-js`
 - **Jobs:** none. Background/cron work is not supported in-repo — schedule remote agents via claude.ai if needed.
-- **AI runtime:** none. Zero server-side inference — not Anthropic, not Groq, not any Vercel AI SDK provider. All LLM reasoning happens client-side in Claude Chat / Claude Code, hitting the MCP surface at `/api/mcp/whatelz` (or the future CLI). MCP verbs are pure data — read verbs return structured context, write verbs persist a body Claude produced client-side.
+- **AI runtime:** Personal admin uses ChatGPT/Codex and pure-data MCP. Explicitly authorized member API inference runs only on app.whatelz.ai behind MEMBER_AI_ENABLED; see docs/member-assistant.md. Personal API Daily stays off.
 - **PDF:** Puppeteer (`puppeteer-core` + `@sparticuz/chromium-min`) — resume renderer
 - **Email:** Resend
 - **Package manager:** npm (lockfile: `package-lock.json`)
@@ -85,9 +85,9 @@ Full list: `.env.example`. Generate with `openssl rand -hex 32` where the commen
 
 When proposing a new `supabase/migrations/*.sql`, **apply it immediately** in the same session via Supabase Studio or CLI. Do not hand off "user, please apply this." The Supabase MCP in `.mcp.json` is currently **read-only** (no write tool exposed), so application happens via Studio/CLI for now. Re-enable write access by removing `--read-only` from the Supabase MCP config when ready.
 
-### 4. No server-side LLM. Ever.
+### 4. Personal admin uses subscription/MCP; member API is explicitly scoped
 
-- **Zero server inference.** Not Anthropic, not Groq, not OpenAI, not any Vercel AI SDK provider. All LLM reasoning happens client-side in Claude Chat / Claude Code, invoked by Edmund, hitting the MCP at `/api/mcp/whatelz` (or the future CLI) for data.
+- Personal admin reasoning stays in ChatGPT/Codex with pure-data MCP. Edmund explicitly authorized server-side OpenAI member inference on app.whatelz.ai (SPR-129), with US$5/person/month, atomic reservations, owner-managed access and resets. This supersedes the former blanket no-inference rule only for member chat.
 - **MCP verbs are pure data.** Read verbs return raw or lightly-shaped structured context. Write verbs persist a body that arrives fully-formed from the client. If a tool feels like it needs server inference to be useful, split it into a read verb + a write verb and let Claude bridge them client-side.
 - **Do not suggest** `ANTHROPIC_API_KEY`, `GROQ_API_KEY`, `OPENAI_API_KEY`, or any similar env var as a pending action, prerequisite, or blocker.
 
@@ -373,3 +373,12 @@ The weekly page discovers the canonical EMDEE document independently of SQL
 API-run status so externally written summaries display correctly. Existing API
 metadata remains separate; the old daily 03:00 Distill is unchanged.
 See docs/daily/README.md. — codex, 2026-10-19
+
+
+## Member assistant (SPR-129)
+
+See docs/member-assistant.md for stable ownership, verified 1:1 EMDEE OAuth
+linking, mobile chat, private commitment tools and bounded API execution.
+MEMBER_AI_ENABLED is independent of the personal Daily generation flag.
+Admin /users is sole-owner gated; reset grants a fresh allowance without
+erasing history. EMDEE remains a knowledge service with no AI inference.

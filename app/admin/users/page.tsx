@@ -84,9 +84,9 @@ export default async function UsersPage() {
                 </p>
               </details>
               <p className="mt-4 text-sm">
-                <strong>{money(Number(current?.spent_micro ?? 0))}</strong> used
-                · {money(Number(current?.reserved_micro ?? 0))} reserved this
-                allowance
+                <strong>{money(Number(current?.spent_micro ?? 0), 6)}</strong>{" "}
+                used · {money(Number(current?.reserved_micro ?? 0), 6)} reserved
+                this allowance
               </p>
               <p className="mt-1 text-xs text-zinc-500">
                 Cap: US$5 ·{" "}
@@ -112,8 +112,8 @@ export default async function UsersPage() {
                         {new Date(c.started_at).toLocaleString("en-SG", {
                           timeZone: "Asia/Singapore",
                         })}{" "}
-                        · {c.reason} · {money(Number(c.spent_micro))} used /{" "}
-                        {money(Number(c.reserved_micro))} reserved
+                        · {c.reason} · {money(Number(c.spent_micro), 6)} used /{" "}
+                        {money(Number(c.reserved_micro), 6)} reserved
                       </li>
                     ))}
                   </ul>

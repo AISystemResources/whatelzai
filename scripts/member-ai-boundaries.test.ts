@@ -21,10 +21,10 @@ function load<T>(
       },
     },
   ).outputText;
-  const module = { exports: {} };
+  const testModule = { exports: {} };
   vm.runInNewContext(code, {
-    module,
-    exports: module.exports,
+    module: testModule,
+    exports: testModule.exports,
     require: (name: string) =>
       name === "server-only"
         ? {}
@@ -40,7 +40,7 @@ function load<T>(
     AbortSignal,
     ...extra,
   });
-  return module.exports as T;
+  return testModule.exports as T;
 }
 test("member route rejects disabled, cross-origin and inactive calls before provider or reservation", async () => {
   for (const gate of ["origin", "flag", "member"]) {

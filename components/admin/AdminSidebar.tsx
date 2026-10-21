@@ -14,6 +14,7 @@ const NAV: readonly NavItem[] = [
   { href: "/admin/ai-business", label: "AI Business" },
   { href: "/admin/network-marketing", label: "Network Marketing" },
   { href: "/admin/day-job", label: "Day Job" },
+  { href: "/admin/users", label: "Users" },
   { href: "/admin/settings", label: "Settings" },
 ];
 

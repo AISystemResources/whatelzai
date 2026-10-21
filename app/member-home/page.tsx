@@ -32,6 +32,16 @@ export default async function MemberHome() {
         <p className="mt-3 text-zinc-600">
           Your space for learning and staying connected.
         </p>
+        <div className="mt-8 rounded-2xl bg-yellow-100 p-6">
+          <h2 className="text-lg font-semibold">Your assistant</h2>
+          <p className="mt-2 text-sm text-zinc-600">
+            Think it through, choose a next step, and follow through. Available
+            to invited pilot members.
+          </p>
+          <Link href="/assistant" className="mt-4 inline-block underline">
+            Open assistant →
+          </Link>
+        </div>
         <div className="mt-8 rounded-2xl border border-zinc-200 p-6">
           <h2 className="text-lg font-semibold">Your account</h2>
           <p className="mt-2 text-sm text-zinc-600">

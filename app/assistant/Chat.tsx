@@ -1,10 +1,13 @@
 "use client";
+import Link from "next/link";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { ChatMessage } from "@/lib/member-ai/model";
 import { acceptCommitment } from "./actions";
 const starters = [
-  "Help me choose one meaningful outcome today.",
+  "Help me prepare an HQH (会前会). Ask which lead and event, then help me think it through.",
+  "Help me write an HHH (会后会). Separate what happened, what I learned and next steps.",
+  "Who should I follow up with today? Read my own leads and commitments.",
   "Help me reflect on today without assuming what I completed.",
   "What have I committed to, and what needs following up?",
 ];
@@ -12,12 +15,14 @@ export function Chat({
   messages,
   conversationId,
   enabled,
+  initialPrompt = "",
 }: {
   messages: ChatMessage[];
   conversationId: string;
   enabled: boolean;
+  initialPrompt?: string;
 }) {
-  const [text, setText] = useState("");
+  const [text, setText] = useState(initialPrompt);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const pending = useRef<{ text: string; id: string } | null>(null);
@@ -75,8 +80,9 @@ export function Chat({
           <div className="rounded-2xl bg-yellow-50 p-5">
             <h2 className="font-semibold">A little clarity. A next step.</h2>
             <p className="mt-2 text-sm text-zinc-600">
-              Start with what is on your mind. Your assistant can read your
-              commitments and suggest a plan for you to accept.
+              Start with what is on your mind. fcOS can read your leads, notes
+              and shared resources, help draft an HQH or HHH, and suggest a plan
+              for you to accept.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               {starters.map((prompt) => (
@@ -103,6 +109,22 @@ export function Chat({
             <div className="whitespace-pre-wrap break-words text-sm leading-7">
               {message.body}
             </div>
+            {message.role === "assistant" && (
+              <div className="mt-3 flex flex-wrap gap-4 text-xs">
+                <Link
+                  className="underline"
+                  href={`/briefings/new?kind=HQH&message=${message.id}`}
+                >
+                  Review as HQH
+                </Link>
+                <Link
+                  className="underline"
+                  href={`/briefings/new?kind=HHH&message=${message.id}`}
+                >
+                  Review as HHH
+                </Link>
+              </div>
+            )}
             {message.proposals?.map((proposal) => (
               <div
                 key={proposal.id}

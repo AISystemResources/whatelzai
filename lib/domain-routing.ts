@@ -41,6 +41,9 @@ export function domainRoute(hostname: string, pathname: string) {
       pathname === "/catalogue" ||
       pathname === "/calendar" ||
       pathname === "/culture" ||
+      pathname === "/resources" ||
+      pathname === "/briefings" ||
+      pathname.startsWith("/briefings/") ||
       pathname === "/leads" ||
       pathname.startsWith("/leads/"))
   ) {

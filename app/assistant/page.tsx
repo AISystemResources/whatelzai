@@ -10,13 +10,13 @@ import { Chat } from "./Chat";
 import { CompleteTask } from "./CompleteTask";
 export const dynamic = "force-dynamic";
 export const metadata = {
-  title: "Your assistant — Whatelzai",
+  title: "Chat · fcOS",
   robots: { index: false, follow: false },
 };
 export default async function AssistantPage({
   searchParams,
 }: {
-  searchParams: Promise<{ chat?: string }>;
+  searchParams: Promise<{ chat?: string; prompt?: string }>;
 }) {
   if (!(await ensureUserRow())) redirect("/sign-in");
   const query = await searchParams;
@@ -29,7 +29,7 @@ export default async function AssistantPage({
     return (
       <main className="mx-auto max-w-3xl px-5 py-10">
         <MemberNav current="/assistant" />
-        <h1 className="mt-10 text-3xl font-semibold">Your assistant</h1>
+        <h1 className="mt-10 text-3xl font-semibold">fcOS Chat</h1>
         <p className="mt-4">
           This pilot is invite only. Ask Edmund to activate your account, or
           return later if the workspace is temporarily unavailable.
@@ -51,10 +51,19 @@ export default async function AssistantPage({
             A space to move forward
           </p>
           <h1 className="mt-2 text-3xl font-semibold sm:text-4xl">
-            Your assistant<span className="text-yellow-500">.</span>
+            fcOS Chat<span className="text-yellow-500">.</span>
           </h1>
         </div>
         <form action={newConversation}>
+          <input
+            type="hidden"
+            name="prompt"
+            value={
+              query.prompt === "hqh" || query.prompt === "hhh"
+                ? query.prompt
+                : ""
+            }
+          />
           <button className="min-h-11 rounded-xl bg-yellow-300 px-5 font-semibold">
             + New conversation
           </button>
@@ -86,7 +95,7 @@ export default async function AssistantPage({
             </p>
             <p className="mt-3 text-xs text-yellow-300">{workspace.model}</p>
           </section>
-          <details className="rounded-2xl border p-4" open>
+          <details className="rounded-2xl border p-4">
             <summary className="cursor-pointer font-medium">
               Conversations
             </summary>
@@ -133,11 +142,11 @@ export default async function AssistantPage({
             )}
           </section>
           <section className="rounded-2xl border p-4">
-            <h2 className="font-medium">Your EMDEE vault</h2>
+            <h2 className="font-medium">Optional knowledge connection</h2>
             <p className="mt-2 text-sm text-zinc-600">
               {workspace.vault?.connected
                 ? `Connected: ${workspace.vault.handle ?? workspace.vault.id}`
-                : "Not connected yet. Vault access requires your own verified EMDEE connection."}
+                : "fcOS works without EMDEE. Connect your own collection only if you want additional knowledge context."}
             </p>
             <Link
               href="/assistant/connections"
@@ -154,6 +163,13 @@ export default async function AssistantPage({
               messages={workspace.messages}
               conversationId={workspace.selected}
               enabled={workspace.enabled}
+              initialPrompt={
+                query.prompt === "hqh"
+                  ? "Help me prepare an HQH (会前会). Ask which lead and event before drafting."
+                  : query.prompt === "hhh"
+                    ? "Help me write an HHH (会后会). Ask what happened and what I learned."
+                    : ""
+              }
             />
           ) : (
             <div className="rounded-3xl bg-yellow-50 p-8">

@@ -382,3 +382,9 @@ linking, mobile chat, private commitment tools and bounded API execution.
 MEMBER_AI_ENABLED is independent of the personal Daily generation flag.
 Admin /users is sole-owner gated; reset grants a fresh allowance without
 erasing history. EMDEE remains a knowledge service with no AI inference.
+
+## fcOS workspace (SPR-130)
+
+app.whatelz.ai is fcOS, Founder’s Club Operating System. Mobile navigation: Today, Chat, Leads, HQH/HHH and Resources. Today reads only the signed-in member’s due follow-ups and accepted unfinished commitments. Resources retains products/calendar/culture/team. Chat adds bounded owner-private lead/note and permitted shared resource reads within the existing pilot, allowance and execution limits. Actual calendar membership is resolved server-side; tool input never supplies owner IDs or preview personas. EMDEE is optional; personal admin Daily remains separate.
+
+Private HQH/HHH notes live in member_briefings, with RLS/no browser grants, independently verified server ownership, immutable identity, owner-validated lead references and optimistic revisions. Chat drafts enter a review form as reflections; explicit Save persists the record, and Reviewed is a human selection. No automatic sharing, RSVP, sponsor placement, account grants or commitment acceptance. Note list paginates 30 records, up to 20 leads per note; lead picker explicitly limits to first 200 own leads. Mirrored in EMDEE INSTRUCTIONS under “fcOS workspace (SPR-130)”.

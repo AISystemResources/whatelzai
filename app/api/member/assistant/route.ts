@@ -1,3 +1,4 @@
+import { readFcosResource } from "@/lib/fcos/resources";
 import { randomUUID } from "node:crypto";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import {
@@ -91,6 +92,7 @@ export async function POST(request: Request) {
       day: singaporeDay(),
       history: await conversationMessages(actor.user.id, conversationId),
       receipt,
+      readFcos: readFcosResource,
       readVault: (path) => readMemberVault(actor.user.id, path),
       readCommitments: async () => {
         const tasks = await supabaseAdmin

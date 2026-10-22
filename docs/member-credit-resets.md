@@ -10,10 +10,10 @@ context uses only that member's permitted records and optional vault connection.
 
 Owner Users → Manage AI credits & resets shows all activated members and current
 remaining, spent and reserved allowance. Choose selected members or All activated,
-then a full US$5 or half US$2.50 reset. Review names, amount per person and total
+then a full US$1 or half US$0.50 reset. Review names, amount per person and total
 before confirming. A reset starts a new period with that amount available. It is
-not a top-up: old unused balance is not added. The ordinary US$5 monthly baseline
-returns at the next Singapore month boundary. Old cycles, costs, pending/uncertain
+not a top-up: old unused balance is not added. The ordinary US$1 seven-day baseline
+returns seven days after the reset, on the new window anchor. Old cycles, costs, pending/uncertain
 reservations, conversations and administrator audit records stay intact. Late
 settlement always charges its original cycle.
 
@@ -32,7 +32,7 @@ sufficient to invoke admin actions. Browser database grants/RLS remain unchanged
 
 ## Migration and validation
 
-Apply 20261022053000_activated_chat_resets.sql before publishing application code.
+Apply 20261022053000_activated_chat_resets.sql followed by 20261022053300_fcos_weekly_allowance.sql before publishing application code.
 The migration adds service-only functions, updates the legacy reset wrapper and
 rechecks activation in the existing reservation function. Backfill activates normal
 Chat enrollment but does not issue resets or change current cycles. Record the
@@ -40,7 +40,7 @@ migration atomically in supabase_migrations.schema_migrations. Verify existing
 cycle pointers/spend and function execute permissions after applying it.
 
 Local SQL tests cover enrollment, denied unassigned accounts, full/half amounts,
-unchanged monthly baseline, stale/replayed and partial bulk failure, late request
+unchanged seven-day baseline, stale/replayed and partial bulk failure, late request
 settlement, retained audit/history and browser execute denial. Application tests
 cover activated non-owner access, owner-only reset actions and strict target input.
 Live verification opens the owner controls and cancels reviewed examples; do not

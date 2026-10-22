@@ -1,49 +1,74 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { summarizeUsage, type UsageCycle } from "../lib/profile/usage";
+import {
+  summarizeUsage,
+  percentage,
+  resetCountdown,
+  type UsageCycle,
+} from "../lib/profile/usage";
 const access = {
   active: true,
   model: "gpt-6.1-sol",
-  allowance_micro: 5000000,
+  allowance_micro: 1000000,
   current_cycle_id: "current",
 };
 const cycle: UsageCycle = {
   id: "current",
-  allowance_micro: 5000000,
-  spent_micro: 1000000,
-  reserved_micro: 500000,
-  started_at: "2026-10-01T00:00:00Z",
-  ends_at: "2026-10-31T16:00:00Z",
-  reason: "monthly",
+  allowance_micro: 1000000,
+  spent_micro: 100000,
+  reserved_micro: 50000,
+  started_at: "2026-10-21T09:35:00Z",
+  ends_at: "2026-10-28T09:35:00Z",
+  reason: "weekly",
 };
-test("remaining credits include reservations without mixing in previous reset cycles", () => {
-  const result = summarizeUsage(
+test("remaining includes reservations and ignores older cycles", () => {
+  const r = summarizeUsage(
+    access,
+    [cycle, { ...cycle, id: "old", spent_micro: 1000000 }],
+    new Date("2026-10-22T00:00:00Z"),
+  );
+  assert.equal(r.remaining, 850000);
+  assert.equal(r.percent, 15);
+  assert.equal(r.renewsAt, cycle.ends_at.replace("Z", ".000Z"));
+});
+test("weekly rollover projects anchored windows at and after the boundary without writes", () => {
+  for (const [now, end] of [
+    ["2026-10-28T09:35:00Z", "2026-11-04T09:35:00.000Z"],
+    ["2026-11-11T10:00:00Z", "2026-11-18T09:35:00.000Z"],
+  ]) {
+    const r = summarizeUsage(access, [cycle], new Date(now));
+    assert.equal(r.current, undefined);
+    assert.equal(r.spent, 0);
+    assert.equal(r.remaining, 1000000);
+    assert.equal(r.renewsAt, end);
+  }
+});
+test("half reset displays half the normal weekly budget", () => {
+  const r = summarizeUsage(
     access,
     [
-      cycle,
-      { ...cycle, id: "old", spent_micro: 5000000, reason: "owner-reset" },
+      {
+        ...cycle,
+        reason: "owner-reset",
+        allowance_micro: 500000,
+        spent_micro: 0,
+        reserved_micro: 0,
+      },
     ],
     new Date("2026-10-22T00:00:00Z"),
   );
-  assert.equal(result.remaining, 3500000);
-  assert.equal(result.spent, 1000000);
-  assert.equal(result.percent, 30);
+  assert.equal(percentage(r.remaining, r.baseline), 50);
 });
-test("monthly rollover uses Singapore boundary and retains history without old charges", () => {
-  const result = summarizeUsage(
-    access,
-    [cycle],
-    new Date("2026-10-31T16:00:00Z"),
-  );
-  assert.equal(result.current, undefined);
-  assert.equal(result.spent, 0);
-  assert.equal(result.remaining, 5000000);
-  assert.equal(result.renewsAt, "2026-11-30T16:00:00.000Z");
+test("no cycle means no invented reset date; unassigned has no credit", () => {
+  assert.equal(summarizeUsage(access, []).renewsAt, null);
+  const r = summarizeUsage(null, []);
+  assert.equal(r.remaining, 0);
+  assert.equal(r.renewsAt, null);
 });
-test("unassigned accounts do not display invented credits", () => {
-  const result = summarizeUsage(null, [], new Date("2026-12-31T16:01:00Z"));
-  assert.equal(result.allowance, 0);
-  assert.equal(result.remaining, 0);
-  assert.equal(result.percent, 0);
-  assert.equal(result.renewsAt, "2027-01-31T16:00:00.000Z");
+test("countdown advances and stops at zero", () => {
+  const end = "2026-10-28T09:35:00Z",
+    now = Date.parse("2026-10-21T09:35:00Z");
+  assert.equal(resetCountdown(end, now), "Resets in 7d 0h 0m 0s");
+  assert.equal(resetCountdown(end, now + 1000), "Resets in 6d 23h 59m 59s");
+  assert.equal(resetCountdown(end, Date.parse(end)), "Resetting…");
 });

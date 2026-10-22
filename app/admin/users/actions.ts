@@ -62,7 +62,7 @@ export async function manageMember(input: unknown) {
       user_id: change.userId,
       active: change.active,
       model: change.model,
-      allowance_micro: 5000000,
+      allowance_micro: 1000000,
       updated_at: new Date().toISOString(),
     });
     if (result.error) return { error: "Could not update member access." };

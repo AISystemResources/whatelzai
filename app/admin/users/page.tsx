@@ -159,8 +159,8 @@ export default async function UsersPage({
                 </summary>
                 <p className="mt-3 text-xs leading-5 text-zinc-500">
                   Confirm this account belongs to the person you select. This
-                  grants member app access and AI Chat with US$5 per month. It
-                  does not grant admin access.
+                  grants member app access and AI Chat with US$1 per seven days.
+                  It does not grant admin access.
                 </p>
                 <form action={linkTeamAccount} className="mt-3 space-y-3">
                   <input

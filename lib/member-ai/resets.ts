@@ -17,4 +17,4 @@ export const creditResetSchema = z
     "Duplicate targets",
   );
 export const resetAmount = (amount: "full" | "half") =>
-  amount === "full" ? 5000000 : 2500000;
+  amount === "full" ? 1000000 : 500000;

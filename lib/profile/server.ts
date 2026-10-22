@@ -46,7 +46,7 @@ export async function loadProfileData() {
   const stored = (access.data as UsageAccess | null) ?? {
     active: true,
     model: "gpt-6-luna",
-    allowance_micro: 5000000,
+    allowance_micro: 1000000,
     current_cycle_id: null,
   };
   const history = (cycles.data ?? []) as UsageCycle[];

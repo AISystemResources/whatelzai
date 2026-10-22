@@ -217,6 +217,7 @@ test("API pilot requires the configured owner before reading active pilot access
     const server = load<{
       memberActor: () => Promise<{ user: { id: string } }>;
     }>("lib/member-ai/server.ts", {
+      "@/lib/team-assignment": { hasTeamAssignment: async () => true },
       "@/lib/users": { ensureUserRow: async () => user },
       "@/lib/admin-policy": {
         isOwnerUser: (value: typeof user) => isOwnerUser(value, configured),
@@ -537,6 +538,7 @@ test("blank Chat skips transcript reads while latest Chat loads only its owner's
         blank?: boolean,
       ) => Promise<{ selected: string | null; messages: unknown[] }>;
     }>("lib/member-ai/server.ts", {
+      "@/lib/team-assignment": { hasTeamAssignment: async () => true },
       "@/lib/users": {
         ensureUserRow: async () => ({
           id: "owner",
@@ -665,7 +667,7 @@ test("Profile usage rejects anonymous reads and scopes every private query to th
   const anonymous = load<{ loadProfileData: () => Promise<unknown> }>(
     "lib/profile/server.ts",
     {
-      "@/lib/users": { ensureUserRow: async () => null },
+      "@/lib/app-access": { requireAssignedUser: async () => null },
       "@/lib/supabase-server": {
         supabaseAdmin: {
           from: () => {
@@ -742,7 +744,9 @@ test("Profile usage rejects anonymous reads and scopes every private query to th
       usage: { canChat: boolean; allowance: number };
     }>;
   }>("lib/profile/server.ts", {
-    "@/lib/users": { ensureUserRow: async () => ({ id: "verified-account" }) },
+    "@/lib/app-access": {
+      requireAssignedUser: async () => ({ id: "verified-account" }),
+    },
     "@/lib/supabase-server": { supabaseAdmin: { from } },
     "@/lib/admin-policy": { isOwnerUser: () => false },
     "@/lib/community-calendar/personas": {

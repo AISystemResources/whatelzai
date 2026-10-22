@@ -1,5 +1,5 @@
 import "server-only";
-import { ensureUserRow } from "@/lib/users";
+import { requireAssignedUser } from "@/lib/app-access";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import {
   regions,
@@ -10,7 +10,7 @@ import {
 } from "./model";
 
 export async function leadOwner() {
-  const user = await ensureUserRow();
+  const user = await requireAssignedUser();
   if (!user) throw new Error("Sign in to manage your leads.");
   return user.id;
 }

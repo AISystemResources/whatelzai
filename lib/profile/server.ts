@@ -1,5 +1,5 @@
 import "server-only";
-import { ensureUserRow } from "@/lib/users";
+import { requireAssignedUser } from "@/lib/app-access";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { isOwnerUser } from "@/lib/admin-policy";
 import { isPersona } from "@/lib/community-calendar/personas";
@@ -8,7 +8,7 @@ import { summarizeUsage, type UsageAccess, type UsageCycle } from "./usage";
 
 // Caller supplies no account identifier. Every private query uses verified identity.
 export async function loadProfileData() {
-  const user = await ensureUserRow();
+  const user = await requireAssignedUser();
   if (!user) throw Error("Sign in to view your profile");
   const [membership, access, cycles, resets] = await Promise.all([
     supabaseAdmin

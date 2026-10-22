@@ -148,6 +148,8 @@ async function proxyResult({
   account = appOwner as typeof appOwner | null,
   error = null as unknown,
   confirmed = true,
+  assigned = true,
+  assignmentError = false,
 } = {}) {
   const db = database({ users: { data: account, error } });
   const exports = load(
@@ -175,6 +177,12 @@ async function proxyResult({
       "@/lib/admin-policy": ownerPolicy(owner),
       "@/lib/supabase-server": { supabaseAdmin: db.client },
       "@/lib/domain-routing": { domainRoute },
+      "@/lib/team-assignment": {
+        hasTeamAssignment: async () => {
+          if (assignmentError) throw Error("Assignment unavailable");
+          return assigned;
+        },
+      },
     },
     owner,
   );
@@ -464,4 +472,51 @@ test("legacy MCP rejects unbound secrets and narrow credentials; owner full-scop
     )) as Response;
     assert.equal(response.status, expected);
   }
+});
+
+test("unassigned app users see a pending page and cannot execute page actions", async () => {
+  for (const path of ["/", "/leads", "/calendar", "/profile", "/resources"]) {
+    const { response } = await proxyResult({
+      host: "app.whatelz.ai",
+      path,
+      assigned: false,
+    });
+    assert.equal(response.status, 307);
+    assert.equal(
+      response.headers.get("location"),
+      "https://app.whatelz.ai/pending-assignment",
+    );
+  }
+  for (const path of ["/leads", "/pending-assignment"])
+    assert.equal(
+      (
+        await proxyResult({
+          host: "app.whatelz.ai",
+          path,
+          method: "POST",
+          assigned: false,
+        })
+      ).response.status,
+      403,
+    );
+  assert.equal(
+    (
+      await proxyResult({
+        host: "app.whatelz.ai",
+        path: "/pending-assignment",
+        assigned: false,
+      })
+    ).response.status,
+    200,
+  );
+  assert.equal(
+    (
+      await proxyResult({
+        host: "app.whatelz.ai",
+        path: "/leads",
+        assignmentError: true,
+      })
+    ).response.status,
+    503,
+  );
 });

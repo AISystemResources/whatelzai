@@ -453,6 +453,22 @@ fall back to fabricated instructions. See docs/daily/README.md; mirrored in EMDE
 
 ChatViewport follows the mobile visual viewport height/offset, removing bottom navigation and its reserved padding while the software keyboard occupies the viewport. It restores navigation on keyboard dismissal and excludes pinch zoom/toolbars from detection. The chat shell uses overflow:clip to prevent browser focus scrolling of the entire page; only the transcript scrolls. Composer-specific focus CSS removes the nested textarea rectangle while retaining a rounded group focus border and other control outlines. The owner pilot now selects existing GPT-6.1 Sol Responses support with low reasoning; the US$5 allowance, reservations, ownership and conversation history are preserved.
 
+## User activation and assignment (SPR-139)
+
+Admin Users classifies a registered account explicitly linked to the fcOS tree as
+Activated; a tree person without a signed-in linked account as Not activated;
+and a registered account without a tree link as Not assigned. Stable users.id
+and explicit business_team_accounts links determine access, never names/emails
+or AI allowance flags. The complete bounded directory paginates and fails if
+source reads are incomplete; no partial join is labelled unassigned.
+
+Unassigned users see /pending-assignment. Proxy gates app pages/actions, and
+private leads/notes/calendar/catalogue/Chat loaders independently check assignment.
+Owner admin remains independent; Chat retains its stricter owner/pilot gates.
+Assignment is owner-only, verified-account, insert-only; no automatic invitations,
+placement changes, AI allowance grants or identity matching. AI controls remain
+a secondary admin section. See docs/user-activation.md; mirrored in EMDEE.
+
 ## Member Profile and Usage (SPR-138)
 
 `/profile` uses a mobile orange welcome/avatar, verified calendar persona and fcOS Member Pass, with Profile/Usage links (`?tab=usage`). Profile alone opts into orange navigation/install accents; existing app tabs retain yellow. No invented points, streak, next tier or automatic team linking. `loadProfileData` independently verifies identity and scopes every membership/access/cycle/reset read to that immutable users.id, never accepting a target account. Usage shows current allowance spent/reserved/remaining, Singapore renewal, actual latest admin reset/count and 20-cycle history. Expired cycles stay historical; read-only monthly projection never resets credit. No provider/key access, quota write, access grant, self-reset or inference from this view. Unavailable data is explicit; owner-only Chat remains independently enforced.

@@ -1,142 +1,230 @@
-import { dailyOwner } from "@/lib/daily/server";
-import { supabaseAdmin } from "@/lib/supabase-server";
-import { modelSchema, money } from "@/lib/member-ai/model";
-import { MemberControls } from "./MemberControls";
+import Link from "next/link";
+import { loadUserDirectory } from "@/lib/admin-users/server";
+import { statusLabels, type DirectoryStatus } from "@/lib/admin-users/model";
+import { adminUrl } from "@/lib/admin-url";
+import { linkTeamAccount } from "../team/actions";
+import { AIAllowances } from "./AIAllowances";
+
 export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Users — Admin",
   robots: { index: false, follow: false },
 };
-export default async function UsersPage() {
-  await dailyOwner();
-  const [users, access, cycles, links, events] = await Promise.all([
-    supabaseAdmin
-      .from("users")
-      .select("id,name,email,supabase_auth_user_id")
-      .not("supabase_auth_user_id", "is", null)
-      .order("name")
-      .limit(200),
-    supabaseAdmin.from("member_ai_access").select("*"),
-    supabaseAdmin
-      .from("member_ai_cycles")
-      .select(
-        "id,user_id,spent_micro,reserved_micro,allowance_micro,started_at,ends_at,reason",
-      )
-      .order("started_at", { ascending: false })
-      .limit(300),
-    supabaseAdmin
-      .from("member_emdee_links")
-      .select("user_id,subject,vault_id,handle"),
-    supabaseAdmin
-      .from("member_ai_admin_events")
-      .select("user_id,action,created_at")
-      .order("created_at", { ascending: false })
-      .limit(30),
-  ]);
-  if ([users, access, cycles, links, events].some((result) => result.error))
-    throw Error("Member administration could not be loaded.");
-  const loadedAt = new Date().getTime();
+export default async function UsersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string; q?: string; page?: string }>;
+}) {
+  const directory = await loadUserDirectory();
+  const params = await searchParams;
+  const status = Object.keys(statusLabels).includes(params.status ?? "")
+    ? (params.status as DirectoryStatus)
+    : null;
+  const q = (params.q ?? "").trim().slice(0, 160);
+  const filtered = directory.entries.filter(
+    (entry) =>
+      (!status || entry.status === status) &&
+      (!q ||
+        `${entry.name} ${entry.account?.name ?? ""} ${entry.account?.email ?? ""} ${entry.person?.email ?? ""}`
+          .toLowerCase()
+          .includes(q.toLowerCase())),
+  );
+  const pages = Math.max(1, Math.ceil(filtered.length / 30));
+  const page = Math.min(
+    pages,
+    /^[1-9]\d{0,4}$/.test(params.page ?? "") ? Number(params.page) : 1,
+  );
+  const href = (nextStatus: DirectoryStatus | null, nextPage = 1) =>
+    adminUrl(
+      `/admin/users?${new URLSearchParams({ ...(nextStatus ? { status: nextStatus } : {}), ...(q ? { q } : {}), ...(nextPage > 1 ? { page: String(nextPage) } : {}) })}`,
+    );
   return (
-    <div>
-      <p className="text-xs uppercase tracking-widest text-zinc-500">
-        Owner controls
+    <div className="space-y-7 text-zinc-950">
+      <header className="rounded-3xl bg-yellow-300 p-6 sm:p-8">
+        <p className="text-xs uppercase tracking-widest">
+          Owner · Member administration
+        </p>
+        <h1 className="mt-3 text-3xl font-semibold">People & accounts</h1>
+        <p className="mt-3 max-w-2xl text-sm leading-6">
+          A person in the tree becomes activated when their signed-in account is
+          explicitly linked. Names and email matches never assign access
+          automatically.
+        </p>
+      </header>
+      <nav aria-label="Activation status" className="grid gap-3 sm:grid-cols-3">
+        {(Object.keys(statusLabels) as DirectoryStatus[]).map((key) => (
+          <Link
+            key={key}
+            href={href(key)}
+            aria-current={status === key ? "page" : undefined}
+            className={`rounded-2xl border p-5 ${status === key ? "border-zinc-950 bg-yellow-50" : "border-zinc-200"}`}
+          >
+            <p className="text-3xl font-semibold">
+              {directory.entries.filter((entry) => entry.status === key).length}
+            </p>
+            <h2 className="mt-2 font-semibold">{statusLabels[key]}</h2>
+            <p className="mt-2 text-xs leading-5 text-zinc-500">
+              {key === "activated"
+                ? "Signed in and assigned to a tree person."
+                : key === "not-activated"
+                  ? "In the tree, without a signed-in linked account."
+                  : "Signed in, awaiting assignment. App access is blocked."}
+            </p>
+          </Link>
+        ))}
+      </nav>
+      <form
+        method="get"
+        action={adminUrl("/admin/users")}
+        className="flex flex-wrap items-end gap-3"
+      >
+        {status ? <input type="hidden" name="status" value={status} /> : null}
+        <label className="min-w-0 flex-1 text-sm">
+          Search people or email
+          <input
+            name="q"
+            defaultValue={q}
+            maxLength={160}
+            className="mt-2 block w-full rounded-xl border border-zinc-200 px-4 py-3"
+          />
+        </label>
+        <button className="rounded-xl bg-zinc-950 px-5 py-3 text-sm text-white">
+          Search
+        </button>
+        <Link href={href(null)} className="px-2 py-3 text-sm underline">
+          All statuses
+        </Link>
+      </form>
+      <p className="text-sm text-zinc-500">
+        {filtered.length}{" "}
+        {status ? statusLabels[status].toLowerCase() : "people and accounts"} ·{" "}
+        {directory.team.name} · Page {page} of {pages}
       </p>
-      <h1 className="mt-2 text-3xl font-semibold">Users & AI allowance</h1>
-      <p className="mt-4 max-w-3xl text-sm leading-6 text-zinc-600">
-        Activate the pilot for a verified account below. Each person receives
-        US$5 per calendar month, renewing on the 1st at midnight Singapore time.
-        Full reset grants another US$5 now and keeps previous usage. API chat
-        runs on app.whatelz.ai; personal Daily remains on ChatGPT. Registered
-        accounts shown: up to 200.
-      </p>
-      <div className="mt-7 grid gap-5 sm:grid-cols-2">
-        {users.data?.map((user) => {
-          const member = access.data?.find((a) => a.user_id === user.id);
-          const history =
-            cycles.data?.filter((c) => c.user_id === user.id) ?? [];
-          const cycle = history.find((c) => c.id === member?.current_cycle_id);
-          const current =
-            cycle && Date.parse(cycle.ends_at) > loadedAt ? cycle : null;
-          const link = links.data?.find((l) => l.user_id === user.id);
-          return (
-            <article key={user.id} className="min-w-0 rounded-2xl border p-5">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <h2 className="text-lg font-semibold">
-                  {user.name || "Registered member"}
-                </h2>
-                <span
-                  className={`rounded-full px-2 py-1 text-xs ${member?.active ? "bg-yellow-100" : "bg-zinc-100"}`}
-                >
-                  {member?.active ? "Active" : "Inactive"}
-                </span>
-              </div>
-              <p className="mt-1 break-all text-sm text-zinc-600">
-                {user.email}
-              </p>
-              <details className="mt-2 text-xs text-zinc-500">
-                <summary>Permanent identity</summary>
-                <p className="mt-2 break-all">Whatelzai: {user.id}</p>
-                <p className="mt-1 break-all">
-                  EMDEE:{" "}
-                  {link
-                    ? `${link.subject} · vault ${link.vault_id}`
-                    : "Awaiting verified member connection"}
+      <div className="grid items-start gap-4 lg:grid-cols-2">
+        {filtered.slice((page - 1) * 30, page * 30).map((entry) => (
+          <article
+            key={entry.key}
+            className="min-w-0 rounded-2xl border border-zinc-200 p-5"
+          >
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <h2 className="text-lg font-semibold">{entry.name}</h2>
+              <span
+                className={`rounded-full px-3 py-1 text-xs ${entry.status === "activated" ? "bg-yellow-100" : "bg-zinc-100"}`}
+              >
+                {statusLabels[entry.status]}
+              </span>
+            </div>
+            {entry.account ? (
+              <>
+                <p className="mt-2 break-all text-sm text-zinc-600">
+                  {entry.account.email}
                 </p>
+                <p className="mt-2 text-xs text-zinc-500">
+                  {entry.person
+                    ? `Tree: ${entry.person.display_name} · ${entry.link?.access_role}`
+                    : "No tree identity assigned. No member app access."}
+                </p>
+              </>
+            ) : (
+              <p className="mt-2 text-sm leading-6 text-zinc-500">
+                This tree person does not have a signed-in linked account yet. A
+                contact email on their profile does not activate access.
+              </p>
+            )}
+            {entry.person ? (
+              <Link
+                className="mt-4 inline-block text-sm underline"
+                href={adminUrl(`/admin/team/${entry.person.id}`)}
+              >
+                View tree profile →
+              </Link>
+            ) : null}
+            {entry.status === "not-assigned" && entry.account ? (
+              <details className="mt-4 rounded-xl border border-zinc-200 p-4">
+                <summary className="cursor-pointer text-sm font-medium">
+                  Assign to a tree person
+                </summary>
+                <p className="mt-3 text-xs leading-5 text-zinc-500">
+                  Confirm this account belongs to the person you select. This
+                  grants member app access; it does not enable AI Chat or admin
+                  access.
+                </p>
+                <form action={linkTeamAccount} className="mt-3 space-y-3">
+                  <input
+                    type="hidden"
+                    name="team_id"
+                    value={directory.team.id}
+                  />
+                  <input
+                    type="hidden"
+                    name="user_id"
+                    value={entry.account.id}
+                  />
+                  <input type="hidden" name="access_role" value="member" />
+                  <label className="block text-sm">
+                    Tree person
+                    <select
+                      required
+                      name="person_id"
+                      defaultValue=""
+                      className="mt-2 block w-full rounded-lg border p-3"
+                    >
+                      <option value="" disabled>
+                        Choose a person
+                      </option>
+                      {directory.availablePeople.map((person) => (
+                        <option key={person.id} value={person.id}>
+                          {person.display_name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <button
+                    disabled={!directory.availablePeople.length}
+                    className="rounded-lg bg-yellow-300 px-4 py-3 text-sm font-medium disabled:opacity-50"
+                  >
+                    Assign account
+                  </button>
+                </form>
               </details>
-              <p className="mt-4 text-sm">
-                <strong>{money(Number(current?.spent_micro ?? 0), 6)}</strong>{" "}
-                used · {money(Number(current?.reserved_micro ?? 0), 6)} reserved
-                this allowance
-              </p>
-              <p className="mt-1 text-xs text-zinc-500">
-                Cap: US$5 ·{" "}
-                {current
-                  ? `Renews ${new Date(current.ends_at).toLocaleDateString("en-SG", { timeZone: "Asia/Singapore" })}`
-                  : "Fresh allowance begins on first message"}
-              </p>
-              <MemberControls
-                userId={user.id}
-                active={member?.active ?? false}
-                enrolled={!!member}
-                model={modelSchema.parse(member?.model ?? "gpt-6-luna")}
-                cycle={member?.current_cycle_id ?? null}
-              />
-              {!!history.length && (
-                <details className="mt-3 text-xs">
-                  <summary>
-                    Allowance history (latest 300 across members)
-                  </summary>
-                  <ul className="mt-2 space-y-2">
-                    {history.map((c) => (
-                      <li key={c.id}>
-                        {new Date(c.started_at).toLocaleString("en-SG", {
-                          timeZone: "Asia/Singapore",
-                        })}{" "}
-                        · {c.reason} · {money(Number(c.spent_micro), 6)} used /{" "}
-                        {money(Number(c.reserved_micro), 6)} reserved
-                      </li>
-                    ))}
-                  </ul>
-                </details>
-              )}
-            </article>
-          );
-        })}
+            ) : null}
+            {entry.account ? (
+              <details className="mt-3 text-xs text-zinc-500">
+                <summary className="cursor-pointer">
+                  Permanent account ID
+                </summary>
+                <p className="mt-2 break-all">{entry.account.id}</p>
+              </details>
+            ) : null}
+          </article>
+        ))}
       </div>
-      <details className="mt-8 text-sm">
-        <summary>Recent access changes and resets</summary>
-        <ul className="mt-3 space-y-2">
-          {events.data?.map((event, i) => (
-            <li key={i}>
-              {users.data?.find((u) => u.id === event.user_id)?.name ??
-                event.user_id}{" "}
-              · {event.action} ·{" "}
-              {new Date(event.created_at).toLocaleString("en-SG", {
-                timeZone: "Asia/Singapore",
-              })}
-            </li>
-          ))}
-        </ul>
+      {!filtered.length ? (
+        <p className="rounded-2xl border border-dashed p-6 text-sm text-zinc-500">
+          No people or accounts match this view.
+        </p>
+      ) : null}
+      {pages > 1 ? (
+        <nav aria-label="User pages" className="flex gap-4 text-sm">
+          {page > 1 ? (
+            <Link href={href(status, page - 1)} className="underline">
+              ← Previous
+            </Link>
+          ) : null}
+          {page < pages ? (
+            <Link href={href(status, page + 1)} className="underline">
+              Next →
+            </Link>
+          ) : null}
+        </nav>
+      ) : null}
+      <details className="rounded-2xl border border-zinc-200 p-5">
+        <summary className="cursor-pointer font-medium">
+          AI allowances & usage
+        </summary>
+        <div className="mt-5">
+          <AIAllowances />
+        </div>
       </details>
     </div>
   );

@@ -1,3 +1,4 @@
+import { hasTeamAssignment } from "@/lib/team-assignment";
 import "server-only";
 import { ensureUserRow } from "@/lib/users";
 import { supabaseAdmin } from "@/lib/supabase-server";
@@ -12,6 +13,8 @@ export async function memberActor() {
   // The current API pilot is Edmund-only, even if another account has active access.
   if (!isOwnerUser(user))
     throw Error("fcOS Chat is currently available only to Edmund");
+  if (!(await hasTeamAssignment(user.id)))
+    throw Error("Your account is awaiting a tree assignment");
   const { data, error } = await supabaseAdmin
     .from("member_ai_access")
     .select("active,model,allowance_micro,current_cycle_id")

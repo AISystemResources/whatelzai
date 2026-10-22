@@ -1,6 +1,6 @@
 import { isOwnerUser } from "@/lib/admin-policy";
 import "server-only";
-import { ensureUserRow } from "@/lib/users";
+import { requireAssignedUser } from "@/lib/app-access";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { expandMonth, type CalendarRecord } from "./ical";
 import {
@@ -10,7 +10,7 @@ import {
   type Persona,
 } from "./personas";
 export async function loadCommunityCalendar(month: string, preview?: string) {
-  const user = await ensureUserRow();
+  const user = await requireAssignedUser();
   if (!user) throw new Error("Sign-in required");
   const { data: membership, error: membershipError } = await supabaseAdmin
     .from("community_calendar_memberships")

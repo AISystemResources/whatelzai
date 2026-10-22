@@ -85,6 +85,12 @@ export default async function TodayPage() {
       >
         Weekly reflection →
       </Link>
+      <Link
+        href={adminUrl("/admin/today/routines")}
+        className="inline-block text-sm underline underline-offset-4"
+      >
+        Routine library →
+      </Link>
       {!connected ? (
         <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6">
           Connect EMDEE to Personal → Daily to read your saved briefs here.

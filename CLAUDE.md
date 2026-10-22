@@ -435,3 +435,12 @@ the preceding Today source-editor UI description. Mirrored in EMDEE INSTRUCTIONS
 ## fcOS installation (SPR-135)
 
 Only the app surface links `/fcos/app.webmanifest`, with canonical app origin identity/scope/start URL, standalone display, PNG/maskable icons and Apple home-screen metadata. The app shell captures `beforeinstallprompt` across navigation; Profile exposes native installation or platform instructions and standalone state. The app-only shell registers `/fcos-sw.js` for older Chromium install promotion. Its fetch handler is strictly network-only and stores no offline private-data cache. Auth and member API gates remain unchanged; the app requires a network connection.
+
+## Private daily routine library (SPR-133 follow-up)
+
+Owner `/today/routines` reads three allowlisted, versioned SKILL.md sources from
+EMDEE Personal Daily/04-Routines. Personal instruction bodies stay out of the public
+repo. Detail pages render Markdown and owner-gated downloads return identical
+normalized sources with private/no-store headers. Skills and schedules remain
+separate; existing cloud task prompts/jobs are unchanged. Unknown sources do not
+fall back to fabricated instructions. See docs/daily/README.md; mirrored in EMDEE.

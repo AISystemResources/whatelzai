@@ -1,3 +1,4 @@
+import { BriefMarkdown } from "@/components/admin/BriefMarkdown";
 import { randomUUID } from "node:crypto";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -111,9 +112,9 @@ export default async function TodayPage() {
       <section className="rounded-2xl border border-zinc-200 p-5">
         <h2 className="text-lg font-semibold">Yesterday’s handoff</h2>
         {yesterday?.exists ? (
-          <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-zinc-600">
-            {yesterday.body}
-          </p>
+          <div className="mt-3">
+            <BriefMarkdown body={yesterday.body} />
+          </div>
         ) : (
           <p className="mt-2 text-sm text-zinc-500">
             {sourceError
@@ -146,14 +147,27 @@ export default async function TodayPage() {
                   The editor will return when EMDEE can be read safely.
                 </p>
               ) : (
-                <BriefEditor
-                  key={`${day}-${kind}-${brief?.hash ?? "new"}`}
-                  day={day}
-                  kind={kind}
-                  brief={brief}
-                  connected={connected}
-                  aiReady={!!ai && apiGenerationEnabled()}
-                />
+                <>
+                  {brief?.exists ? <BriefMarkdown body={brief.body} /> : null}
+                  <details
+                    open={!brief?.exists}
+                    className="mt-5 rounded-xl border border-zinc-200 p-4"
+                  >
+                    <summary className="cursor-pointer text-sm font-medium">
+                      {brief?.exists ? "Edit Markdown" : "Write an entry"}
+                    </summary>
+                    <div className="mt-4">
+                      <BriefEditor
+                        key={`${day}-${kind}-${brief?.hash ?? "new"}`}
+                        day={day}
+                        kind={kind}
+                        brief={brief}
+                        connected={connected}
+                        aiReady={!!ai && apiGenerationEnabled()}
+                      />
+                    </div>
+                  </details>
+                </>
               )}
             </section>
           );

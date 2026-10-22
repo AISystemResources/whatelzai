@@ -22,8 +22,10 @@ The underlying Daily loader is bounded to100 unfinished and100 current-day
 completions across all lanes, so focus/attention figures explicitly describe the
 loaded set. Completion is counted only from explicit done records.
 
-Morning/evening previews read existing canonical EMDEE Notes, truncated to650
-characters; full entries remain editable in Today. Before04:30 and21:00 Singapore,
+Morning/evening previews render the existing canonical EMDEE Notes as Markdown
+in a bounded scrolling area, preserving complete headings, lists and GFM tables.
+Today and weekly reflection render Markdown too; Today keeps explicit Edit Markdown
+controls. Raw HTML and remote image loading are disabled. Source content is unchanged. Before04:30 and21:00 Singapore,
 a missing current entry is not due yet. Afterward it is not found, not proof that
 a schedule failed. Saved entries similarly do not prove an unattended run.
 Yesterday's closeout remains a read-only preview. No inference, schedule change,

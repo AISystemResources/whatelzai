@@ -1,3 +1,4 @@
+import { BriefMarkdown } from "@/components/admin/BriefMarkdown";
 import Link from "next/link";
 import { dailyOwner } from "@/lib/daily/server";
 import { weeklyStatus } from "@/lib/daily/weekly";
@@ -116,8 +117,8 @@ export default async function WeeklyPage() {
         </p>
       ) : null}
       {body ? (
-        <article className="whitespace-pre-wrap rounded-2xl border border-zinc-200 p-6 text-sm leading-7">
-          {body}
+        <article className="min-w-0 rounded-2xl border border-zinc-200 p-6">
+          <BriefMarkdown body={body} />
         </article>
       ) : null}
       <p className="text-xs text-zinc-500">

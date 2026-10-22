@@ -1,3 +1,4 @@
+import { BriefMarkdown } from "@/components/admin/BriefMarkdown";
 import Link from "next/link";
 import { Suspense } from "react";
 import type { Metadata } from "next";
@@ -6,7 +7,6 @@ import { adminUrl } from "@/lib/admin-url";
 import { loadAdminOverview } from "@/lib/admin-overview/server";
 import {
   briefStatus,
-  briefExcerpt,
   productSignal,
   type Source,
 } from "@/lib/admin-overview/model";
@@ -261,14 +261,20 @@ async function DecisionWorkspace() {
           <summary className="cursor-pointer text-sm font-medium">
             Yesterday’s handoff
           </summary>
-          <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-7 text-zinc-600">
-            {overview.handoff.status !== "ready"
-              ? "EMDEE could not be checked."
-              : overview.handoff.data.exists
-                ? briefExcerpt(overview.handoff.data.body) ||
+          <div className="mt-3 max-h-80 overflow-y-auto">
+            {overview.handoff.status !== "ready" ? (
+              "EMDEE could not be checked."
+            ) : overview.handoff.data.exists ? (
+              <BriefMarkdown
+                body={
+                  overview.handoff.data.body ||
                   "The saved entry has no Notes content."
-                : "No saved evening entry was found for yesterday."}
-          </p>
+                }
+              />
+            ) : (
+              "No saved evening entry was found for yesterday."
+            )}
+          </div>
           <Link
             href={adminUrl("/admin/today")}
             className="mt-3 inline-block text-sm underline"
@@ -376,12 +382,15 @@ function BriefPreview({
           {status}
         </span>
       </div>
-      <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-7 text-zinc-600">
-        {source.status === "ready" && source.data.exists
-          ? briefExcerpt(source.data.body) ||
-            "The saved entry has no Notes content."
-          : "Open Today to read, prepare or check the entry."}
-      </p>
+      <div className="mt-3 max-h-80 overflow-y-auto">
+        {source.status === "ready" && source.data.exists ? (
+          <BriefMarkdown
+            body={source.data.body || "The saved entry has no Notes content."}
+          />
+        ) : (
+          "Open Today to read, prepare or check the entry."
+        )}
+      </div>
       <Link href={href} className="mt-4 inline-block text-sm underline">
         Open in Today →
       </Link>

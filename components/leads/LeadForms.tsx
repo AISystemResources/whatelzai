@@ -1,4 +1,5 @@
 "use client";
+import { MobilePicker } from "./MobilePicker";
 import { useActionState, useState } from "react";
 import {
   setLeadPriority,
@@ -18,7 +19,7 @@ import {
   type ActionResult,
 } from "@/lib/leads/model";
 const input =
-  "mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2";
+  "mt-2 min-h-12 w-full rounded-2xl border border-zinc-200 bg-zinc-50/70 px-4 py-3 text-base";
 const button =
   "rounded-lg bg-zinc-900 px-4 py-2 text-white disabled:opacity-50";
 function Message({ state }: { state: ActionResult }) {
@@ -45,22 +46,15 @@ function Select({
   onChange?: (value: string) => void;
 }) {
   return (
-    <label className="block">
-      {label}
-      <select
-        name={name}
-        {...(onChange
-          ? { value, onChange: (event) => onChange(event.target.value) }
-          : { defaultValue: value })}
-        className={input}
-      >
-        {options.map((x) => (
-          <option key={x}>{x}</option>
-        ))}
-      </select>
-    </label>
+    <MobilePicker
+      name={name}
+      label={label}
+      options={options.map((x) => ({ value: x, label: x }))}
+      {...(onChange ? { value, onChange } : { defaultValue: value })}
+    />
   );
 }
+
 export function NewLead() {
   const [state, action, pending] = useActionState(createLead, {});
   return (
@@ -202,7 +196,7 @@ export function LeadEditor({ lead }: { lead: Lead }) {
           />
         </label>
       </section>
-      <details className="rounded-xl border p-4">
+      <details className="rounded-2xl border border-zinc-100 bg-zinc-50/40 p-4">
         <summary className="cursor-pointer">
           Contact and personal details (optional)
         </summary>
@@ -239,7 +233,10 @@ export function LeadEditor({ lead }: { lead: Lead }) {
 export function NewActivity({ leadId }: { leadId: string }) {
   const [state, action, pending] = useActionState(addActivity, {});
   return (
-    <form action={action} className="space-y-4 rounded-xl border p-4">
+    <form
+      action={action}
+      className="space-y-4 rounded-2xl border border-zinc-100 bg-zinc-50/40 p-4"
+    >
       <h3 className="font-semibold">Record an activity</h3>
       <input type="hidden" name="lead_id" value={leadId} />
       <label className="block">

@@ -1,6 +1,7 @@
 import { LeadSharing } from "@/components/leads/ProfileControls";
 import { LeadAvatar } from "@/components/leads/LeadAvatar";
 import { visibilitySettings, loadSharedLeads } from "@/lib/leads/sharing";
+import { MobilePicker } from "@/components/leads/MobilePicker";
 import Link from "next/link";
 import { LeadCard } from "@/components/leads/LeadCard";
 import { groupPlans } from "@/lib/leads/plans";
@@ -51,7 +52,7 @@ export default async function LeadsPage({
   const pageLink = (page: number) =>
     `/leads?${new URLSearchParams({ q: data.q, region: data.region, stage: data.stage, page: String(page) })}`;
   return (
-    <main className="mx-auto max-w-5xl space-y-6 px-5 py-10 sm:px-8">
+    <main className="fcos-lead-controls mx-auto max-w-5xl space-y-6 px-5 py-10 sm:px-8">
       <MemberNav current="/leads" />
       <header>
         <p className="text-sm text-zinc-500">Network Marketing · Your people</p>
@@ -79,32 +80,24 @@ export default async function LeadsPage({
                 className="mt-1 w-full rounded-lg border p-2"
               />
             </label>
-            <label>
-              Community
-              <select
-                name="region"
-                defaultValue={data.region}
-                className="mt-1 w-full rounded-lg border p-2"
-              >
-                <option value="">All communities</option>
-                {regions.map((x) => (
-                  <option key={x}>{x}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Stage
-              <select
-                name="stage"
-                defaultValue={data.stage}
-                className="mt-1 w-full rounded-lg border p-2"
-              >
-                <option value="">All stages</option>
-                {stages.map((x) => (
-                  <option key={x}>{x}</option>
-                ))}
-              </select>
-            </label>
+            <MobilePicker
+              name="region"
+              label="Community"
+              defaultValue={data.region}
+              options={[
+                { value: "", label: "All communities" },
+                ...regions.map((x) => ({ value: x, label: x })),
+              ]}
+            />
+            <MobilePicker
+              name="stage"
+              label="Stage"
+              defaultValue={data.stage}
+              options={[
+                { value: "", label: "All stages" },
+                ...stages.map((x) => ({ value: x, label: x })),
+              ]}
+            />
             <button className="self-end rounded-lg bg-zinc-900 p-2 text-white">
               Filter
             </button>

@@ -10,7 +10,7 @@ export async function ContextNotes({
 }) {
   const notes = await contextBriefings(context);
   return (
-    <section className="space-y-4 rounded-2xl border p-5">
+    <section className="fcos-context-notes space-y-4 rounded-2xl border border-zinc-200 p-5">
       <h2 className="text-xl font-semibold">HQH & HHH · Linked notes</h2>
       <p className="text-sm text-zinc-500">
         The same saved notes you’ll find in Resources. Private unless you choose

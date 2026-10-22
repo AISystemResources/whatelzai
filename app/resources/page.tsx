@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ensureUserRow } from "@/lib/users";
+import { isOwnerUser } from "@/lib/admin-policy";
 import { MemberNav } from "@/components/culture/MemberNav";
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -8,7 +9,8 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 export default async function Resources() {
-  if (!(await ensureUserRow())) redirect("/sign-in");
+  const user = await ensureUserRow();
+  if (!user) redirect("/sign-in");
   return (
     <main className="mx-auto max-w-4xl space-y-7 px-5 py-8">
       <MemberNav current="/resources" />
@@ -50,6 +52,20 @@ export default async function Resources() {
             title: "My team",
             body: "Explore the sponsor relationships your account is permitted to see.",
           },
+          ...(isOwnerUser(user)
+            ? [
+                {
+                  href: "/assistant/commitments",
+                  title: "Commitments",
+                  body: "Review and complete the next steps you accepted in chat.",
+                },
+                {
+                  href: "/assistant/connections",
+                  title: "Knowledge connection",
+                  body: "Manage your optional EMDEE collection.",
+                },
+              ]
+            : []),
         ].map((item) => (
           <Link
             key={item.href}

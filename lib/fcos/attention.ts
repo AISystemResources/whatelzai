@@ -33,8 +33,8 @@ export function attentionItems(
       (task): AttentionItem => ({
         id: `task-${task.id}`,
         title: task.title,
-        detail: "An accepted commitment. Review your next step in Chat.",
-        href: "/assistant",
+        detail: "An accepted commitment. Review your next step.",
+        href: "/assistant/commitments",
         kind: "Commitment",
         date: task.due_on,
         status:

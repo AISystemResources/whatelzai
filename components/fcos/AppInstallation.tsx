@@ -5,10 +5,11 @@ import {
   useContext,
   useEffect,
   useState,
+  useRef,
   useSyncExternalStore,
   type ReactNode,
 } from "react";
-import { Download, Smartphone } from "lucide-react";
+import { Download, X } from "lucide-react";
 
 interface InstallPrompt extends Event {
   prompt(): Promise<void>;
@@ -82,106 +83,87 @@ export function AppInstallationProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function InstallAppCard() {
+export function InstallAppButton() {
   const { prompt, installed, ios, clear } = useContext(Installation);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const help = useRef<HTMLDialogElement>(null);
   async function install() {
-    if (!prompt || busy) return;
+    if (busy) return;
+    if (!prompt || ios) {
+      help.current?.showModal();
+      return;
+    }
     setBusy(true);
     try {
       await prompt.prompt();
       const choice = await prompt.userChoice;
       setMessage(
-        choice.outcome === "accepted"
-          ? "Installation requested. Look for fcOS on your home screen or in your apps."
-          : "You can install fcOS whenever you’re ready.",
+        choice.outcome === "accepted" ? "Installation requested." : "",
       );
     } catch {
-      setMessage(
-        "Use your browser menu to install fcOS, or reload this page to try again.",
-      );
+      help.current?.showModal();
     } finally {
       clear();
       setBusy(false);
     }
   }
+  if (installed) return null;
   return (
-    <section
-      className="rounded-3xl border p-6"
-      aria-labelledby="install-fcos-title"
-    >
-      <div className="flex items-center gap-3">
-        <span className="rounded-2xl bg-yellow-300 p-3">
-          <Smartphone size={24} aria-hidden="true" />
-        </span>
-        <div>
-          <h2 id="install-fcos-title" className="text-xl font-semibold">
-            fcOS on your phone
-          </h2>
-          <p className="mt-1 text-sm text-zinc-500">
-            Your workspace, one tap away.
-          </p>
-        </div>
-      </div>
-      {installed ? (
-        <p className="mt-4 text-sm">
-          fcOS is installed. Open it from your home screen or apps.
-        </p>
-      ) : (
-        <>
-          <p className="mt-4 text-sm leading-6 text-zinc-600">
-            Add fcOS to your home screen for its own app window. No app store
-            needed. An internet connection is required.
-          </p>
-          {prompt && !ios ? (
-            <button
-              type="button"
-              onClick={install}
-              disabled={busy}
-              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-yellow-300 px-5 py-3 font-semibold disabled:opacity-50"
-            >
-              <Download size={18} aria-hidden="true" />
-              {busy ? "Opening installer…" : "Install fcOS"}
-            </button>
-          ) : null}
-          <details className="mt-4" open={ios || !prompt}>
-            <summary className="cursor-pointer text-sm font-medium">
-              {ios ? "Install on iPhone or iPad" : "How to install"}
-            </summary>
-            <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-zinc-600">
-              {ios ? (
-                <>
-                  <li>Open app.whatelz.ai in Safari.</li>
-                  <li>
-                    Tap Share, then Add to Home Screen (you may need to scroll).
-                  </li>
-                  <li>Keep Open as Web App enabled if shown, then tap Add.</li>
-                </>
-              ) : (
-                <>
-                  <li>
-                    On Android, open app.whatelz.ai in Chrome, then open the ⋮
-                    menu.
-                  </li>
-                  <li>
-                    Choose Add to Home screen or Install app, then confirm.
-                  </li>
-                  <li>
-                    On a computer, use the install icon in the address bar, or
-                    your browser’s install menu.
-                  </li>
-                </>
-              )}
-            </ol>
-          </details>
-        </>
-      )}
+    <div>
+      <button
+        type="button"
+        onClick={install}
+        disabled={busy}
+        className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-yellow-300 px-5 py-3 font-semibold disabled:opacity-50"
+      >
+        <Download size={18} aria-hidden="true" />
+        {busy ? "Opening installer…" : "Install fcOS"}
+      </button>
       {message && (
-        <p role="status" className="mt-4 text-sm text-zinc-600">
+        <p role="status" className="mt-2 text-sm text-zinc-500">
           {message}
         </p>
       )}
-    </section>
+      <dialog
+        ref={help}
+        aria-labelledby="fcos-install-help"
+        className="fixed inset-0 m-auto w-[calc(100%-2rem)] max-w-sm rounded-3xl border bg-white p-6 text-zinc-900 shadow-xl backdrop:bg-black/40"
+      >
+        <div className="flex items-center justify-between gap-4">
+          <h2 id="fcos-install-help" className="text-xl font-semibold">
+            Add fcOS to your phone
+          </h2>
+          <button
+            type="button"
+            aria-label="Close install instructions"
+            onClick={() => help.current?.close()}
+            className="flex min-h-11 min-w-11 items-center justify-center rounded-full hover:bg-zinc-100"
+          >
+            <X size={20} aria-hidden="true" />
+          </button>
+        </div>
+        <p className="mt-4 text-sm leading-6 text-zinc-600">
+          {ios ? (
+            <>
+              In Safari, tap <strong>Share → Add to Home Screen</strong>, then{" "}
+              <strong>Add</strong>. Keep <strong>Open as Web App</strong>{" "}
+              enabled if shown.
+            </>
+          ) : (
+            <>
+              In Chrome, open <strong>⋮ → Add to Home screen → Install</strong>.
+              On a computer, use the install icon in the address bar or your
+              browser’s install menu.
+            </>
+          )}
+        </p>
+        <form method="dialog" className="mt-5">
+          <button className="w-full rounded-xl bg-yellow-300 px-4 py-3 font-semibold">
+            Got it
+          </button>
+        </form>
+      </dialog>
+    </div>
   );
 }

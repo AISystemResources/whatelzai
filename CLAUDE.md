@@ -424,6 +424,14 @@ Tables scroll within their container on phones; overview previews scroll without
 cutting Markdown syntax. No raw HTML or remote image fetching; no source mutation.
 See docs/admin-overview.md; mirrored in EMDEE INSTRUCTIONS.
 
+## Read-first Today (SPR-133 follow-up)
+
+Today reads rendered briefs without briefing editors or Save to EMDEE controls.
+Missing entries show a short message; yesterday’s handoff and optional commitment
+forms are collapsed. The page no longer reads OpenAI credentials. Canonical EMDEE
+writes, schedules, permissions and existing actions remain unchanged. This supersedes
+the preceding Today source-editor UI description. Mirrored in EMDEE INSTRUCTIONS.
+
 ## fcOS installation (SPR-135)
 
 Only the app surface links `/fcos/app.webmanifest`, with canonical app origin identity/scope/start URL, standalone display, PNG/maskable icons and Apple home-screen metadata. The app shell captures `beforeinstallprompt` across navigation; Profile exposes native installation or platform instructions and standalone state. No service worker or offline private-data cache is installed. Auth and member API gates remain unchanged; the app requires a network connection.

@@ -3,6 +3,7 @@ import { ensureUserRow } from "@/lib/users";
 import { MemberNav } from "@/components/culture/MemberNav";
 import { SignOutButton } from "@/components/auth/AuthControls";
 import Link from "next/link";
+import { InstallAppCard } from "@/components/fcos/AppInstallation";
 export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Profile · fcOS",
@@ -32,6 +33,7 @@ export default async function Profile() {
       <Link href="/team" className="block rounded-xl border p-4">
         View my team →
       </Link>
+      <InstallAppCard />
       <SignOutButton />
     </main>
   );

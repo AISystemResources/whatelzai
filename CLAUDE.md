@@ -423,3 +423,7 @@ Today keeps source editing behind Edit Markdown; empty entries open the writer.
 Tables scroll within their container on phones; overview previews scroll without
 cutting Markdown syntax. No raw HTML or remote image fetching; no source mutation.
 See docs/admin-overview.md; mirrored in EMDEE INSTRUCTIONS.
+
+## fcOS installation (SPR-135)
+
+Only the app surface links `/fcos/app.webmanifest`, with canonical app origin identity/scope/start URL, standalone display, PNG/maskable icons and Apple home-screen metadata. The app shell captures `beforeinstallprompt` across navigation; Profile exposes native installation or platform instructions and standalone state. No service worker or offline private-data cache is installed. Auth and member API gates remain unchanged; the app requires a network connection.

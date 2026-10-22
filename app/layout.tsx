@@ -42,7 +42,19 @@ export async function generateMetadata(): Promise<Metadata> {
   const surface = siteSurface(requestHeaders.get("host") ?? "");
   if (surface !== "public") {
     return {
-      title: surface === "admin" ? "Whatelz Admin" : "Whatelz Members",
+      title: surface === "admin" ? "Whatelz Admin" : "fcOS",
+      ...(surface === "app"
+        ? {
+            applicationName: "fcOS",
+            manifest: "/fcos/app.webmanifest",
+            appleWebApp: {
+              capable: true,
+              title: "fcOS",
+              statusBarStyle: "default" as const,
+            },
+            icons: { icon: "/fcos/icon-192.png", apple: "/fcos/icon-180.png" },
+          }
+        : {}),
       robots: { index: false, follow: false },
     };
   }

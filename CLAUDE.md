@@ -448,3 +448,7 @@ repo. Detail pages render Markdown and owner-gated downloads return identical
 normalized sources with private/no-store headers. Skills and schedules remain
 separate; existing cloud task prompts/jobs are unchanged. Unknown sources do not
 fall back to fabricated instructions. See docs/daily/README.md; mirrored in EMDEE.
+
+## Mobile fcOS Chat (SPR-137)
+
+ChatViewport follows the mobile visual viewport height/offset, removing bottom navigation and its reserved padding while the software keyboard occupies the viewport. It restores navigation on keyboard dismissal and excludes pinch zoom/toolbars from detection. Composer-specific focus CSS removes the nested textarea rectangle while retaining a rounded group focus border and other control outlines. The owner pilot now selects existing GPT-6.1 Sol Responses support with low reasoning; the US$5 allowance, reservations, ownership and conversation history are preserved.

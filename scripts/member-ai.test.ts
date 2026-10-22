@@ -168,3 +168,22 @@ test("loop stops after four provider calls and reservations exceed bounded usage
   for (const model of ["gpt-6-luna", "gpt-6.1-sol"] as const)
     assert.ok(reserveCost(model) >= 4 * usageCost(model, 60000, 1024));
 });
+
+test("GPT-6.1 Sol uses Responses with supported reasoning and its own usage rates", async () => {
+  const config = { ...options(), model: "gpt-6.1-sol" as MemberModel };
+  const result = await runMemberAgent({
+    ...config,
+    request: async (url, init) => {
+      assert.equal(url, "https://api.openai.com/v1/responses");
+      const body = JSON.parse(String(init?.body));
+      assert.equal(body.model, "gpt-6.1-sol");
+      assert.equal(body.reasoning.effort, "low");
+      assert.equal(body.store, false);
+      return reply([
+        { type: "message", content: [{ type: "output_text", text: "Ready." }] },
+      ]);
+    },
+  });
+  assert.equal(result.body, "Ready.");
+  assert.equal(config.receipt.charge, 400);
+});

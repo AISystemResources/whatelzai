@@ -39,8 +39,9 @@ never the owner's EMDEE token or personal notes. Provider calls are accepted onl
 on the member origin (or exact deployment preview/development origin), with a
 matching Origin header and verified activated owner account.
 
-Default GPT-6 Luna pricing: US$0.10/M input and US$0.50/M output tokens. Optional
-GPT-6.1 Sol: US$2/M input and US$10/M output. Checked 2026-10-21 against the OpenAI
+The current owner pilot uses GPT-6.1 Sol (enabled 2026-10-22), with low reasoning through Responses. Stored model selection controls each request; US$5 allowance and usage history are unchanged.
+
+GPT-6 Luna pricing: US$0.10/M input and US$0.50/M output tokens. GPT-6.1 Sol: US$2/M input and US$10/M output. Checked 2026-10-22 against the OpenAI
 model documentation. Rates must be rechecked before changing models. Cached
 input is conservatively counted at the uncached rate; this is an allowance
 estimate, not a provider invoice. No automatic model escalation/fallback.
@@ -74,3 +75,5 @@ identifiers, email addresses, credentials or private transcripts as fixtures.
 On narrow screens the conversation and composer precede the supporting panels;
 a compact allowance link jumps to usage and conversations. Currency balances
 use cents while usage receipts keep micro-dollar precision.
+
+Chat follows the mobile visual viewport. The bottom navigation hides while an editable field and substantial keyboard height reduction are detected, then restores after dismissal; pinch zoom and normal toolbar movement do not count as a keyboard. The rounded composer owns focus feedback; the inner textarea has no separate outline or border.

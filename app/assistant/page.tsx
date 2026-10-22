@@ -7,6 +7,7 @@ import { memberWorkspace } from "@/lib/member-ai/server";
 import { money } from "@/lib/member-ai/model";
 import { ChatMenu } from "./ChatMenu";
 import { Chat } from "./Chat";
+import { ChatViewport } from "./ChatViewport";
 import { CompleteTask } from "./CompleteTask";
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -52,7 +53,7 @@ export default async function AssistantPage({
     workspace.cycle?.allowance_micro ?? workspace.allowance,
   );
   return (
-    <main className="fcos-chat-page mx-auto flex h-dvh max-w-5xl flex-col overflow-hidden px-3 text-zinc-900 md:px-6">
+    <ChatViewport>
       <MemberNav current="/assistant" compact />
       <ChatMenu>
         <aside className="space-y-6">
@@ -154,6 +155,6 @@ export default async function AssistantPage({
               : ""
         }
       />
-    </main>
+    </ChatViewport>
   );
 }

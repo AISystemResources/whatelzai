@@ -197,3 +197,31 @@ body:has(.fcos-chat-page) {
     padding-bottom: 20px;
   }
 }
+
+/* The composer owns its focus border; never draw a second rectangle inside it. */
+.fcos-chat-composer .fcos-chat-input,
+.fcos-chat-composer .fcos-chat-input:focus,
+.fcos-chat-composer .fcos-chat-input:focus-visible {
+  appearance: none;
+  border: 0;
+  outline: none;
+  box-shadow: none;
+}
+@media (max-width: 767px) {
+  .fcos-chat-page {
+    position: fixed;
+    inset-inline: 0;
+    top: var(--fcos-viewport-top, 0px);
+    height: var(--fcos-viewport-height, 100dvh);
+    width: 100%;
+  }
+  .fcos-chat-page[data-keyboard-open="true"] {
+    padding-bottom: 0;
+  }
+  .fcos-chat-page[data-keyboard-open="true"] [data-fcos-nav] {
+    display: none;
+  }
+  .fcos-chat-page[data-keyboard-open="true"] .fcos-chat-composer {
+    padding-bottom: 8px;
+  }
+}

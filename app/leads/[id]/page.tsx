@@ -38,7 +38,7 @@ export default async function LeadPage({
   const today = todayUtc8();
   const plans = groupPlans(activities.filter((a) => a.activity_on >= today));
   return (
-    <main className="mx-auto max-w-3xl space-y-5 px-5 py-8 sm:px-8">
+    <main className="fcos-lead-controls mx-auto max-w-3xl space-y-5 px-5 py-8 sm:px-8">
       <MemberNav current="/leads" />
       <Link href="/leads" className="inline-block py-2 text-sm text-zinc-500">
         ← All leads

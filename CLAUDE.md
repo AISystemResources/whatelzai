@@ -509,3 +509,7 @@ Leads presents owner-private priority cards first, upcoming plans grouped over c
 ## Calm lead profiles and explicit visibility (SPR-146)
 
 Leads use profile cards with initials/private uploaded photos and concise overviews; editing, history and HQH/HHH are collapsed. Explicit per-recipient visibility is private by default, selected leads or all current/future leads, read-only and revision guarded. Activated team position alone grants nothing. Contacts/private remarks/activity notes/linked briefings/chats stay private. Profile/photo/Chat reads independently verify the assigned session and current grants; owner mutation boundaries are unchanged. Private storage has no browser policies or public URLs; authenticated photo responses are no-store and uploads are decoded/resized/metadata-stripped via pinned sharp 0.34.5. Chat prioritizes own leads and includes bounded actual activity statuses; tentative/planned never means attended. No sharing is seeded. See docs/lead-profiles.md; apply 20261022064708 before publication.
+
+## Mobile lead controls (SPR-147)
+
+Lead forms/search/sharing use MobilePicker: a native modal dialog with rounded option buttons, current selection, keyboard arrow/Home/End navigation, Escape dismissal and focus restoration. The hidden form field preserves existing names/values and server validation; opening/cancelling never saves. Lead-scoped styles replace the public gold outline with a soft local focus ring, 48px fields, rounded disclosure chevrons and muted borders. Public/admin styling and all data/access rules remain unchanged.

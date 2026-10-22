@@ -1,4 +1,5 @@
 "use client";
+import { MobilePicker } from "./MobilePicker";
 import { useActionState, useState } from "react";
 import { saveLeadPhoto, saveVisibility } from "@/app/leads/profile-actions";
 import type { Visibility } from "@/lib/leads/sharing";
@@ -63,20 +64,18 @@ function Recipient({
     <form action={action} className="space-y-3 rounded-2xl bg-zinc-50 p-4">
       <input type="hidden" name="recipient" value={recipient.id} />
       <input type="hidden" name="revision" value={grant?.revision ?? 0} />
-      <label className="flex flex-wrap items-center justify-between gap-3 text-sm font-medium">
-        {recipient.label}
-        <select
-          aria-label={`Visibility for ${recipient.label}`}
-          name="mode"
-          value={mode}
-          onChange={(e) => setMode(e.target.value as typeof mode)}
-          className="rounded-xl border bg-white p-2"
-        >
-          <option value="none">Private</option>
-          <option value="selected">Selected leads</option>
-          <option value="all">All my leads</option>
-        </select>
-      </label>
+      <p className="text-sm font-medium">{recipient.label}</p>
+      <MobilePicker
+        name="mode"
+        label={`Visibility for ${recipient.label}`}
+        value={mode}
+        onChange={(value) => setMode(value as typeof mode)}
+        options={[
+          { value: "none", label: "Private" },
+          { value: "selected", label: "Selected leads" },
+          { value: "all", label: "All my leads" },
+        ]}
+      />
       {mode === "selected" && (
         <fieldset disabled={limited}>
           <legend className="mb-2 text-xs text-zinc-500">

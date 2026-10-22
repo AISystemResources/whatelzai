@@ -64,8 +64,8 @@ function Select({
 export function NewLead() {
   const [state, action, pending] = useActionState(createLead, {});
   return (
-    <details className="rounded-xl border p-4">
-      <summary className="cursor-pointer font-semibold">Add a lead</summary>
+    <details className="rounded-2xl border border-zinc-200 p-3 open:w-full">
+      <summary className="cursor-pointer text-sm font-medium">Add</summary>
       <form action={action} className="mt-4 grid gap-4 sm:grid-cols-2">
         <label>
           Name

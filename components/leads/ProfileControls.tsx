@@ -144,14 +144,14 @@ export function LeadSharing({
       })),
   ];
   return (
-    <details className="rounded-2xl border border-zinc-200 bg-white p-4">
+    <details className="rounded-2xl border border-zinc-200 bg-white p-3 open:w-full">
       <summary className="cursor-pointer text-sm font-medium">
-        Sharing{" "}
-        <span className="ml-2 font-normal text-zinc-500">
-          {grants.filter((g) => g.mode !== "none").length
-            ? "Manage access"
-            : "Private to you"}
-        </span>
+        Sharing
+        {grants.some((g) => g.mode !== "none") && (
+          <span className="ml-2 text-zinc-500">
+            {grants.filter((g) => g.mode !== "none").length}
+          </span>
+        )}
       </summary>
       <div className="mt-4 space-y-4">
         <p className="text-sm text-zinc-500">

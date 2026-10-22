@@ -74,3 +74,16 @@ test("countdown rounds up to minutes and stops at zero", () => {
   assert.equal(resetCountdown(end, Date.parse(end) - 1000), "Resets in 0h 1m");
   assert.equal(resetCountdown(end, Date.parse(end)), "Resetting…");
 });
+
+test("reset availability ends at its stored expiry without resurrecting used credits", async () => {
+  const { availableReset, expiredReset } = await import("../lib/profile/usage");
+  const credit = { used_at: null, expires_at: "2026-10-29T10:00:00Z" };
+  const end = Date.parse(credit.expires_at);
+  assert.equal(availableReset(credit, end - 1), true);
+  assert.equal(availableReset(credit, end), false);
+  assert.equal(expiredReset(credit, end), true);
+  assert.equal(
+    availableReset({ ...credit, used_at: "2026-10-22T10:00:00Z" }, end - 1),
+    false,
+  );
+});

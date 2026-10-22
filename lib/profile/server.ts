@@ -37,7 +37,7 @@ export async function loadProfileData() {
       .limit(1),
     supabaseAdmin
       .from("member_ai_reset_credits")
-      .select("id,granted_at,used_at,cycle_id")
+      .select("id,granted_at,expires_at,used_at,cycle_id")
       .eq("user_id", user.id)
       .order("granted_at", { ascending: false })
       .limit(2),
@@ -75,6 +75,7 @@ export async function loadProfileData() {
       resetCredits: (credits.data ?? []) as {
         id: string;
         granted_at: string;
+        expires_at: string;
         used_at: string | null;
         cycle_id: string | null;
       }[],

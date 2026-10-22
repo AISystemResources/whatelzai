@@ -54,7 +54,7 @@ or change credentials to roll back this feature.
 ## Member-owned reset credits (SPR-153)
 
 Each existing and future application user receives one lifetime full-reset credit,
-with no expiry. This is an available credit, not an automatic allowance reset or
+with a seven-day expiry from its grant time (SPR-154). This is an available credit, not an automatic allowance reset or
 new Chat access. The users insert trigger and unique user constraint prevent
 repeat grants on sign-in/upsert. Profile → Usage shows Available and History links.
 Percentages are rounded to whole numbers and the countdown rounds up to minutes.
@@ -73,3 +73,14 @@ and no browser grants; both functions are security invoker and service-only.
 Rollback may deploy the old UI while retaining the credit ledger and used cycles;
 never reissue used credits or delete their audit trail. Tests live in
 `scripts/member-reset-credits-sql.test.mjs` and `scripts/profile-usage.test.ts`.
+
+## Stored reset expiry (SPR-154)
+
+`expires_at` is non-null and defaults to seven days after the grant. The migration
+backfills existing credits from their original `granted_at` without new credits,
+renewal extensions or changes to consumption. Available excludes expired unused
+credits; History retains expired and used records. Expiry is shown in Singapore
+time. Redemption checks the stored expiry against database wall-clock time after
+locking the credit, so a stale page or delayed lock cannot redeem an expired one.
+Already-used credits still return their recorded result on replay, preserving
+idempotency. Apply `20261022100901_member_reset_credit_expiry.sql` before publishing.

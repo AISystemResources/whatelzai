@@ -23,10 +23,13 @@ export async function useResetCredit(
     p_expected_cycle: parsed.data.cycle,
   });
   if (error) {
+    revalidatePath("/profile");
     return {
-      message: error.message.includes("current reply")
-        ? "Wait for your current reply to finish, then try again."
-        : "Your allowance or reset may have changed. Reload to check before trying again.",
+      message: error.message.includes("Reset expired")
+        ? "This reset has expired."
+        : error.message.includes("current reply")
+          ? "Wait for your current reply to finish, then try again."
+          : "Your allowance or reset may have changed. Reload to check before trying again.",
     };
   }
   revalidatePath("/profile");

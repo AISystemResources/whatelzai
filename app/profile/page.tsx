@@ -16,6 +16,7 @@ import { InstallAppButton } from "@/components/fcos/AppInstallation";
 import { loadProfileData } from "@/lib/profile/server";
 import { UsageLimit } from "./UsageLimit";
 import { ResetCreditButton } from "./ResetCreditButton";
+import { availableReset, expiredReset } from "@/lib/profile/usage";
 export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Profile · fcOS",
@@ -43,6 +44,7 @@ export default async function Profile({
   const resetHistory = resets === "history";
   const usageTab = tab === "usage";
   const { persona, usage } = await loadProfileData();
+  const observedAt = usage ? Date.parse(usage.observedAt) : 0;
   const firstName = user.name?.split(" ")[0] || "friend";
   return (
     <main className="fcos-tab-page fcos-profile-page mx-auto min-h-dvh max-w-5xl space-y-6 bg-[#f7f6f4] px-5 pb-8 pt-6 text-zinc-950 sm:px-8">
@@ -149,7 +151,7 @@ export default async function Profile({
                 >
                   {[
                     {
-                      label: `Available ${usage.resetCredits.filter((c) => !c.used_at).length}`,
+                      label: `Available ${usage.resetCredits.filter((c) => availableReset(c, observedAt)).length}`,
                       href: "/profile?tab=usage",
                       selected: !resetHistory,
                     },
@@ -172,14 +174,18 @@ export default async function Profile({
                 {resetHistory ? (
                   <div className="divide-y divide-zinc-100">
                     {usage.resetCredits
-                      .filter((c) => c.used_at)
+                      .filter((c) => c.used_at || expiredReset(c, observedAt))
                       .map((c) => (
                         <div key={c.id} className="py-4">
                           <p className="text-sm font-semibold">
-                            Full reset used
+                            {c.used_at
+                              ? "Full reset used"
+                              : "Full reset expired"}
                           </p>
                           <p className="mt-1 text-xs text-zinc-500">
-                            {date(c.used_at!)}
+                            {c.used_at
+                              ? date(c.used_at)
+                              : `Expired ${date(c.expires_at)} · SGT`}
                           </p>
                         </div>
                       ))}
@@ -193,7 +199,9 @@ export default async function Profile({
                           </p>
                         </div>
                       ))}
-                    {!usage.resetCredits.some((c) => c.used_at) &&
+                    {!usage.resetCredits.some(
+                      (c) => c.used_at || expiredReset(c, observedAt),
+                    ) &&
                       !usage.history.some(
                         (c) => c.reason === "owner-reset",
                       ) && (
@@ -205,16 +213,16 @@ export default async function Profile({
                 ) : (
                   <div>
                     {usage.resetCredits
-                      .filter((c) => !c.used_at)
+                      .filter((c) => availableReset(c, observedAt))
                       .map((c) => (
                         <div
                           key={c.id}
-                          className="flex flex-wrap items-start justify-between gap-3 pt-5"
+                          className="flex items-start justify-between gap-3 pt-5"
                         >
-                          <div>
+                          <div className="min-w-0 flex-1">
                             <p className="text-sm font-semibold">Full reset</p>
                             <p className="mt-1 text-xs text-zinc-500">
-                              Restore to 100%.
+                              Expires {date(c.expires_at)} · SGT
                             </p>
                           </div>
                           <ResetCreditButton
@@ -223,7 +231,9 @@ export default async function Profile({
                           />
                         </div>
                       ))}
-                    {!usage.resetCredits.some((c) => !c.used_at) && (
+                    {!usage.resetCredits.some((c) =>
+                      availableReset(c, observedAt),
+                    ) && (
                       <p className="py-5 text-sm text-zinc-500">
                         No resets available.
                       </p>

@@ -435,3 +435,7 @@ the preceding Today source-editor UI description. Mirrored in EMDEE INSTRUCTIONS
 ## fcOS installation (SPR-135)
 
 Only the app surface links `/fcos/app.webmanifest`, with canonical app origin identity/scope/start URL, standalone display, PNG/maskable icons and Apple home-screen metadata. The app shell captures `beforeinstallprompt` across navigation; Profile exposes native installation or platform instructions and standalone state. The app-only shell registers `/fcos-sw.js` for older Chromium install promotion. Its fetch handler is strictly network-only and stores no offline private-data cache. Auth and member API gates remain unchanged; the app requires a network connection.
+
+## Simple install control (SPR-136)
+
+Profile shows one Install fcOS button, hidden when installed. A captured native prompt opens directly; otherwise platform guidance appears only after tapping, in a native accessible dialog with Escape/close and focus restoration. iOS continues to require Safari Share/Add to Home Screen; there is no fabricated install URL.

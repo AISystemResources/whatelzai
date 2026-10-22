@@ -1,3 +1,4 @@
+import { AppHeader } from "@/components/fcos/AppHeader";
 import { loadLead } from "@/lib/leads/server";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -35,8 +36,9 @@ export default async function AssistantPage({
     );
   } catch {
     return (
-      <main className="mx-auto max-w-3xl px-5 py-10">
-        <MemberNav current="/assistant" />
+      <main className="fcos-tab-page mx-auto max-w-5xl px-5 py-10">
+        <AppHeader title="Chat" />
+        <MemberNav current="/assistant" compact persistent />
         <h1 className="mt-10 text-3xl font-semibold">fcOS Chat</h1>
         <p className="mt-4">
           Chat is available to activated members. Your workspace could not be
@@ -51,7 +53,7 @@ export default async function AssistantPage({
       : null;
   return (
     <ChatViewport>
-      <MemberNav current="/assistant" compact />
+      <MemberNav current="/assistant" compact persistent />
       <ChatMenu chats={workspace.chats} selected={workspace.selected} />
       <Chat
         key={

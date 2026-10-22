@@ -1,3 +1,4 @@
+import { AppHeader } from "@/components/fcos/AppHeader";
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -44,27 +45,21 @@ export default async function Profile({
   const { persona, usage } = await loadProfileData();
   const firstName = user.name?.split(" ")[0] || "friend";
   return (
-    <main className="fcos-profile-page mx-auto min-h-dvh max-w-4xl space-y-6 bg-[#f7f6f4] px-4 pb-8 pt-6 text-zinc-950 sm:px-8">
-      <header className="flex items-center justify-between gap-3">
-        <Link href="/" className="flex items-center gap-2.5 font-bold">
-          <span className="grid h-10 w-10 place-items-center rounded-2xl bg-orange-500 text-white">
-            <Sparkles size={23} aria-hidden="true" />
-          </span>
-          <span className="text-xl tracking-tight">
-            fcOS
-            <span className="block text-[9px] font-semibold uppercase tracking-[0.14em] text-zinc-400">
-              Founder’s Club OS
-            </span>
-          </span>
-        </Link>
-        <SignOutButton>
-          <button className="inline-flex min-h-11 items-center gap-2 rounded-2xl border border-red-100 bg-red-50 px-4 text-sm font-semibold text-red-600 disabled:opacity-50">
-            <LogOut size={17} aria-hidden="true" />
-            Logout
-          </button>
-        </SignOutButton>
-      </header>
-      <MemberNav current="/profile" compact accent="orange" />
+    <main className="fcos-tab-page fcos-profile-page mx-auto min-h-dvh max-w-5xl space-y-6 bg-[#f7f6f4] px-5 pb-8 pt-6 text-zinc-950 sm:px-8">
+      <AppHeader
+        title="Profile"
+        end={
+          <SignOutButton>
+            <button
+              aria-label="Sign out"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-red-50 text-red-600"
+            >
+              <LogOut size={20} aria-hidden="true" />
+            </button>
+          </SignOutButton>
+        }
+      />
+      <MemberNav current="/profile" compact persistent accent="orange" />
       <section className="flex items-center gap-4 py-3 sm:gap-6">
         <div className="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-full border-4 border-orange-100 bg-orange-50 text-3xl font-semibold text-orange-600 sm:h-28 sm:w-28">
           {user.image_url ? (
@@ -81,11 +76,11 @@ export default async function Profile({
           )}
         </div>
         <div className="min-w-0">
-          <h1 className="text-[1.7rem] font-bold leading-tight tracking-tight sm:text-4xl">
+          <h2 className="text-[1.7rem] font-bold leading-tight tracking-tight sm:text-4xl">
             Welcome back,
             <br />
             {firstName}.
-          </h1>
+          </h2>
           <p className="mt-2 text-sm leading-6 text-zinc-500">
             Current tier:{" "}
             <strong className="font-semibold uppercase text-zinc-600">

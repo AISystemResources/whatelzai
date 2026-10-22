@@ -18,10 +18,12 @@ export function MemberNav({
   current,
   compact = false,
   accent = "yellow",
+  persistent = false,
 }: {
   current: string;
   compact?: boolean;
   accent?: "yellow" | "orange";
+  persistent?: boolean;
 }) {
   const selected = memberTab(current);
   const orange = accent === "orange";
@@ -29,6 +31,7 @@ export function MemberNav({
     <nav
       aria-label="fcOS workspace"
       data-fcos-nav
+      data-fcos-persistent-nav={persistent || undefined}
       className={
         compact
           ? "shrink-0 md:mb-2 md:border-b md:border-zinc-200 md:pb-3"
@@ -48,7 +51,9 @@ export function MemberNav({
         </Link>
         <span className="text-xs text-zinc-500">Prepare · connect · grow</span>
       </div>
-      <div className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-zinc-200 bg-white px-2 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_24px_rgba(0,0,0,0.04)] md:static md:gap-1 md:border-0 md:p-0 md:shadow-none">
+      <div
+        className={`${persistent ? "fcos-persistent-tabs " : ""}fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-zinc-200 bg-white px-2 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_24px_rgba(0,0,0,0.04)] md:static md:gap-1 md:border-0 md:p-0 md:shadow-none`}
+      >
         {items.map((item) => (
           <Link
             key={item.href}

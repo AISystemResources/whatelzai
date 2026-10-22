@@ -1,3 +1,4 @@
+import { AppHeader } from "@/components/fcos/AppHeader";
 import { LeadAvatar } from "@/components/leads/LeadAvatar";
 import { loadSharedLeads } from "@/lib/leads/sharing";
 import { Search } from "lucide-react";
@@ -46,12 +47,9 @@ export default async function LeadsPage({
   const pageLink = (page: number) =>
     `/leads?${new URLSearchParams({ q: data.q, page: String(page) })}`;
   return (
-    <main className="fcos-lead-controls mx-auto max-w-5xl space-y-6 px-5 py-10 sm:px-8">
-      <MemberNav current="/leads" />
-      <header className="flex items-center justify-between gap-4">
-        <h1 className="text-3xl font-semibold tracking-tight">Baobeis</h1>
-        <NewLead />
-      </header>
+    <main className="fcos-tab-page fcos-lead-controls mx-auto max-w-5xl space-y-6 px-5 py-10 sm:px-8">
+      <AppHeader title="Baobeis" end={<NewLead />} />
+      <MemberNav current="/leads" compact persistent />
       <form
         role="search"
         className="fcos-baobei-search flex items-center gap-3 rounded-full border border-zinc-200 bg-zinc-50/80 px-4"

@@ -529,3 +529,7 @@ Five roots use AppHeader with consistent title/spacing and page action slots: Ba
 ## Intentional Resources (SPR-151)
 
 Resources uses two compact HQH/HHH creation actions, grouped Notes & events and Learn & grow rows, and a collapsed owner-only Personal tools disclosure. Existing notebook/calendar/catalogue/culture/team destinations, permission gates and shared pinned tab shell are preserved. No data/model/schema changes. Mirrored in EMDEE INSTRUCTIONS.
+
+## Quiet Profile Usage (SPR-152)
+
+Profile removes the Grow with intention card. Usage omits the welcome block and model/explanatory copy, keeping weekly remaining percentage, progress bar and live renewal countdown. Resets/history are collapsed by default; in-flight usage appears only when nonzero. Quotas, private identity-scoped loaders, renewal and admin-reset authorization are unchanged. Mirrored in EMDEE INSTRUCTIONS.

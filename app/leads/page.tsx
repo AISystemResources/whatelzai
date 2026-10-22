@@ -1,19 +1,18 @@
-import { LeadSharing } from "@/components/leads/ProfileControls";
 import { LeadAvatar } from "@/components/leads/LeadAvatar";
-import { visibilitySettings, loadSharedLeads } from "@/lib/leads/sharing";
-import { MobilePicker } from "@/components/leads/MobilePicker";
+import { loadSharedLeads } from "@/lib/leads/sharing";
+import { Search } from "lucide-react";
 import Link from "next/link";
 import { LeadCard } from "@/components/leads/LeadCard";
 import { groupPlans } from "@/lib/leads/plans";
 import { redirect } from "next/navigation";
 import { ensureUserRow } from "@/lib/users";
 import { loadLeads } from "@/lib/leads/server";
-import { regions, stages, todayUtc8 } from "@/lib/leads/model";
+import { todayUtc8 } from "@/lib/leads/model";
 import { MemberNav } from "@/components/culture/MemberNav";
 import { NewLead } from "@/components/leads/LeadForms";
 export const dynamic = "force-dynamic";
 export const metadata = {
-  title: "Leads",
+  title: "Baobeis",
   robots: { index: false, follow: false },
 };
 export default async function LeadsPage({
@@ -27,16 +26,11 @@ export default async function LeadsPage({
   }>;
 }) {
   if (!(await ensureUserRow())) redirect("/sign-in?redirect_url=/leads");
-  const data = await loadLeads(await searchParams);
-  const [settings, shared] = await Promise.all([
-    visibilitySettings(),
-    loadSharedLeads(),
-  ]);
+  const query = await searchParams;
+  const data = await loadLeads({ q: query.q, page: query.page });
+  const shared = await loadSharedLeads();
   const today = todayUtc8();
   const plans = groupPlans(data.upcoming);
-  const priority = data.leads.filter((lead) => lead.is_priority);
-  const others = data.leads.filter((lead) => !lead.is_priority);
-  const filtered = Boolean(data.q || data.region || data.stage);
   const cards = (leads: typeof data.leads) => (
     <div className="grid gap-4 sm:grid-cols-2">
       {leads.map((lead) => (
@@ -50,63 +44,33 @@ export default async function LeadsPage({
     </div>
   );
   const pageLink = (page: number) =>
-    `/leads?${new URLSearchParams({ q: data.q, region: data.region, stage: data.stage, page: String(page) })}`;
+    `/leads?${new URLSearchParams({ q: data.q, page: String(page) })}`;
   return (
     <main className="fcos-lead-controls mx-auto max-w-5xl space-y-6 px-5 py-10 sm:px-8">
       <MemberNav current="/leads" />
-      <header>
-        <p className="text-sm text-zinc-500">Network Marketing · Your people</p>
-        <h1 className="mt-2 text-3xl font-semibold">Leads</h1>
-        <p className="mt-3 text-zinc-600">
-          Your priority people and what’s coming up next.
-        </p>
-      </header>
-      <div className="flex flex-wrap items-start gap-2">
-        <LeadSharing {...settings} />
+      <header className="flex items-center justify-between gap-4">
+        <h1 className="text-3xl font-semibold tracking-tight">Baobeis</h1>
         <NewLead />
-        <details
-          open={filtered}
-          className="rounded-2xl border border-zinc-200 p-3 open:w-full"
-        >
-          <summary className="cursor-pointer text-sm font-medium">
-            Search
-          </summary>
-          <form className="mt-4 grid gap-3 sm:grid-cols-2">
-            <label>
-              Search names
-              <input
-                name="q"
-                defaultValue={data.q}
-                className="mt-1 w-full rounded-lg border p-2"
-              />
-            </label>
-            <MobilePicker
-              name="region"
-              label="Community"
-              defaultValue={data.region}
-              options={[
-                { value: "", label: "All communities" },
-                ...regions.map((x) => ({ value: x, label: x })),
-              ]}
-            />
-            <MobilePicker
-              name="stage"
-              label="Stage"
-              defaultValue={data.stage}
-              options={[
-                { value: "", label: "All stages" },
-                ...stages.map((x) => ({ value: x, label: x })),
-              ]}
-            />
-            <button className="self-end rounded-lg bg-zinc-900 p-2 text-white">
-              Filter
-            </button>
-          </form>
-        </details>
-      </div>
-      <p className="text-sm text-zinc-500">
-        {data.count} {data.count === 1 ? "lead" : "leads"}
-      </p>
+      </header>
+      <form
+        role="search"
+        className="fcos-baobei-search flex items-center gap-3 rounded-full border border-zinc-200 bg-zinc-50/80 px-4"
+      >
+        <Search
+          size={19}
+          className="shrink-0 text-zinc-400"
+          aria-hidden="true"
+        />
+        <input
+          type="search"
+          name="q"
+          aria-label="Search baobeis"
+          placeholder="Search baobeis…"
+          defaultValue={data.q}
+          enterKeyHint="search"
+          className="min-w-0 flex-1 py-3 text-base placeholder:text-zinc-400"
+        />
+      </form>
       {data.plansUnavailable && (
         <p
           role="status"
@@ -116,45 +80,16 @@ export default async function LeadsPage({
           history or reload.
         </p>
       )}
-      {priority.length > 0 && (
-        <section className="space-y-4">
-          <div>
-            <h2 className="text-xl font-semibold">
-              Priority leads{" "}
-              <span className="text-sm font-normal text-zinc-400">
-                {priority.length}
-              </span>
-            </h2>
-            <p className="mt-1 text-xs text-zinc-500">
-              Plans are your personal record. “Maybe” means tentative;
-              attendance is recorded separately.
-            </p>
-          </div>
-          {cards(priority)}
-        </section>
-      )}
-      {others.length > 0 && (
-        <details
-          open={filtered || priority.length === 0}
-          className="rounded-2xl border border-zinc-200 p-4"
-        >
-          <summary className="cursor-pointer font-semibold">
-            {priority.length ? "Other leads" : "All leads"}{" "}
-            <span className="text-sm font-normal text-zinc-400">
-              {others.length}
-            </span>
-          </summary>
-          <div className="mt-4">{cards(others)}</div>
-        </details>
-      )}
+      {cards(data.leads)}
       {!data.leads.length && (
-        <p>No leads match. Try another filter or add your first profile.</p>
+        <p className="py-8 text-center text-sm text-zinc-500">
+          {data.q ? "No baobeis found." : "Add your first baobei with +."}
+        </p>
       )}
       {shared.length > 0 && (
         <details className="rounded-2xl border border-zinc-200 p-4">
           <summary className="cursor-pointer text-sm font-medium">
-            Shared with me{" "}
-            <span className="text-zinc-400">{shared.length}</span>
+            Shared with me
           </summary>
           <p className="mt-3 text-xs text-zinc-500">
             Read-only profiles shared by your team. Showing up to 50 profiles
@@ -181,7 +116,7 @@ export default async function LeadsPage({
           </div>
         </details>
       )}
-      <nav aria-label="Leads pages" className="flex gap-4">
+      <nav aria-label="Baobeis pages" className="flex gap-4">
         {data.page > 1 && (
           <Link href={pageLink(data.page - 1)}>← Previous</Link>
         )}

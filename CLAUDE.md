@@ -513,3 +513,7 @@ Leads use profile cards with initials/private uploaded photos and concise overvi
 ## Mobile lead controls (SPR-147)
 
 Lead forms/search/sharing use MobilePicker: a native modal dialog with rounded option buttons, current selection, keyboard arrow/Home/End navigation, Escape dismissal and focus restoration. The hidden form field preserves existing names/values and server validation; opening/cancelling never saves. Lead-scoped styles replace the public gold outline with a soft local focus ring, 48px fields, rounded disclosure chevrons and muted borders. Public/admin styling and all data/access rules remain unchanged.
+
+## Baobeis list (SPR-148)
+
+Member /leads and navigation are labelled Baobeis. The default list shows title, plus-button add dialog, rounded search bar and cards without introductory text, counts or priority section headings. Search submits on Enter. The sharing toolbar is removed; existing grants/permissions remain unchanged. Add uses the same owner-verified action in a native modal, with nested community picker and cancel/focus restoration. No record is created until submission.

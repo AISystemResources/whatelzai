@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { memberTab } from "@/lib/fcos/navigation";
 const items = [
-  { href: "/leads", label: "Leads", icon: UsersRound },
+  { href: "/leads", label: "Baobeis", icon: UsersRound },
   { href: "/assistant", label: "Chat", icon: MessageCircle },
   { href: "/", label: "Home", icon: House },
   { href: "/resources", label: "Resources", icon: Library },

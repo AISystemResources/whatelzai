@@ -49,7 +49,7 @@ export async function loadSharedLeads() {
   // Restrict before querying and never return the owner's contact/private fields.
   const r = await supabaseAdmin
     .from("member_leads")
-    .select("id,name,region,stage,is_priority,photo_path")
+    .select("id,name,region,stage,is_priority,photo_path,updated_at")
     .in(
       "id",
       ids.slice(0, 500).map((x) => x.id),

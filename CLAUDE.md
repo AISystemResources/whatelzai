@@ -525,3 +525,7 @@ All admin pages share `AdminNavigation` in the owner-guarded admin layout. It su
 ## Shared fcOS tab shell (SPR-150)
 
 Five roots use AppHeader with consistent title/spacing and page action slots: Baobeis add, Chat history/new-chat, Profile sign out. Their headers and persistent bottom tabs stay visible; ordinary pages retain document scrolling. Chat keeps its independently scrolling transcript, visual-viewport composer and keyboard nav hiding. Shared safe-area offsets keep content clear. Native browser pull refresh is left alone on normal pages. Standalone app and contained Chat use an explicit single-finger downward-pull fallback only at scroll top: threshold/release, horizontal/pinch/modal/editing/streaming/cancel guards, and router.refresh without inference, writes, hard reload or draft loss. See docs/fcos-tab-shell.md. Real handset gesture QA remains separate from desktop automation.
+
+## Intentional Resources (SPR-151)
+
+Resources uses two compact HQH/HHH creation actions, grouped Notes & events and Learn & grow rows, and a collapsed owner-only Personal tools disclosure. Existing notebook/calendar/catalogue/culture/team destinations, permission gates and shared pinned tab shell are preserved. No data/model/schema changes. Mirrored in EMDEE INSTRUCTIONS.

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SignOutButton } from "@/components/auth/AuthControls";
+import { InstallAppButton } from "@/components/fcos/AppInstallation";
 
 type NavItem = { href: string; label: string; exact?: boolean };
 
@@ -71,7 +72,7 @@ function NavLink({
       href={adminUrl(href)}
       aria-current={active ? "page" : undefined}
       onClick={onNavigate}
-      className={`block border-l-2 px-3 py-2 font-mono text-xs uppercase tracking-widest transition-colors ${
+      className={`flex min-h-11 items-center border-l-2 px-3 py-2 font-mono text-xs uppercase tracking-widest transition-colors ${
         active
           ? "border-zinc-900 bg-zinc-50 text-zinc-900"
           : "border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-900"
@@ -114,7 +115,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         </ul>
       </nav>
 
-      <div className="space-y-4 border-t border-zinc-200 px-5 py-4">
+      <div className="space-y-4 border-t border-zinc-200 px-5 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <InstallAppButton />
         <div className="flex items-center justify-between gap-3">
           <Link
             href={adminUrl("/admin/settings")}
@@ -165,13 +167,13 @@ export function AdminSidebar() {
   return (
     <>
       {/* Mobile top bar — visible < md. Layout compensates with pt-14 md:pt-0. */}
-      <div className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-zinc-200 bg-white px-4 md:hidden">
+      <div className="sticky top-0 z-30 flex min-h-14 items-center justify-between border-b border-zinc-200 bg-white px-4 pt-[env(safe-area-inset-top)] md:hidden">
         <button
           type="button"
           aria-label="Open admin menu"
           aria-expanded={open}
           onClick={() => setOpen(true)}
-          className="flex h-9 w-9 items-center justify-center border border-zinc-200 text-zinc-700 transition-colors hover:border-zinc-400 hover:text-zinc-900"
+          className="flex h-11 w-11 items-center justify-center border border-zinc-200 text-zinc-700 transition-colors hover:border-zinc-400 hover:text-zinc-900"
         >
           <svg
             viewBox="0 0 24 24"
@@ -208,6 +210,7 @@ export function AdminSidebar() {
           open ? "translate-x-0" : "-translate-x-full"
         }`}
         aria-hidden={!open}
+        inert={!open}
       >
         <SidebarContent onNavigate={() => setOpen(false)} />
       </aside>

@@ -490,11 +490,13 @@ mirrored in EMDEE INSTRUCTIONS.
 
 Chat’s native modal drawer contains New chat, title/date search across the latest 30 owned conversations, selected history and a small Profile/Usage link. Usage stays in Profile. Commitments are at `/assistant/commitments`, linked from Home and owner Resources alongside the optional knowledge connection. No inference or conversation creation on navigation; first-send creation and all owner/assignment/access checks remain intact. Projects and further harness automation are deferred until their context and sharing boundaries are defined.
 
-
 ## Weekly percentage usage (SPR-142)
 
 The baseline is now internal US$1 per seven-day window (full reset US$1 / 100%, half US$0.50 / 50%), superseding SPR-141's monthly amounts. Profile Usage exposes percentages and a live countdown, never dollar amounts. Exact reset timestamps use Singapore time. Current-cycle spend/reservations and historical records are preserved on conversion. New members start a seven-day window on first send; expired windows roll forward on the existing anchor without credit accumulation. Read-only projection and reservation SQL agree. Owner resets restart the seven-day clock; a partial grant is measured against the normal weekly baseline. No member self-reset entitlement is invented. Apply migration 20261022053300 after 20261022053000 before publishing code.
 
+## Admin phone app (SPR-144)
+
+The admin host links its own `/admin-pwa/app.webmanifest`, yellow W icons and Apple home-screen metadata. Canonical identity/scope remain admin.whatelz.ai; standalone launch opens `/today`. Shared install UI retains fcOS defaults; only the admin shell supplies Admin identity and `/admin-sw.js`. Installation is available in the owner sidebar and Settings, with native Chromium prompting or iPhone/iPad Share-menu instructions. Closed mobile navigation is inert; touch targets and safe-area padding accommodate phones. Owner proxy/layout/action checks remain unchanged. The admin worker is network-only: no private offline cache, persisted snapshots, background sync or queued mutations. Failed navigation receives only a generic no-store reconnect page; API failures propagate. Requires network and owner sign-in. See docs/admin-pwa.md; mirrored in EMDEE INSTRUCTIONS.
 
 ## Streamed Markdown Chat (SPR-143)
 

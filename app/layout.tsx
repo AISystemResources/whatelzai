@@ -54,7 +54,19 @@ export async function generateMetadata(): Promise<Metadata> {
             },
             icons: { icon: "/fcos/icon-192.png", apple: "/fcos/icon-180.png" },
           }
-        : {}),
+        : {
+            applicationName: "Whatelz Admin",
+            manifest: "/admin-pwa/app.webmanifest",
+            appleWebApp: {
+              capable: true,
+              title: "Whatelz Admin",
+              statusBarStyle: "default" as const,
+            },
+            icons: {
+              icon: "/admin-pwa/icon-192.png",
+              apple: "/admin-pwa/icon-180.png",
+            },
+          }),
       robots: { index: false, follow: false },
     };
   }

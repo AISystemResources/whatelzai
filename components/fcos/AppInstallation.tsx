@@ -6,6 +6,7 @@ import {
   useEffect,
   useState,
   useRef,
+  useId,
   useSyncExternalStore,
   type ReactNode,
 } from "react";
@@ -20,7 +21,14 @@ const Installation = createContext<{
   installed: boolean;
   ios: boolean;
   clear: () => void;
-}>({ prompt: null, installed: false, ios: false, clear: () => {} });
+  name: string;
+}>({
+  prompt: null,
+  installed: false,
+  ios: false,
+  clear: () => {},
+  name: "fcOS",
+});
 
 function browserInstalled() {
   return (
@@ -41,7 +49,15 @@ function browserIos() {
     (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
   );
 }
-export function AppInstallationProvider({ children }: { children: ReactNode }) {
+export function AppInstallationProvider({
+  children,
+  name = "fcOS",
+  worker = "/fcos-sw.js",
+}: {
+  children: ReactNode;
+  name?: string;
+  worker?: string;
+}) {
   const [prompt, setPrompt] = useState<InstallPrompt | null>(null);
   const [justInstalled, setJustInstalled] = useState(false);
   const standalone = useSyncExternalStore(
@@ -56,7 +72,7 @@ export function AppInstallationProvider({ children }: { children: ReactNode }) {
     // This worker is network-only; browser-menu installation remains the fallback.
     if ("serviceWorker" in navigator) {
       void navigator.serviceWorker
-        .register("/fcos-sw.js", { scope: "/", updateViaCache: "none" })
+        .register(worker, { scope: "/", updateViaCache: "none" })
         .catch(() => {});
     }
     const capture = (event: Event) => {
@@ -73,10 +89,10 @@ export function AppInstallationProvider({ children }: { children: ReactNode }) {
       window.removeEventListener("beforeinstallprompt", capture);
       window.removeEventListener("appinstalled", completed);
     };
-  }, []);
+  }, [worker]);
   return (
     <Installation.Provider
-      value={{ prompt, installed, ios, clear: () => setPrompt(null) }}
+      value={{ prompt, installed, ios, clear: () => setPrompt(null), name }}
     >
       {children}
     </Installation.Provider>
@@ -92,7 +108,8 @@ export function InstallAppButton({
     accent === "orange"
       ? "bg-orange-500 text-white"
       : "bg-yellow-300 text-zinc-950";
-  const { prompt, installed, ios, clear } = useContext(Installation);
+  const { prompt, installed, ios, clear, name } = useContext(Installation);
+  const helpId = useId();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const help = useRef<HTMLDialogElement>(null);
@@ -126,7 +143,7 @@ export function InstallAppButton({
         className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 py-3 font-semibold disabled:opacity-50 ${buttonTone}`}
       >
         <Download size={18} aria-hidden="true" />
-        {busy ? "Opening installer…" : "Install fcOS"}
+        {busy ? "Opening installer…" : `Install ${name}`}
       </button>
       {message && (
         <p role="status" className="mt-2 text-sm text-zinc-500">
@@ -135,12 +152,12 @@ export function InstallAppButton({
       )}
       <dialog
         ref={help}
-        aria-labelledby="fcos-install-help"
+        aria-labelledby={helpId}
         className="fixed inset-0 m-auto w-[calc(100%-2rem)] max-w-sm rounded-3xl border bg-white p-6 text-zinc-900 shadow-xl backdrop:bg-black/40"
       >
         <div className="flex items-center justify-between gap-4">
-          <h2 id="fcos-install-help" className="text-xl font-semibold">
-            Add fcOS to your phone
+          <h2 id={helpId} className="text-xl font-semibold">
+            Add {name} to your phone
           </h2>
           <button
             type="button"

@@ -15,6 +15,7 @@ for (const file of [
   "20261022053000_activated_chat_resets.sql",
   "20261022053300_fcos_weekly_allowance.sql",
   "20261022095557_member_reset_credits.sql",
+  "20261022100901_member_reset_credit_expiry.sql",
 ])
   await db.exec(
     fs.readFileSync(
@@ -35,6 +36,11 @@ await db.query("insert into users values($1,$2,$3,$1)", [
   "future@example.invalid",
 ]);
 assert.ok((await credit(future)).id);
+for (const id of [owner, user, future]) {
+  const row = await credit(id);
+  assert.equal(+row.expires_at - +row.granted_at, 604800000);
+}
+
 await assert.rejects(
   () =>
     db.query("insert into member_ai_reset_credits(user_id) values($1)", [user]),
@@ -128,6 +134,46 @@ assert.equal(
 );
 assert.equal((await credit(user)).cycle_id, used.id);
 assert.equal((await credit(owner)).used_at, null);
+// A used token remains idempotent after expiry; expiry must not grant it again.
+await db.query(
+  "update member_ai_reset_credits set granted_at=now()-interval '8 days',expires_at=now()-interval '1 day' where user_id=$1",
+  [user],
+);
+assert.equal(
+  (await one("select use_member_reset_credit($1,$2,$3) id", [user, token, old]))
+    .id,
+  used.id,
+);
+// Expired unused credit is rejected at the database, without creating a cycle.
+await db.query("insert into business_team_accounts values($1,$2)", [
+  owner,
+  future,
+]);
+await db.query(
+  "update member_ai_reset_credits set granted_at=now()-interval '8 days',expires_at=now()-interval '1 day' where user_id=$1",
+  [future],
+);
+const beforeExpiryAttempt = (
+  await one("select count(*)::int n from member_ai_cycles")
+).n;
+await assert.rejects(
+  async () =>
+    db.query("select use_member_reset_credit($1,$2,null)", [
+      future,
+      (await credit(future)).id,
+    ]),
+  /Reset expired/,
+);
+assert.equal((await credit(future)).used_at, null);
+assert.equal(
+  (await one("select count(*)::int n from member_ai_cycles")).n,
+  beforeExpiryAttempt,
+);
+assert.equal(
+  await one("select * from member_ai_access where user_id=$1", [future]),
+  undefined,
+);
+
 for (const role of ["anon", "authenticated"]) {
   await db.exec(`set role ${role}`);
   await assert.rejects(
@@ -143,5 +189,5 @@ for (const role of ["anon", "authenticated"]) {
 }
 await db.close();
 console.log(
-  "Reset-credit SQL passed: one grant/current and future user, unassigned/cross-account/stale denial, reservation guard, atomic use/replay, retained cycles and browser privilege denial.",
+  "Reset-credit SQL passed: one grant/current and future user, unassigned/cross-account/stale denial, reservation guard, atomic use/replay, retained cycles, seven-day expiry/backfill/future grants, expired rejection and browser privilege denial.",
 );

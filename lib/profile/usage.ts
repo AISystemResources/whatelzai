@@ -61,3 +61,11 @@ export function summarizeUsage(
     current,
   };
 }
+
+export type ResetCredit = { used_at: string | null; expires_at: string };
+export function expiredReset(credit: ResetCredit, now: number) {
+  return Date.parse(credit.expires_at) <= now;
+}
+export function availableReset(credit: ResetCredit, now: number) {
+  return !credit.used_at && Date.parse(credit.expires_at) > now;
+}

@@ -338,7 +338,6 @@ only execution metadata, never Markdown. See docs/daily/README.md. This explicit
 requested schedule supersedes the old blanket prohibition on in-repo jobs; daily
 08:00/21:00 generation is still disabled. — codex, 2026-10-19
 
-
 ## Subscription-first personal Daily (SPR-127)
 
 Personal Daily uses the existing ChatGPT cloud tasks at 04:30 and 21:00
@@ -360,7 +359,6 @@ storing it; a valid token for the wrong account must not count as a successful
 connection. Never copy a personal CLI/chat token into application configuration.
 See docs/daily/README.md. — codex, 2026-10-19
 
-
 ## ChatGPT weekly reflection (SPR-128)
 
 The personal cloud task Weekly - EMDEE Reflection runs Mondays at 03:00
@@ -373,7 +371,6 @@ The weekly page discovers the canonical EMDEE document independently of SQL
 API-run status so externally written summaries display correctly. Existing API
 metadata remains separate; the old daily 03:00 Distill is unchanged.
 See docs/daily/README.md. — codex, 2026-10-19
-
 
 ## Member assistant (SPR-129)
 
@@ -488,3 +485,7 @@ a stale or failed batch rolls back all. Reset replaces remaining credit rather
 than adding it; old spend/reservations remain and monthly baseline stays US$5.
 No reset is issued on page load or during deployment. See docs/member-credit-resets.md;
 mirrored in EMDEE INSTRUCTIONS.
+
+## Conversation-first Chat sidebar (SPR-140)
+
+Chat’s native modal drawer contains New chat, title/date search across the latest 30 owned conversations, selected history and a small Profile/Usage link. Usage stays in Profile. Commitments are at `/assistant/commitments`, linked from Home and owner Resources alongside the optional knowledge connection. No inference or conversation creation on navigation; first-send creation and all owner/assignment/access checks remain intact. Projects and further harness automation are deferred until their context and sharing boundaries are defined.

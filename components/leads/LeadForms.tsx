@@ -1,6 +1,7 @@
 "use client";
 import { MobilePicker } from "./MobilePicker";
-import { useActionState, useState } from "react";
+import { Plus, X } from "lucide-react";
+import { useActionState, useState, useRef } from "react";
 import {
   setLeadPriority,
   createLead,
@@ -57,26 +58,79 @@ function Select({
 
 export function NewLead() {
   const [state, action, pending] = useActionState(createLead, {});
+  const dialog = useRef<HTMLDialogElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const [open, setOpen] = useState(false);
   return (
-    <details className="rounded-2xl border border-zinc-200 p-3 open:w-full">
-      <summary className="cursor-pointer text-sm font-medium">Add</summary>
-      <form action={action} className="mt-4 grid gap-4 sm:grid-cols-2">
-        <label>
-          Name
-          <input name="name" required maxLength={160} className={input} />
-        </label>
-        <Select
-          name="region"
-          label="Community"
-          value="Unassigned"
-          options={regions}
-        />
-        <Message state={state} />
-        <button disabled={pending} className={button}>
-          {pending ? "Creating…" : "Create profile"}
-        </button>
-      </form>
-    </details>
+    <>
+      <button
+        ref={trigger}
+        type="button"
+        aria-label="Add baobei"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        onClick={() => {
+          dialog.current?.showModal();
+          setOpen(true);
+        }}
+        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-yellow-300 text-zinc-900 transition hover:bg-yellow-400 active:scale-95"
+      >
+        <Plus size={24} aria-hidden="true" />
+      </button>
+      <dialog
+        ref={dialog}
+        aria-labelledby="new-baobei-title"
+        className="fixed inset-x-3 bottom-3 top-auto mx-auto mb-0 mt-auto max-h-[85dvh] w-[calc(100%_-_24px)] max-w-lg overflow-y-auto rounded-[28px] border-0 bg-white p-6 text-zinc-900 shadow-2xl backdrop:bg-zinc-900/25 sm:inset-0 sm:my-auto sm:h-fit"
+        onClose={(event) => {
+          if (event.target === event.currentTarget) {
+            setOpen(false);
+            trigger.current?.focus({ preventScroll: true });
+          }
+        }}
+        onClick={(event) => {
+          if (event.target === event.currentTarget) dialog.current?.close();
+        }}
+      >
+        <div className="mb-5 flex items-center justify-between gap-4">
+          <h2 id="new-baobei-title" className="text-xl font-semibold">
+            Add a baobei
+          </h2>
+          <button
+            type="button"
+            aria-label="Close add baobei"
+            onClick={() => dialog.current?.close()}
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-zinc-100 text-zinc-500"
+          >
+            <X size={20} aria-hidden="true" />
+          </button>
+        </div>
+        <form action={action} className="space-y-4">
+          <label className="block text-sm font-medium text-zinc-600">
+            Name
+            <input
+              name="name"
+              required
+              maxLength={160}
+              placeholder="Their name"
+              className={input}
+            />
+          </label>
+          <Select
+            name="region"
+            label="Community"
+            value="Unassigned"
+            options={regions}
+          />
+          <Message state={state} />
+          <button
+            disabled={pending}
+            className="min-h-12 w-full rounded-full bg-zinc-900 px-4 py-3 font-medium text-white disabled:opacity-50"
+          >
+            {pending ? "Adding…" : "Add baobei"}
+          </button>
+        </form>
+      </dialog>
+    </>
   );
 }
 export function LeadEditor({ lead }: { lead: Lead }) {

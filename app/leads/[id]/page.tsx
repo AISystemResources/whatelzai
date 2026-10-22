@@ -41,7 +41,7 @@ export default async function LeadPage({
     <main className="fcos-lead-controls mx-auto max-w-3xl space-y-5 px-5 py-8 sm:px-8">
       <MemberNav current="/leads" />
       <Link href="/leads" className="inline-block py-2 text-sm text-zinc-500">
-        ← All leads
+        ← Baobeis
       </Link>
       <header className="rounded-3xl bg-gradient-to-br from-amber-50/80 via-orange-50/40 to-white p-6 sm:p-8">
         <div className="flex items-center gap-5">
@@ -58,9 +58,7 @@ export default async function LeadPage({
           </div>
         </div>
         <p className="mt-5 text-xs text-zinc-500">
-          {canEdit
-            ? "Your profile · sharing is managed from Leads"
-            : "Shared with you · read only"}
+          {canEdit ? "Your profile" : "Shared with you · read only"}
         </p>
       </header>
       <section className="space-y-4 rounded-3xl bg-white p-5 sm:p-6">

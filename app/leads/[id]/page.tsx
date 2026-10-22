@@ -1,9 +1,12 @@
 import { ContextNotes } from "@/components/fcos/ContextNotes";
+import { LeadAvatar } from "@/components/leads/LeadAvatar";
+import { PhotoEditor } from "@/components/leads/ProfileControls";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ensureUserRow } from "@/lib/users";
 import { loadLead } from "@/lib/leads/server";
-import { ageOn, dateLabel } from "@/lib/leads/model";
+import { dateLabel, todayUtc8 } from "@/lib/leads/model";
+import { groupPlans, planDate } from "@/lib/leads/plans";
 import { MemberNav } from "@/components/culture/MemberNav";
 import {
   LeadPriority,
@@ -16,6 +19,7 @@ export const metadata = {
   title: "Lead profile",
   robots: { index: false, follow: false },
 };
+const disclosure = "rounded-2xl border border-zinc-200 bg-white p-5";
 export default async function LeadPage({
   params,
 }: {
@@ -30,49 +34,196 @@ export default async function LeadPage({
     redirect(`/sign-in?redirect_url=${encodeURIComponent(`/leads/${id}`)}`);
   const data = await loadLead(id);
   if (!data) notFound();
-  const age = ageOn(data.lead.birthday);
+  const { lead, activities, canEdit } = data;
+  const today = todayUtc8();
+  const plans = groupPlans(activities.filter((a) => a.activity_on >= today));
   return (
-    <main className="mx-auto max-w-4xl space-y-8 px-5 py-10 sm:px-8">
+    <main className="mx-auto max-w-3xl space-y-5 px-5 py-8 sm:px-8">
       <MemberNav current="/leads" />
-      <header>
-        <Link href="/leads" className="text-sm underline">
-          ← All leads
-        </Link>
-        <p className="mt-4 text-sm text-zinc-500">Private to you</p>
-        <h1 className="mt-2 text-3xl font-semibold">{data.lead.name}</h1>
-        {age !== null && <p className="mt-2 text-zinc-500">Age {age}</p>}
-      </header>
-      <LeadPriority key={data.lead.revision} lead={data.lead} />
-      <ContextNotes context={{ lead: id }} createQuery={`lead=${id}`} />
-      <LeadEditor lead={data.lead} />
-      <section className="space-y-4">
-        <h2 className="text-2xl font-semibold">Activity history</h2>
-        <p className="text-sm text-zinc-500">
-          Your personal record. Planned, tentative and “to invite” activities
-          are not confirmed attendance or calendar bookings.
-        </p>
-        {data.activities.map((activity) => (
-          <article key={activity.id} className="rounded-xl border p-4">
-            <div className="flex flex-wrap justify-between gap-2">
-              <h3 className="font-semibold">{activity.title}</h3>
-              <span className="rounded bg-zinc-100 px-2 py-1 text-sm">
-                {activity.status}
-              </span>
-            </div>
+      <Link href="/leads" className="inline-block py-2 text-sm text-zinc-500">
+        ← All leads
+      </Link>
+      <header className="rounded-3xl bg-gradient-to-br from-amber-50/80 via-orange-50/40 to-white p-6 sm:p-8">
+        <div className="flex items-center gap-5">
+          <LeadAvatar lead={lead} large />
+          <div className="min-w-0">
+            <p className="text-xs text-zinc-500">{lead.region}</p>
+            <h1 className="mt-1 text-3xl font-semibold tracking-tight">
+              {lead.name}
+            </h1>
             <p className="mt-2 text-sm text-zinc-500">
-              {dateLabel(activity.activity_on)}
+              {lead.stage}
+              {lead.membership !== "Unknown" ? ` · ${lead.membership}` : ""}
             </p>
-            {activity.notes && (
-              <p className="mt-2 whitespace-pre-wrap">{activity.notes}</p>
-            )}
-            <ActivityStatus key={activity.revision} activity={activity} />
-          </article>
+          </div>
+        </div>
+        <p className="mt-5 text-xs text-zinc-500">
+          {canEdit
+            ? "Your profile · sharing is managed from Leads"
+            : "Shared with you · read only"}
+        </p>
+      </header>
+      <section className="space-y-4 rounded-3xl bg-white p-5 sm:p-6">
+        <h2 className="text-base font-semibold">Coming up</h2>
+        {plans.slice(0, 3).map((plan) => (
+          <div
+            key={`${plan.title}-${plan.start}-${plan.status}`}
+            className="flex items-start justify-between gap-4 border-b border-zinc-100 pb-4 last:border-0 last:pb-0"
+          >
+            <div>
+              <p className="text-sm font-medium">{plan.title}</p>
+              <p
+                className={`mt-1 text-xs ${plan.start === today ? "text-orange-600" : "text-zinc-500"}`}
+              >
+                {planDate(plan, today)}
+              </p>
+            </div>
+            <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-600">
+              {plan.status === "Tentative" ? "Maybe" : plan.status}
+            </span>
+          </div>
         ))}
-        {!data.activities.length && (
-          <p className="text-zinc-500">No activities recorded yet.</p>
+        {!plans.length && (
+          <p className="text-sm text-zinc-500">
+            {lead.next_action || "A little space for the next step."}
+          </p>
         )}
-        <NewActivity leadId={id} />
+        {plans.length > 3 && (
+          <p className="text-xs text-zinc-500">
+            {plans.length - 3} more in activities below.
+          </p>
+        )}
       </section>
+      {lead.story && (
+        <section className="rounded-3xl bg-zinc-50 p-5 sm:p-6">
+          <h2 className="text-base font-semibold">Their story</h2>
+          <p className="mt-3 line-clamp-4 whitespace-pre-wrap text-sm leading-relaxed text-zinc-600">
+            {lead.story}
+          </p>
+          <details className="mt-3 text-sm">
+            <summary className="cursor-pointer text-zinc-500">
+              Read their story
+            </summary>
+            <p className="mt-3 whitespace-pre-wrap leading-relaxed">
+              {lead.story}
+            </p>
+          </details>
+        </section>
+      )}
+      <div className="flex flex-wrap items-center justify-between gap-3 px-1">
+        <Link
+          href={`/assistant?new=1&lead=${id}`}
+          className="rounded-full bg-yellow-100 px-4 py-3 text-sm font-medium"
+        >
+          Talk it through in Chat ↗
+        </Link>
+        {lead.goal !== "Undecided" && (
+          <span className="text-xs text-zinc-500">
+            Working towards {lead.goal}
+          </span>
+        )}
+      </div>
+      {canEdit && (
+        <details className={disclosure}>
+          <summary className="cursor-pointer text-sm font-medium">
+            Edit profile
+          </summary>
+          <div className="mt-5 space-y-6">
+            <PhotoEditor key={`photo-${lead.revision}`} lead={lead} />
+            <LeadPriority key={`priority-${lead.revision}`} lead={lead} />
+            <LeadEditor key={`profile-${lead.revision}`} lead={lead} />
+          </div>
+        </details>
+      )}
+      <details className={disclosure}>
+        <summary className="cursor-pointer text-sm font-medium">
+          Activities{" "}
+          <span className="ml-2 font-normal text-zinc-400">
+            {activities.length}
+            {data.historyLimited ? "+" : ""}
+          </span>
+        </summary>
+        <div className="mt-4 space-y-4">
+          <p className="text-xs leading-relaxed text-zinc-500">
+            Plans and invitations are not confirmed attendance. Past plans stay
+            unconfirmed until you update them.
+          </p>
+          {activities.slice(0, 500).map((activity) => (
+            <article
+              key={activity.id}
+              className="border-b border-zinc-100 py-3"
+            >
+              <div className="flex justify-between gap-3">
+                <div>
+                  <h3 className="text-sm font-medium">{activity.title}</h3>
+                  <p className="mt-1 text-xs text-zinc-500">
+                    {dateLabel(activity.activity_on)}
+                  </p>
+                </div>
+                <span className="text-xs text-zinc-500">
+                  {activity.status === "Tentative" ? "Maybe" : activity.status}
+                </span>
+              </div>
+              {canEdit && (
+                <details className="mt-2">
+                  <summary className="cursor-pointer text-xs text-zinc-500">
+                    Update or add context
+                  </summary>
+                  {activity.notes && (
+                    <p className="mt-3 whitespace-pre-wrap text-sm">
+                      {activity.notes}
+                    </p>
+                  )}
+                  <ActivityStatus key={activity.revision} activity={activity} />
+                </details>
+              )}
+            </article>
+          ))}
+          {!activities.length && (
+            <p className="text-sm text-zinc-500">No activities recorded yet.</p>
+          )}
+          {data.historyLimited && (
+            <p className="text-xs text-zinc-500">
+              Showing the latest 500 records.
+            </p>
+          )}
+          {canEdit && (
+            <details>
+              <summary className="cursor-pointer py-2 text-sm font-medium">
+                + Record an activity
+              </summary>
+              <NewActivity leadId={id} />
+            </details>
+          )}
+        </div>
+      </details>
+      {(lead.interests || lead.concerns) && (
+        <details className={disclosure}>
+          <summary className="cursor-pointer text-sm font-medium">
+            A little more about {lead.name.split(" ")[0]}
+          </summary>
+          <div className="mt-4 space-y-4 text-sm text-zinc-600">
+            {lead.interests && (
+              <p className="whitespace-pre-wrap">Interests: {lead.interests}</p>
+            )}
+            {lead.concerns && (
+              <p className="whitespace-pre-wrap">
+                Things to keep in mind: {lead.concerns}
+              </p>
+            )}
+          </div>
+        </details>
+      )}
+      {canEdit && (
+        <details className={disclosure}>
+          <summary className="cursor-pointer text-sm font-medium">
+            HQH & HHH notes
+          </summary>
+          <div className="mt-4">
+            <ContextNotes context={{ lead: id }} createQuery={`lead=${id}`} />
+          </div>
+        </details>
+      )}
     </main>
   );
 }

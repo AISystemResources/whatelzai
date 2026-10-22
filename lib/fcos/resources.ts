@@ -1,4 +1,5 @@
 import "server-only";
+import { readLeadContext } from "@/lib/leads/context";
 import { sourceQuerySchema } from "./model";
 import { fcosOwner } from "./server";
 import { supabaseAdmin } from "@/lib/supabase-server";
@@ -13,29 +14,7 @@ export async function readFcosResource(input: unknown) {
     value.toLocaleLowerCase().includes(query.toLocaleLowerCase());
   const filter = `%${query.replace(/[\\%_]/g, "\\$&")}%`;
   if (source === "leads") {
-    const { data, error } = await supabaseAdmin
-      .from("member_leads")
-      .select(
-        "id,name,region,membership,stage,goal,story,interests,concerns,notes,next_action,follow_up_on",
-      )
-      .eq("owner_id", owner)
-      .ilike("name", filter)
-      .order("name")
-      .limit(5);
-    if (error) throw Error("Your leads are unavailable.");
-    return {
-      items: data?.map((lead) => ({
-        ...lead,
-        story: lead.story.slice(0, 400),
-        notes: lead.notes.slice(0, 400),
-        interests: lead.interests.slice(0, 200),
-        concerns: lead.concerns.slice(0, 200),
-        next_action: lead.next_action.slice(0, 300),
-        url: `/leads/${lead.id}`,
-      })),
-      coverage:
-        "At most 5 of your own matching leads. Dates are recorded follow-ups, not confirmed completion.",
-    };
+    return readLeadContext(query);
   }
   if (source === "briefings") {
     const { data, error } = await supabaseAdmin

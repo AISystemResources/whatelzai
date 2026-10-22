@@ -1,3 +1,4 @@
+import { loadLead } from "@/lib/leads/server";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { ensureUserRow } from "@/lib/users";
@@ -17,6 +18,7 @@ export default async function AssistantPage({
   searchParams: Promise<{
     chat?: string;
     prompt?: string;
+    lead?: string;
     new?: string;
     draft?: string;
   }>;
@@ -43,6 +45,10 @@ export default async function AssistantPage({
       </main>
     );
   }
+  const leadContext =
+    query.new === "1" && z.uuid().safeParse(query.lead).success
+      ? await loadLead(query.lead!)
+      : null;
   return (
     <ChatViewport>
       <MemberNav current="/assistant" compact />
@@ -57,11 +63,13 @@ export default async function AssistantPage({
         enabled={workspace.enabled}
         name={workspace.name?.split(" ")[0] ?? ""}
         initialPrompt={
-          query.prompt === "hqh"
-            ? "Help me prepare an HQH (会前会). Ask which lead and event before drafting."
-            : query.prompt === "hhh"
-              ? "Help me write an HHH (会后会). Ask what happened and what I learned."
-              : ""
+          leadContext
+            ? `Help me review ${leadContext.lead.name}’s profile and recorded activities. Read my leads first.`
+            : query.prompt === "hqh"
+              ? "Help me prepare an HQH (会前会). Ask which lead and event before drafting."
+              : query.prompt === "hhh"
+                ? "Help me write an HHH (会后会). Ask what happened and what I learned."
+                : ""
         }
       />
     </ChatViewport>

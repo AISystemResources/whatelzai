@@ -80,6 +80,7 @@ export type Lead = Omit<z.infer<typeof leadUpdateSchema>, "id"> & {
   id: string;
   updated_at: string;
   is_priority: boolean;
+  has_photo?: boolean;
 };
 export type LeadSummary = Pick<
   Lead,
@@ -92,7 +93,8 @@ export type LeadSummary = Pick<
   | "next_action"
   | "follow_up_on"
   | "is_priority"
->;
+  | "has_photo"
+> & { updated_at?: string };
 export type Activity = z.infer<typeof activityCreateSchema> & {
   id: string;
   revision: number;

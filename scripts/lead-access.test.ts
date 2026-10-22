@@ -1,0 +1,227 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import vm from "node:vm";
+import ts from "typescript";
+import { createRequire } from "node:module";
+import * as model from "../lib/leads/model";
+const req = createRequire(import.meta.url);
+function load<T>(file: string, mocks: Record<string, unknown>) {
+  const code = ts.transpileModule(
+    fs.readFileSync(new URL("../" + file, import.meta.url), "utf8"),
+    {
+      compilerOptions: {
+        module: ts.ModuleKind.CommonJS,
+        target: ts.ScriptTarget.ES2022,
+      },
+    },
+  ).outputText;
+  const mod = { exports: {} };
+  vm.runInNewContext(code, {
+    module: mod,
+    exports: mod.exports,
+    require: (key: string) =>
+      key === "server-only" ? {} : key in mocks ? mocks[key] : req(key),
+    Date,
+    FormData,
+    File,
+    Buffer,
+  });
+  return mod.exports as T;
+}
+function chain(data: unknown, log: { method: string; args: unknown[] }[]) {
+  const q: Record<string, unknown> = {};
+  for (const method of [
+    "select",
+    "eq",
+    "ilike",
+    "in",
+    "order",
+    "limit",
+    "maybeSingle",
+  ])
+    q[method] = (...args: unknown[]) => {
+      log.push({ method, args });
+      return q;
+    };
+  q.then = (resolve: (r: unknown) => unknown) =>
+    Promise.resolve({ data, error: null }).then(resolve);
+  return q;
+}
+test("Chat reads priority profiles and actual activities; shared context omits private fields", async () => {
+  const logs: {
+    table: string;
+    calls: { method: string; args: unknown[] }[];
+  }[] = [];
+  let profiles = 0;
+  const context = load<{
+    readLeadContext: (
+      q: string,
+    ) => Promise<{ items: Record<string, unknown>[]; coverage: string }>;
+  }>("lib/leads/context.ts", {
+    "./server": { leadOwner: async () => "viewer" },
+    "./model": model,
+    "./sharing": {
+      sharedLeadIds: async () => [{ id: "shared", owner_id: "other" }],
+      sharedLeadColumns: "id,name,story",
+    },
+    "@/lib/supabase-server": {
+      supabaseAdmin: {
+        from: (table: string) => {
+          const calls: { method: string; args: unknown[] }[] = [];
+          logs.push({ table, calls });
+          return chain(
+            table === "member_leads"
+              ? [
+                  {
+                    id: profiles++ === 0 ? "own" : "shared",
+                    name: "Fixture",
+                    story: "Story",
+                    interests: "Books",
+                    concerns: "Time",
+                    next_action: "Meet",
+                    notes: "PRIVATE",
+                    email: "SECRET",
+                    photo_path: "PRIVATE_PATH",
+                  },
+                ]
+              : [
+                  {
+                    title: "Badminton",
+                    activity_on: "2026-10-27",
+                    status: "Tentative",
+                  },
+                ],
+            calls,
+          );
+        },
+      },
+    },
+  });
+  const r = await context.readLeadContext("Fixture");
+  assert.equal(r.items.length, 2);
+  assert.equal(r.items[0].notes, "PRIVATE");
+  assert.equal(r.items[1].notes, undefined);
+  for (const item of r.items) {
+    assert.equal(item.email, undefined);
+    assert.equal(item.photo_path, undefined);
+    assert.equal(
+      (item.activities as { status: string }[])[0].status,
+      "Tentative",
+    );
+  }
+  assert.ok(
+    logs[0].calls.some(
+      (x) =>
+        x.method === "eq" && x.args[0] === "owner_id" && x.args[1] === "viewer",
+    ),
+  );
+  assert.ok(
+    logs[0].calls.some(
+      (x) => x.method === "order" && x.args[0] === "is_priority",
+    ),
+  );
+  assert.ok(
+    logs[1].calls.some(
+      (x) =>
+        x.method === "in" &&
+        x.args[0] === "id" &&
+        JSON.stringify(x.args[1]) === '["shared"]',
+    ),
+  );
+  assert.ok(
+    logs[2].calls.some(
+      (x) =>
+        x.method === "eq" && x.args[0] === "owner_id" && x.args[1] === "viewer",
+    ),
+  );
+  assert.ok(
+    logs[3].calls.some(
+      (x) =>
+        x.method === "eq" && x.args[0] === "owner_id" && x.args[1] === "other",
+    ),
+  );
+  assert.match(r.coverage, /NOT attendance/);
+});
+test("Profile/photo access denies foreign IDs by default and rechecks grants after revocation", async () => {
+  let permitted = false;
+  let reads = 0;
+  const server = load<{
+    leadAccess: (id: string) => Promise<{ canEdit: boolean } | null>;
+  }>("lib/leads/server.ts", {
+    "@/lib/app-access": { requireAssignedUser: async () => ({ id: "viewer" }) },
+    "./model": model,
+    "./sharing": {
+      sharedLeadIds: async () =>
+        permitted ? [{ id: "shared", owner_id: "other" }] : [],
+      sharedLeadColumns: "id,name,story",
+    },
+    "@/lib/supabase-server": {
+      supabaseAdmin: {
+        from: () => {
+          const calls: { method: string; args: unknown[] }[] = [];
+          reads++;
+          const q = chain(null, calls);
+          q.maybeSingle = () =>
+            Promise.resolve({
+              data: calls.some(
+                (x) =>
+                  x.method === "eq" &&
+                  x.args[0] === "owner_id" &&
+                  x.args[1] === "other",
+              )
+                ? { id: "shared", owner_id: "other", photo_path: "private" }
+                : null,
+              error: null,
+            });
+          return q;
+        },
+      },
+    },
+  });
+  assert.equal(await server.leadAccess("shared"), null);
+  assert.equal(reads, 1);
+  permitted = true;
+  assert.equal((await server.leadAccess("shared"))?.canEdit, false);
+  permitted = false;
+  assert.equal(await server.leadAccess("shared"), null);
+});
+test("Sharing actions reject unapproved recipients and derive owner from the session", async () => {
+  let params: Record<string, unknown> | undefined;
+  const actions = load<{
+    saveVisibility: (
+      s: object,
+      f: FormData,
+    ) => Promise<{ error?: string; success?: string }>;
+  }>("app/leads/profile-actions.ts", {
+    "next/cache": { revalidatePath: () => {} },
+    "@/lib/leads/server": { leadOwner: async () => "verified-owner" },
+    "@/lib/fcos/sharing": {
+      shareRecipients: async () => [
+        { id: "22222222-2222-4222-8222-222222222222" },
+      ],
+    },
+    "@/lib/leads/photo": {},
+    "@/lib/supabase-server": {
+      supabaseAdmin: {
+        rpc: async (_name: string, p: Record<string, unknown>) => {
+          params = p;
+          return { data: true, error: null };
+        },
+      },
+    },
+  });
+  const form = new FormData();
+  form.set("recipient", "33333333-3333-4333-8333-333333333333");
+  form.set("mode", "all");
+  form.set("revision", "0");
+  form.set("owner_id", "forged");
+  assert.ok((await actions.saveVisibility({}, form)).error);
+  assert.equal(params, undefined);
+  form.set("recipient", "22222222-2222-4222-8222-222222222222");
+  assert.ok((await actions.saveVisibility({}, form)).success);
+  assert.equal(
+    (params as Record<string, unknown> | undefined)?.p_owner,
+    "verified-owner",
+  );
+});

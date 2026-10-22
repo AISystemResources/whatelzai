@@ -1,3 +1,6 @@
+import { LeadSharing } from "@/components/leads/ProfileControls";
+import { LeadAvatar } from "@/components/leads/LeadAvatar";
+import { visibilitySettings, loadSharedLeads } from "@/lib/leads/sharing";
 import Link from "next/link";
 import { LeadCard } from "@/components/leads/LeadCard";
 import { groupPlans } from "@/lib/leads/plans";
@@ -24,6 +27,10 @@ export default async function LeadsPage({
 }) {
   if (!(await ensureUserRow())) redirect("/sign-in?redirect_url=/leads");
   const data = await loadLeads(await searchParams);
+  const [settings, shared] = await Promise.all([
+    visibilitySettings(),
+    loadSharedLeads(),
+  ]);
   const today = todayUtc8();
   const plans = groupPlans(data.upcoming);
   const priority = data.leads.filter((lead) => lead.is_priority);
@@ -55,6 +62,7 @@ export default async function LeadsPage({
           Your priority people and what’s coming up next.
         </p>
       </header>
+      <LeadSharing {...settings} />
       <div className="grid items-start gap-3 sm:grid-cols-2">
         <NewLead />
         <details open={filtered} className="rounded-xl border p-4">
@@ -147,6 +155,37 @@ export default async function LeadsPage({
       )}
       {!data.leads.length && (
         <p>No leads match. Try another filter or add your first profile.</p>
+      )}
+      {shared.length > 0 && (
+        <details className="rounded-2xl border border-zinc-200 p-4">
+          <summary className="cursor-pointer text-sm font-medium">
+            Shared with me{" "}
+            <span className="text-zinc-400">{shared.length}</span>
+          </summary>
+          <p className="mt-3 text-xs text-zinc-500">
+            Read-only profiles shared by your team. Showing up to 50 profiles
+            from the first 500 permitted leads.
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {shared.map(({ photo_path, ...lead }) => (
+              <Link
+                key={lead.id}
+                href={`/leads/${lead.id}`}
+                className="flex items-center gap-4 rounded-2xl bg-zinc-50 p-4"
+              >
+                <LeadAvatar
+                  lead={{ ...lead, has_photo: Boolean(photo_path) }}
+                />
+                <div>
+                  <h3 className="font-semibold">{lead.name}</h3>
+                  <p className="text-xs text-zinc-500">
+                    {lead.region} · {lead.stage}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </details>
       )}
       <nav aria-label="Leads pages" className="flex gap-4">
         {data.page > 1 && (

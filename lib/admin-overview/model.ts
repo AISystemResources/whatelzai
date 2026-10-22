@@ -66,10 +66,3 @@ export function productSignal(state: WidgetState<OwnerMetrics>, now: Date) {
     return "unavailable";
   return now.getTime() - timestamp > 86400000 ? "stale" : "available";
 }
-export function briefExcerpt(body: string) {
-  // A preview only; retain the complete Notes in the canonical Daily editor.
-  return body
-    .replace(/^#{1,6}\s+/gm, "")
-    .trim()
-    .slice(0, 650);
-}

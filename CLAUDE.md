@@ -415,3 +415,11 @@ One `member_briefings` record links to own lead IDs and optionally a verified ca
 ## Focused fcOS Chat (SPR-134)
 
 Chat opens the newest created conversation and scrolls to its latest message, or shows an immediately editable blank slate. `?new=1` is ephemeral: a conversation is created through an independently owner-gated action only on first send; retries retain its ID and request idempotency key. A small header opens a native modal menu for history, allowance, commitments and optional connections. Main canvas contains only transcript/blank greeting and a compact composer clear of the raised Home navigation. Note-review links are collapsed per reply; commitment acceptance remains explicit. No schema, model, quota, API-origin or owner-access changes.
+
+## Admin Daily Markdown reading (SPR-133 follow-up)
+
+Overview, Today and weekly reflection render canonical Notes with React Markdown/GFM.
+Today keeps source editing behind Edit Markdown; empty entries open the writer.
+Tables scroll within their container on phones; overview previews scroll without
+cutting Markdown syntax. No raw HTML or remote image fetching; no source mutation.
+See docs/admin-overview.md; mirrored in EMDEE INSTRUCTIONS.

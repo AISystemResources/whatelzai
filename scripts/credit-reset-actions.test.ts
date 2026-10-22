@@ -88,7 +88,7 @@ test("half/full resets use fixed reviewed amounts and configured actor, preservi
     });
     assert.ok(result.success);
     assert.equal(api.calls[0].p_actor, "configured-owner");
-    assert.equal(api.calls[0].p_amount, amount === "half" ? 2500000 : 5000000);
+    assert.equal(api.calls[0].p_amount, amount === "half" ? 500000 : 1000000);
     assert.equal(
       JSON.stringify(api.calls[0].p_targets),
       JSON.stringify([{ user_id: member, expected_cycle: null }]),

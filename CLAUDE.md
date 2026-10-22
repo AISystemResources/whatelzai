@@ -489,3 +489,8 @@ mirrored in EMDEE INSTRUCTIONS.
 ## Conversation-first Chat sidebar (SPR-140)
 
 Chat’s native modal drawer contains New chat, title/date search across the latest 30 owned conversations, selected history and a small Profile/Usage link. Usage stays in Profile. Commitments are at `/assistant/commitments`, linked from Home and owner Resources alongside the optional knowledge connection. No inference or conversation creation on navigation; first-send creation and all owner/assignment/access checks remain intact. Projects and further harness automation are deferred until their context and sharing boundaries are defined.
+
+
+## Weekly percentage usage (SPR-142)
+
+The baseline is now internal US$1 per seven-day window (full reset US$1 / 100%, half US$0.50 / 50%), superseding SPR-141's monthly amounts. Profile Usage exposes percentages and a live countdown, never dollar amounts. Exact reset timestamps use Singapore time. Current-cycle spend/reservations and historical records are preserved on conversion. New members start a seven-day window on first send; expired windows roll forward on the existing anchor without credit accumulation. Read-only projection and reservation SQL agree. Owner resets restart the seven-day clock; a partial grant is measured against the normal weekly baseline. No member self-reset entitlement is invented. Apply migration 20261022053300 after 20261022053000 before publishing code.

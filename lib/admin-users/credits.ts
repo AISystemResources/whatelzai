@@ -54,7 +54,7 @@ export async function loadActivatedCredits(): Promise<CreditMember[]> {
       name: entry.name,
       email: entry.account!.email!,
       cycle: stored?.current_cycle_id ?? null,
-      allowance: Number(current?.allowance_micro ?? 5000000),
+      allowance: Number(current?.allowance_micro ?? 1000000),
       spent: Number(current?.spent_micro ?? 0),
       reserved: Number(current?.reserved_micro ?? 0),
     };

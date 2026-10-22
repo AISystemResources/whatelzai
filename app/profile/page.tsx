@@ -8,14 +8,14 @@ import {
   ShieldCheck,
   UsersRound,
   RotateCcw,
-  CalendarClock,
 } from "lucide-react";
 import { ensureUserRow } from "@/lib/users";
 import { MemberNav } from "@/components/culture/MemberNav";
 import { SignOutButton } from "@/components/auth/AuthControls";
 import { InstallAppButton } from "@/components/fcos/AppInstallation";
 import { loadProfileData } from "@/lib/profile/server";
-import { money } from "@/lib/member-ai/model";
+import { percentage } from "@/lib/profile/usage";
+import { UsageLimit } from "./UsageLimit";
 export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Profile · fcOS",
@@ -130,60 +130,18 @@ export default async function Profile({
           ) : (
             <>
               <section className={card}>
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">
-                  AI allowance
-                </p>
-                <h2 className="mt-2 text-2xl font-bold">Your AI credits</h2>
-                <div className="mt-5 flex flex-wrap items-baseline gap-2">
-                  <strong className="text-4xl font-bold tracking-tight">
-                    {money(usage.remaining, 3)}
-                  </strong>
-                  <span className="text-sm text-zinc-400">
-                    of {money(usage.allowance)} remaining
-                  </span>
-                </div>
-                <div
-                  role="progressbar"
-                  aria-label="AI allowance used or reserved"
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-valuenow={Number(usage.percent.toFixed(1))}
-                  className="mt-5 h-2.5 overflow-hidden rounded-full bg-zinc-100"
-                >
-                  <div
-                    className="h-full rounded-full bg-orange-500"
-                    style={{ width: `${usage.percent}%` }}
-                  />
-                </div>
-                <p className="mt-2 text-xs font-semibold text-orange-600">
-                  {usage.percent.toFixed(1)}% used or reserved
-                </p>
-                <dl className="mt-6 grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <dt className="text-zinc-400">Used this allowance</dt>
-                    <dd className="mt-1 font-semibold">
-                      {money(usage.spent, 6)}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-zinc-400">Reserved for replies</dt>
-                    <dd className="mt-1 font-semibold">
-                      {money(usage.reserved, 6)}
-                    </dd>
-                  </div>
-                </dl>
-                <p className="mt-5 flex items-start gap-2 text-xs leading-5 text-zinc-500">
-                  <CalendarClock
-                    size={16}
-                    className="mt-0.5 shrink-0"
-                    aria-hidden="true"
-                  />
-                  Renews {date(usage.renewsAt)} · Singapore time
-                </p>
+                <UsageLimit
+                  remaining={usage.remaining}
+                  baseline={usage.baseline}
+                  spent={usage.spent}
+                  reserved={usage.reserved}
+                  renewsAt={usage.renewsAt}
+                  observedAt={usage.observedAt}
+                />
                 <div className="mt-5 border-t border-zinc-100 pt-4 text-xs leading-5 text-zinc-500">
                   {usage.canChat ? (
                     <>
-                      Active personal pilot ·{" "}
+                      AI Chat enabled ·{" "}
                       <span className="font-medium text-zinc-700">
                         {usage.model}
                       </span>
@@ -194,9 +152,8 @@ export default async function Profile({
                     "AI Chat has not been enabled for your account yet."
                   )}
                   <p className="mt-2">
-                    Credits are a USD allowance estimate, not a subscription
-                    bill. Reserved credits are held while a reply is being
-                    prepared.
+                    Your allowance renews every seven days. Reserved usage is
+                    held while a reply is being prepared.
                   </p>
                 </div>
               </section>
@@ -212,22 +169,21 @@ export default async function Profile({
                 {usage.lastReset ? (
                   <>
                     <p className="mt-4 text-sm font-semibold text-orange-600">
-                      Full reset granted
+                      Allowance reset granted
                     </p>
                     <p className="mt-2 text-sm leading-6 text-zinc-500">
-                      Your admin granted a fresh{" "}
-                      {money(Number(usage.lastReset.allowance_micro))} allowance
-                      on {date(usage.lastReset.started_at)}.
+                      Your admin granted an allowance reset on{" "}
+                      {date(usage.lastReset.started_at)}.
                     </p>
                     <p className="mt-2 text-xs text-zinc-400">
-                      {usage.resetCount} full{" "}
+                      {usage.resetCount} admin{" "}
                       {usage.resetCount === 1 ? "reset" : "resets"} granted so
                       far.
                     </p>
                   </>
                 ) : (
                   <p className="mt-4 text-sm text-zinc-500">
-                    No admin-granted full reset yet.
+                    No admin-granted reset yet.
                   </p>
                 )}
                 <p className="mt-4 text-xs leading-5 text-zinc-400">
@@ -246,21 +202,30 @@ export default async function Profile({
                       <div className="flex flex-wrap justify-between gap-2 text-sm">
                         <strong>
                           {c.reason === "owner-reset"
-                            ? "Admin full reset"
-                            : "Monthly allowance"}
+                            ? "Admin allowance reset"
+                            : c.reason === "weekly"
+                              ? "Weekly allowance"
+                              : "Previous monthly allowance"}
                         </strong>
                         <span className="font-semibold">
-                          {money(Number(c.spent_micro), 6)} used
+                          {percentage(
+                            Number(c.spent_micro),
+                            Number(c.allowance_micro),
+                          ).toFixed(1)}
+                          % used
                         </span>
                       </div>
                       <p className="mt-1 text-xs text-zinc-400">
-                        {date(c.started_at)} ·{" "}
-                        {money(Number(c.allowance_micro))} granted
+                        {date(c.started_at)} · {date(c.ends_at)} end
                         {c.id === usage.current?.id ? " · Current" : ""}
                       </p>
                       {Number(c.reserved_micro) > 0 && (
                         <p className="mt-1 text-xs text-orange-600">
-                          {money(Number(c.reserved_micro), 6)} reserved
+                          {percentage(
+                            Number(c.reserved_micro),
+                            Number(c.allowance_micro),
+                          ).toFixed(1)}
+                          % reserved
                         </p>
                       )}
                     </li>

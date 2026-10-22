@@ -28,8 +28,8 @@ shared wrappers and traversal are denied. No vault write tool is included.
 
 ## Allowance
 
-Each activated member gets US$5 per Singapore calendar month. `Full reset` starts
-a fresh allowance cycle ending at the next month boundary; it grants additional
+Each activated member gets US$1 per seven-day window. `Full reset` starts
+a fresh seven-day allowance cycle; it grants additional
 spending and never erases usage history. In-flight replies settle against their
 original cycle. The server rechecks the configured owner for each admin action.
 
@@ -39,7 +39,7 @@ never the owner's EMDEE token or personal notes. Provider calls are accepted onl
 on the member origin (or exact deployment preview/development origin), with a
 matching Origin header and verified activated owner account.
 
-The current owner pilot uses GPT-6.1 Sol (enabled 2026-10-22), with low reasoning through Responses. Stored model selection controls each request; US$5 allowance and usage history are unchanged.
+The current owner pilot uses GPT-6.1 Sol (enabled 2026-10-22), with low reasoning through Responses. Stored model selection controls each request; US$1 weekly allowance and usage history are unchanged.
 
 GPT-6 Luna pricing: US$0.10/M input and US$0.50/M output tokens. GPT-6.1 Sol: US$2/M input and US$10/M output. Checked 2026-10-22 against the OpenAI
 model documentation. Rates must be rechecked before changing models. Cached
@@ -78,12 +78,12 @@ use cents while usage receipts keep micro-dollar precision.
 
 Chat follows the mobile visual viewport. The bottom navigation hides while an editable field and substantial keyboard height reduction are detected, then restores after dismissal; pinch zoom and normal toolbar movement do not count as a keyboard. The rounded composer owns focus feedback; the inner textarea has no separate outline or border.
 
-Profile → Usage is a read-only per-account allowance view: spent and held credits, remaining amount, next Singapore renewal, actual latest admin-granted reset/count, and 20 recent cycles. Full resets remain owner-controlled in admin Users. Viewing Usage neither invokes a model nor changes access, balances or cycles. Other signed-in members may view their own records while the API chat pilot stays owner-only. Failed reads show unavailable; expired cycles are kept in history and are not charged against a projected new monthly allowance.
+Profile → Usage is a read-only per-account allowance view: spent and held credits, percentage remaining, a live countdown and the next reset in Singapore time, actual latest admin-granted reset/count, and 20 recent cycles. Full resets remain owner-controlled in admin Users. Viewing Usage neither invokes a model nor changes access, balances or cycles. Other signed-in members may view their own records while the API Chat remains limited to activated tree members. Failed reads show unavailable; expired cycles are kept in history and are not charged against a projected new weekly allowance.
 
 ## Activated-member access (SPR-141)
 
 Tree activation now grants Chat eligibility for every member, superseding earlier
 owner-only pilot descriptions. The global API flag still applies and personal
 Daily remains on ChatGPT. Enrollment is validated by a service-only database
-function; the normal US$5 baseline and private per-user data boundaries remain.
+function; the normal US$1 weekly baseline and private per-user data boundaries remain.
 Owner-selected full/half resets are documented in docs/member-credit-resets.md.

@@ -26,6 +26,6 @@ export async function resetCredits(input: unknown) {
   revalidatePath("/assistant");
   revalidatePath("/profile");
   return {
-    success: `${data.length} ${data.length === 1 ? "member" : "members"} reset to ${parsed.data.amount === "full" ? "US$5" : "US$2.50"}. Previous usage stays in history.`,
+    success: `${data.length} ${data.length === 1 ? "member" : "members"} reset to ${parsed.data.amount === "full" ? "US$1" : "US$0.50"}. Previous usage stays in history.`,
   };
 }

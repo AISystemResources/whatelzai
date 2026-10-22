@@ -16,7 +16,7 @@ export function CreditControls({ members }: { members: CreditMember[] }) {
     scope === "all"
       ? members
       : members.filter((member) => selected.includes(member.userId));
-  const dollars = amount === "full" ? 5 : 2.5;
+  const dollars = amount === "full" ? 1 : 0.5;
   async function apply() {
     if (busy) return;
     setBusy(true);
@@ -54,8 +54,8 @@ export function CreditControls({ members }: { members: CreditMember[] }) {
           AI credits
         </h2>
         <p className="mt-2 text-sm leading-6 text-zinc-500">
-          Every activated member can use Chat with US$5 per month. Restore a
-          full or half allowance for selected members or everyone activated.
+          Every activated member can use Chat with US$1 per seven days. Restore
+          a full or half allowance for selected members or everyone activated.
         </p>
       </div>
       <fieldset disabled={busy || confirm} className="space-y-4">
@@ -124,16 +124,16 @@ export function CreditControls({ members }: { members: CreditMember[] }) {
             }
             className="mt-2 block w-full rounded-xl border border-zinc-200 p-3"
           >
-            <option value="full">Full reset · US$5 per person</option>
-            <option value="half">Half reset · US$2.50 per person</option>
+            <option value="full">Full reset · 100% · US$1 per person</option>
+            <option value="half">Half reset · 50% · US$0.50 per person</option>
           </select>
         </label>
       </fieldset>
       <p className="text-xs leading-6 text-zinc-500">
         A reset replaces the current remaining balance with a fresh allowance;
         it does not add to unused credit. Previous usage and in-progress replies
-        stay recorded. Normal monthly renewal remains US$5 on the 1st, Singapore
-        time.
+        stay recorded. The next full allowance renews seven days after the
+        reset.
       </p>
       {confirm ? (
         <div

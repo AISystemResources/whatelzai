@@ -6,14 +6,12 @@ import { percentage, resetCountdown } from "@/lib/profile/usage";
 export function UsageLimit({
   remaining,
   baseline,
-  spent,
   reserved,
   renewsAt,
   observedAt,
 }: {
   remaining: number;
   baseline: number;
-  spent: number;
   reserved: number;
   renewsAt: string | null;
   observedAt: string;
@@ -61,22 +59,9 @@ export function UsageLimit({
           style={{ width: `${left}%` }}
         />
       </div>
-      <p className="mt-4 text-xs text-zinc-500">
-        {percentage(spent, baseline).toFixed(1)}% used ·{" "}
-        {percentage(reserved, baseline).toFixed(1)}% reserved for replies
-      </p>
-      {renewsAt && (
-        <p className="mt-3 text-xs leading-5 text-zinc-400">
-          Resets{" "}
-          {new Intl.DateTimeFormat("en-SG", {
-            timeZone: "Asia/Singapore",
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-            hour: "numeric",
-            minute: "2-digit",
-          }).format(new Date(renewsAt))}{" "}
-          · Singapore time
+      {reserved > 0 && (
+        <p className="mt-3 text-xs text-zinc-500">
+          {percentage(reserved, baseline).toFixed(1)}% in progress
         </p>
       )}
     </>

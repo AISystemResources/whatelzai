@@ -8,7 +8,7 @@ import {
   ArrowUpRight,
   ShieldCheck,
   UsersRound,
-  RotateCcw,
+  ChevronDown,
 } from "lucide-react";
 import { ensureUserRow } from "@/lib/users";
 import { MemberNav } from "@/components/culture/MemberNav";
@@ -60,39 +60,41 @@ export default async function Profile({
         }
       />
       <MemberNav current="/profile" compact persistent accent="orange" />
-      <section className="flex items-center gap-4 py-3 sm:gap-6">
-        <div className="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-full border-4 border-orange-100 bg-orange-50 text-3xl font-semibold text-orange-600 sm:h-28 sm:w-28">
-          {user.image_url ? (
-            <Image
-              src={user.image_url}
-              alt=""
-              width={112}
-              height={112}
-              unoptimized
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            firstName.slice(0, 1).toUpperCase()
-          )}
-        </div>
-        <div className="min-w-0">
-          <h2 className="text-[1.7rem] font-bold leading-tight tracking-tight sm:text-4xl">
-            Welcome back,
-            <br />
-            {firstName}.
-          </h2>
-          <p className="mt-2 text-sm leading-6 text-zinc-500">
-            Current tier:{" "}
-            <strong className="font-semibold uppercase text-zinc-600">
-              {persona ?? "Unavailable"}
-            </strong>
-          </p>
-          <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-orange-50 px-3 py-1 text-[11px] font-semibold text-orange-600">
-            <Sparkles size={13} aria-hidden="true" />
-            Prepare · connect · grow
-          </span>
-        </div>
-      </section>
+      {!usageTab && (
+        <section className="flex items-center gap-4 py-3 sm:gap-6">
+          <div className="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-full border-4 border-orange-100 bg-orange-50 text-3xl font-semibold text-orange-600 sm:h-28 sm:w-28">
+            {user.image_url ? (
+              <Image
+                src={user.image_url}
+                alt=""
+                width={112}
+                height={112}
+                unoptimized
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              firstName.slice(0, 1).toUpperCase()
+            )}
+          </div>
+          <div className="min-w-0">
+            <h2 className="text-[1.7rem] font-bold leading-tight tracking-tight sm:text-4xl">
+              Welcome back,
+              <br />
+              {firstName}.
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-zinc-500">
+              Current tier:{" "}
+              <strong className="font-semibold uppercase text-zinc-600">
+                {persona ?? "Unavailable"}
+              </strong>
+            </p>
+            <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-orange-50 px-3 py-1 text-[11px] font-semibold text-orange-600">
+              <Sparkles size={13} aria-hidden="true" />
+              Prepare · connect · grow
+            </span>
+          </div>
+        </section>
+      )}
       <nav
         aria-label="Profile sections"
         className="flex rounded-2xl bg-zinc-200/60 p-1"
@@ -128,68 +130,32 @@ export default async function Profile({
                 <UsageLimit
                   remaining={usage.remaining}
                   baseline={usage.baseline}
-                  spent={usage.spent}
                   reserved={usage.reserved}
                   renewsAt={usage.renewsAt}
                   observedAt={usage.observedAt}
                 />
-                <div className="mt-5 border-t border-zinc-100 pt-4 text-xs leading-5 text-zinc-500">
-                  {usage.canChat ? (
-                    <>
-                      AI Chat enabled ·{" "}
-                      <span className="font-medium text-zinc-700">
-                        {usage.model}
-                      </span>
-                    </>
-                  ) : usage.assigned ? (
-                    "AI Chat is not enabled for this account. Assigned credits do not grant access."
-                  ) : (
-                    "AI Chat has not been enabled for your account yet."
-                  )}
-                  <p className="mt-2">
-                    Your allowance renews every seven days. Reserved usage is
-                    held while a reply is being prepared.
-                  </p>
-                </div>
-              </section>
-              <section className={card}>
-                <div className="flex items-center gap-2">
-                  <RotateCcw
-                    size={21}
-                    className="text-orange-500"
-                    aria-hidden="true"
-                  />
-                  <h2 className="text-xl font-bold">Admin-granted resets</h2>
-                </div>
-                {usage.lastReset ? (
-                  <>
-                    <p className="mt-4 text-sm font-semibold text-orange-600">
-                      Allowance reset granted
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-zinc-500">
-                      Your admin granted an allowance reset on{" "}
-                      {date(usage.lastReset.started_at)}.
-                    </p>
-                    <p className="mt-2 text-xs text-zinc-400">
-                      {usage.resetCount} admin{" "}
-                      {usage.resetCount === 1 ? "reset" : "resets"} granted so
-                      far.
-                    </p>
-                  </>
-                ) : (
+                {!usage.canChat && (
                   <p className="mt-4 text-sm text-zinc-500">
-                    No admin-granted reset yet.
+                    AI Chat is currently unavailable.
                   </p>
                 )}
-                <p className="mt-4 text-xs leading-5 text-zinc-400">
-                  A full reset starts a fresh allowance. Previous usage stays in
-                  your history. Only the admin can grant one.
-                </p>
               </section>
-              <section className={card}>
-                <h2 className="text-xl font-bold">Allowance history</h2>
+              <details className={`${card} group`}>
+                <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold [&::-webkit-details-marker]:hidden">
+                  Resets & history
+                  <ChevronDown
+                    aria-hidden="true"
+                    size={18}
+                    className="shrink-0 text-zinc-400 transition-transform group-open:rotate-180"
+                  />
+                </summary>
+                <p className="mt-3 text-sm leading-6 text-zinc-500">
+                  {usage.lastReset
+                    ? `Last admin reset: ${date(usage.lastReset.started_at)}.`
+                    : "No admin resets yet."}
+                </p>
                 <p className="mt-1 text-xs text-zinc-400">
-                  Your 20 most recent allowance cycles
+                  Only your admin can grant a full reset.
                 </p>
                 <ul className="mt-4 divide-y divide-zinc-100">
                   {usage.history.map((c) => (
@@ -231,35 +197,12 @@ export default async function Profile({
                     Your history starts when your first allowance cycle begins.
                   </p>
                 )}
-              </section>
+              </details>
             </>
           )}
         </div>
       ) : (
         <div className="space-y-5">
-          <section className={card}>
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">
-              Your next chapter
-            </p>
-            <h2 className="mt-3 flex items-center gap-2 text-2xl font-bold">
-              <Sparkles
-                className="shrink-0 text-orange-500"
-                aria-hidden="true"
-              />
-              Grow with intention.
-            </h2>
-            <p className="mt-4 text-sm leading-7 text-zinc-500">
-              Prepare for your next conversation. Learn something worth sharing.
-              Take one meaningful step forward.
-            </p>
-            <Link
-              href="/"
-              className="mt-5 inline-flex items-center gap-1.5 text-sm font-bold text-orange-600"
-            >
-              What needs my attention{" "}
-              <ArrowUpRight size={17} aria-hidden="true" />
-            </Link>
-          </section>
           <section className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-orange-400 via-orange-500 to-red-500 p-6 text-white shadow-[0_12px_30px_rgba(249,115,22,0.16)] sm:p-8">
             <div
               className="absolute -right-8 -top-12 h-44 w-44 rounded-full border-[28px] border-white/10"

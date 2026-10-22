@@ -5,6 +5,7 @@ import { createRequire } from "node:module";
 import vm from "node:vm";
 import ts from "typescript";
 import * as model from "../lib/member-ai/model";
+import * as profileUsage from "../lib/profile/usage";
 const requireNode = createRequire(import.meta.url);
 function load<T>(
   file: string,
@@ -659,4 +660,112 @@ test("first-send conversation creation verifies the owner and never accepts a ca
       assert.equal(row, undefined);
     }
   }
+});
+
+test("Profile usage rejects anonymous reads and scopes every private query to the verified account", async () => {
+  let calls = 0;
+  const anonymous = load<{ loadProfileData: () => Promise<unknown> }>(
+    "lib/profile/server.ts",
+    {
+      "@/lib/app-access": { requireAssignedUser: async () => null },
+      "@/lib/supabase-server": {
+        supabaseAdmin: {
+          from: () => {
+            calls++;
+            throw Error("unexpected query");
+          },
+        },
+      },
+      "@/lib/admin-policy": { isOwnerUser: () => false },
+      "@/lib/community-calendar/personas": {
+        isPersona: (p: unknown) => p === "Catalyst",
+      },
+      "@/lib/member-ai/server": { memberApiEnabled: () => true },
+      "./usage": profileUsage,
+    },
+  );
+  await assert.rejects(anonymous.loadProfileData(), /Sign in/);
+  assert.equal(calls, 0);
+  const filters: [string, string, unknown][] = [];
+  const queries: {
+    table: string;
+    filters: Record<string, unknown>;
+    selected: string;
+  }[] = [];
+  function from(table: string) {
+    const state = {
+      table,
+      filters: {} as Record<string, unknown>,
+      selected: "",
+    };
+    queries.push(state);
+    const result = () => ({
+      data:
+        table === "community_calendar_memberships"
+          ? { persona: "Catalyst" }
+          : table === "member_ai_access"
+            ? {
+                active: true,
+                model: "gpt-6.1-sol",
+                allowance_micro: 5000000,
+                current_cycle_id: null,
+              }
+            : [],
+      error: null,
+      count: 0,
+    });
+    const chain = {
+      select(value: string) {
+        state.selected = value;
+        return this;
+      },
+      eq(key: string, value: unknown) {
+        filters.push([table, key, value]);
+        state.filters[key] = value;
+        return this;
+      },
+      order() {
+        return this;
+      },
+      limit() {
+        return this;
+      },
+      maybeSingle() {
+        return Promise.resolve(result());
+      },
+      then(resolve: (value: unknown) => unknown) {
+        return Promise.resolve(result()).then(resolve);
+      },
+    };
+    return chain;
+  }
+  const signedIn = load<{
+    loadProfileData: () => Promise<{
+      usage: { canChat: boolean; allowance: number };
+    }>;
+  }>("lib/profile/server.ts", {
+    "@/lib/app-access": {
+      requireAssignedUser: async () => ({ id: "verified-account" }),
+    },
+    "@/lib/supabase-server": { supabaseAdmin: { from } },
+    "@/lib/admin-policy": { isOwnerUser: () => false },
+    "@/lib/community-calendar/personas": {
+      isPersona: (p: unknown) => p === "Catalyst",
+    },
+    "@/lib/member-ai/server": { memberApiEnabled: () => true },
+    "./usage": profileUsage,
+  });
+  const result = await signedIn.loadProfileData();
+  assert.equal(result.usage.canChat, false);
+  assert.equal(result.usage.allowance, 5000000);
+  assert.equal(queries.length, 4);
+  for (const query of queries) {
+    assert.equal(query.filters.user_id, "verified-account");
+    assert.doesNotMatch(query.selected, /encrypted|credential|subject|body/);
+  }
+  assert.ok(
+    filters.some(
+      ([, key, value]) => key === "reason" && value === "owner-reset",
+    ),
+  );
 });

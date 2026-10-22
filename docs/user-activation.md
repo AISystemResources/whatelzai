@@ -26,7 +26,7 @@ The app proxy gates member pages and page actions; GET/HEAD on the pending page
 can finish onboarding without exposing member resources. Pending-page POSTs do
 not bypass the gate. Lookup failures deny access. The page verifies the session
 again and records a new registered account through the existing sign-in sync.
-Leads, notes, catalogue and calendar data loaders and mutations independently
+Leads, notes, catalogue, calendar and Profile/Usage data loaders and mutations independently
 require assignment. AI Chat checks assignment after its existing owner rule and
 before access lookup/reservation/provider use. Existing owner administration and
 public website/customer account flows remain independent of tree assignment.

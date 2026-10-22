@@ -77,3 +77,5 @@ a compact allowance link jumps to usage and conversations. Currency balances
 use cents while usage receipts keep micro-dollar precision.
 
 Chat follows the mobile visual viewport. The bottom navigation hides while an editable field and substantial keyboard height reduction are detected, then restores after dismissal; pinch zoom and normal toolbar movement do not count as a keyboard. The rounded composer owns focus feedback; the inner textarea has no separate outline or border.
+
+Profile → Usage is a read-only per-account allowance view: spent and held credits, remaining amount, next Singapore renewal, actual latest admin-granted reset/count, and 20 recent cycles. Full resets remain owner-controlled in admin Users. Viewing Usage neither invokes a model nor changes access, balances or cycles. Other signed-in members may view their own records while the API chat pilot stays owner-only. Failed reads show unavailable; expired cycles are kept in history and are not charged against a projected new monthly allowance.

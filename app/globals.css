@@ -298,8 +298,8 @@ body:has(.fcos-chat-page) {
   border-color: #a1a1aa;
   box-shadow: 0 0 0 3px rgb(161 161 170 / 12%);
 }
-.fcos-lead-controls .fcos-baobei-search input,
-.fcos-lead-controls .fcos-baobei-search input:focus {
+.fcos-lead-controls form.fcos-baobei-search input[type="search"],
+.fcos-lead-controls form.fcos-baobei-search input[type="search"]:focus {
   border: 0;
   border-radius: 0;
   background: transparent;

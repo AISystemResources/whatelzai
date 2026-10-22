@@ -118,7 +118,9 @@ export function InstallAppCard() {
         </div>
       </div>
       {installed ? (
-        <p className="mt-4 text-sm">You’re using the installed fcOS app.</p>
+        <p className="mt-4 text-sm">
+          fcOS is installed. Open it from your home screen or apps.
+        </p>
       ) : (
         <>
           <p className="mt-4 text-sm leading-6 text-zinc-600">

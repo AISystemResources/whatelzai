@@ -132,7 +132,7 @@ export default async function TodayPage() {
             <section
               key={kind}
               id={kind}
-              className="rounded-2xl border border-zinc-200 p-5 sm:p-6"
+              className="min-w-0 rounded-2xl border border-zinc-200 p-5 sm:p-6"
             >
               <p className="text-xs uppercase tracking-widest text-zinc-500">
                 {kind === "morning" ? "Begin well" : "Finish with clarity"}

@@ -12,7 +12,7 @@ import { ensureUserRow } from "@/lib/users";
 import { isOwnerUser } from "@/lib/admin-policy";
 import { memberApiEnabled } from "@/lib/member-ai/server";
 import { loadAttentionDashboard } from "@/lib/fcos/dashboard";
-import { dateLabel } from "@/lib/leads/model";
+import { dateLabel, todayUtc8 } from "@/lib/leads/model";
 import { MemberNav } from "@/components/culture/MemberNav";
 import { SignOutButton } from "@/components/auth/AuthControls";
 export const dynamic = "force-dynamic";
@@ -213,7 +213,7 @@ export default async function MemberHome() {
             {data.upcoming.map((event) => (
               <li key={event.id}>
                 <Link
-                  href={`/calendar?month=${event.start.slice(0, 7)}`}
+                  href={`/calendar?month=${todayUtc8(new Date(event.start)).slice(0, 7)}`}
                   className="block py-3"
                 >
                   <h3 className="font-medium hover:underline">{event.title}</h3>
@@ -242,7 +242,8 @@ export default async function MemberHome() {
           </Link>
           {data.importedAt && (
             <p className="mt-1 text-xs text-zinc-500">
-              Schedule imported {dateLabel(data.importedAt.slice(0, 10))}
+              Schedule imported{" "}
+              {dateLabel(todayUtc8(new Date(data.importedAt)))}
             </p>
           )}
         </section>

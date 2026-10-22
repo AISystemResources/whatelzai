@@ -149,3 +149,20 @@ rather than silently dropping records. Model/key stay on the existing connection
 Renew expired EMDEE authorization in Connections. Without it the scheduled run
 fails visibly; the 30-day authorization is not an indefinite unattended grant.
 The personal daily ChatGPT tasks remain independent of this optional API job.
+
+## Reusable routine library
+
+`/today/routines` is an owner-only reader for three private EMDEE skill artifacts.
+The allowlisted Morning, Evening and Weekly documents live beneath Personal Daily's
+`04-ROUTINES` hub. Notes contain a complete SKILL.md with name, description and
+version frontmatter; no personal instruction body is bundled into this public repo.
+The existing Daily EMDEE connection reads them at request time. Detail pages render
+Markdown; owner-gated downloads return the same normalized source as SKILL.md with
+private/no-store headers. Missing, disconnected and invalid/unavailable sources
+are distinct; there is no public fallback or inference. The skill name is validated
+against the requested routine and arbitrary document paths cannot be supplied.
+
+Local installed/exported skills are snapshots of the canonical EMDEE Notes.
+Downloading/installing a skill does not create a job or modify existing ChatGPT
+task prompts. The library provides a reusable MCP read-and-follow invocation.
+No schedule, API setting, credentials, member permissions or daily record changes.

@@ -65,10 +65,12 @@ test("no cycle means no invented reset date; unassigned has no credit", () => {
   assert.equal(r.remaining, 0);
   assert.equal(r.renewsAt, null);
 });
-test("countdown advances and stops at zero", () => {
+test("countdown rounds up to minutes and stops at zero", () => {
   const end = "2026-10-28T09:35:00Z",
     now = Date.parse("2026-10-21T09:35:00Z");
-  assert.equal(resetCountdown(end, now), "Resets in 7d 0h 0m 0s");
-  assert.equal(resetCountdown(end, now + 1000), "Resets in 6d 23h 59m 59s");
+  assert.equal(resetCountdown(end, now), "Resets in 7d 0h 0m");
+  assert.equal(resetCountdown(end, now + 1000), "Resets in 7d 0h 0m");
+  assert.equal(resetCountdown(end, now + 60000), "Resets in 6d 23h 59m");
+  assert.equal(resetCountdown(end, Date.parse(end) - 1000), "Resets in 0h 1m");
   assert.equal(resetCountdown(end, Date.parse(end)), "Resetting…");
 });

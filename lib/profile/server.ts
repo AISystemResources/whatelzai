@@ -9,7 +9,7 @@ import { summarizeUsage, type UsageAccess, type UsageCycle } from "./usage";
 export async function loadProfileData() {
   const user = await requireAssignedUser();
   if (!user) throw Error("Sign in to view your profile");
-  const [membership, access, cycles, resets] = await Promise.all([
+  const [membership, access, cycles, resets, credits] = await Promise.all([
     supabaseAdmin
       .from("community_calendar_memberships")
       .select("persona")
@@ -35,13 +35,19 @@ export async function loadProfileData() {
       .eq("reason", "owner-reset")
       .order("started_at", { ascending: false })
       .limit(1),
+    supabaseAdmin
+      .from("member_ai_reset_credits")
+      .select("id,granted_at,used_at,cycle_id")
+      .eq("user_id", user.id)
+      .order("granted_at", { ascending: false })
+      .limit(2),
   ]);
   const persona = membership.error
     ? null
     : isPersona(membership.data?.persona)
       ? membership.data.persona
       : "Guest";
-  if (access.error || cycles.error || resets.error)
+  if (access.error || cycles.error || resets.error || credits.error)
     return { persona, usage: null };
   const stored = (access.data as UsageAccess | null) ?? {
     active: true,
@@ -60,11 +66,18 @@ export async function loadProfileData() {
     persona,
     usage: {
       ...summarizeUsage(stored, history),
+      currentCycleId: stored.current_cycle_id,
       assigned: Boolean(stored),
       active: true,
       canChat: Boolean(memberApiEnabled()),
       model: stored?.model ?? null,
       history,
+      resetCredits: (credits.data ?? []) as {
+        id: string;
+        granted_at: string;
+        used_at: string | null;
+        cycle_id: string | null;
+      }[],
       lastReset: resets.data?.[0] ?? null,
       resetCount: resets.count ?? 0,
     },

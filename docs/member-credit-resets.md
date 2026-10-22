@@ -50,3 +50,26 @@ Rollback deploys the prior app and restores prior function definitions from the
 previous migration; keep all cycles/audit rows. If revoking expanded Chat access,
 restore the old owner-only server gate as well. Never delete new credit history
 or change credentials to roll back this feature.
+
+## Member-owned reset credits (SPR-153)
+
+Each existing and future application user receives one lifetime full-reset credit,
+with no expiry. This is an available credit, not an automatic allowance reset or
+new Chat access. The users insert trigger and unique user constraint prevent
+repeat grants on sign-in/upsert. Profile → Usage shows Available and History links.
+Percentages are rounded to whole numbers and the countdown rounds up to minutes.
+
+The assigned-session server action accepts only credit ID and reviewed current
+cycle pointer; the account ID always comes from the verified session. Service-only
+`use_member_reset_credit` rechecks activation, locks the access row and then the
+owned credit, rejects stale cycle pointers or outstanding current reservations,
+and creates one USD1 seven-day member-reset cycle atomically with marking the
+credit used. Replay returns the original recorded cycle without another grant.
+Old usage, cycles and late settlement accounting remain intact. New baseline,
+provider enrollment and admin-reset behavior are unchanged. No API invocation.
+
+Apply `20261022095557_member_reset_credits.sql` before shipping. The table has RLS
+and no browser grants; both functions are security invoker and service-only.
+Rollback may deploy the old UI while retaining the credit ledger and used cycles;
+never reissue used credits or delete their audit trail. Tests live in
+`scripts/member-reset-credits-sql.test.mjs` and `scripts/profile-usage.test.ts`.

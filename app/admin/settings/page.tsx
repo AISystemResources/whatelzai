@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AdminArea } from "@/components/admin/AdminArea";
 import { MCPConnectHint } from "@/components/admin/MCPConnectHint";
+import { InstallAppButton } from "@/components/fcos/AppInstallation";
 
 export const metadata: Metadata = { title: "Settings — Admin" };
 
@@ -27,6 +28,20 @@ export default function SettingsPage() {
         },
       ]}
     >
+      <section
+        aria-labelledby="admin-install"
+        className="max-w-2xl rounded-2xl border border-zinc-200 p-6"
+      >
+        <h2 id="admin-install" className="font-semibold text-zinc-900">
+          Your command centre, on your phone
+        </h2>
+        <p className="mt-2 mb-5 text-sm leading-6 text-zinc-600">
+          Add Whatelz Admin to your home screen. It opens on Today, ready for
+          your morning brief and evening closeout. Your owner sign-in is still
+          required, and reading needs an internet connection.
+        </p>
+        <InstallAppButton />
+      </section>
       <section
         aria-labelledby="mcp-connections"
         className="max-w-2xl rounded-xl border border-zinc-200 p-6"

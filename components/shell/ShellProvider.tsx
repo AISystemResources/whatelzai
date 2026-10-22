@@ -32,6 +32,10 @@ export function ShellProvider({
       >
         {surface === "app" ? (
           <AppInstallationProvider>{children}</AppInstallationProvider>
+        ) : surface === "admin" ? (
+          <AppInstallationProvider name="Admin" worker="/admin-sw.js">
+            {children}
+          </AppInstallationProvider>
         ) : (
           children
         )}

@@ -3,13 +3,12 @@ import { randomUUID } from "node:crypto";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { dailyOwner, loadDailyTasks } from "@/lib/daily/server";
-import { emdeeConnection, openaiConnection } from "@/lib/daily/connections";
+import { emdeeConnection } from "@/lib/daily/connections";
 import { loadBrief } from "@/lib/daily/emdee";
 import { DAILY_PARENT } from "@/lib/daily/paths";
 import { singaporeDay, previousDay, type Brief } from "@/lib/daily/model";
 import { adminUrl } from "@/lib/admin-url";
-import { BriefEditor, NewTask, TaskRow } from "./Forms";
-import { apiGenerationEnabled } from "@/lib/daily/settings";
+import { NewTask, TaskRow } from "./Forms";
 export const metadata: Metadata = {
   title: "Today — Admin",
   robots: { index: false, follow: false },
@@ -18,10 +17,9 @@ export const dynamic = "force-dynamic";
 export default async function TodayPage() {
   const owner = await dailyOwner();
   const day = singaporeDay();
-  const [tasks, emdee, ai] = await Promise.all([
+  const [tasks, emdee] = await Promise.all([
     loadDailyTasks(day),
     emdeeConnection(owner),
-    openaiConnection(owner),
   ]);
   const connected = emdee?.parentPath === DAILY_PARENT;
   let morning: Brief | null = null,
@@ -37,7 +35,7 @@ export default async function TodayPage() {
       ]);
     } catch {
       sourceError =
-        "EMDEE could not be read. Existing text has not been replaced. Reconnect or reload before editing.";
+        "EMDEE could not be read. Reconnect or refresh to check your saved entries.";
     }
   }
   const due = tasks.active.filter((t) => t.due_on <= day);
@@ -89,9 +87,7 @@ export default async function TodayPage() {
       </Link>
       {!connected ? (
         <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6">
-          Your commitments are ready to use. Connect or reconnect EMDEE to
-          Personal → Daily to save your briefs in your brain, and OpenAI when
-          you want help preparing them. No daily schedules are enabled.
+          Connect EMDEE to Personal → Daily to read your saved briefs here.
         </p>
       ) : null}
       {sourceError ? (
@@ -102,15 +98,14 @@ export default async function TodayPage() {
           {sourceError}
         </p>
       ) : null}
-      {!apiGenerationEnabled() ? (
-        <p className="rounded-xl bg-yellow-50 p-4 text-sm leading-6">
-          ChatGPT prepares your morning brief at 4:30am and evening debrief at
-          9pm Singapore time. Saved EMDEE entries appear here when you open or
-          refresh this page. API generation is off.
-        </p>
-      ) : null}
-      <section className="rounded-2xl border border-zinc-200 p-5">
-        <h2 className="text-lg font-semibold">Yesterday’s handoff</h2>
+      <p className="text-xs text-zinc-500">
+        Morning · 4:30am &nbsp; Evening · 9pm · Singapore time. Refresh to read
+        the latest saved entries.
+      </p>
+      <details className="rounded-2xl border border-zinc-200 p-5">
+        <summary className="cursor-pointer text-sm font-medium">
+          Yesterday’s handoff
+        </summary>
         {yesterday?.exists ? (
           <div className="mt-3">
             <BriefMarkdown body={yesterday.body} />
@@ -124,8 +119,8 @@ export default async function TodayPage() {
                 : "Your previous closeout will appear here once EMDEE is connected."}
           </p>
         )}
-      </section>
-      <div className="grid gap-6 xl:grid-cols-2">
+      </details>
+      <div className="grid items-start gap-6 xl:grid-cols-2">
         {(["morning", "evening"] as const).map((kind) => {
           const brief = kind === "morning" ? morning : evening;
           return (
@@ -144,30 +139,18 @@ export default async function TodayPage() {
               </h2>
               {sourceError ? (
                 <p className="text-sm text-zinc-500">
-                  The editor will return when EMDEE can be read safely.
+                  This entry is unavailable while EMDEE cannot be read.
                 </p>
+              ) : brief?.exists ? (
+                <BriefMarkdown body={brief.body} />
               ) : (
-                <>
-                  {brief?.exists ? <BriefMarkdown body={brief.body} /> : null}
-                  <details
-                    open={!brief?.exists}
-                    className="mt-5 rounded-xl border border-zinc-200 p-4"
-                  >
-                    <summary className="cursor-pointer text-sm font-medium">
-                      {brief?.exists ? "Edit Markdown" : "Write an entry"}
-                    </summary>
-                    <div className="mt-4">
-                      <BriefEditor
-                        key={`${day}-${kind}-${brief?.hash ?? "new"}`}
-                        day={day}
-                        kind={kind}
-                        brief={brief}
-                        connected={connected}
-                        aiReady={!!ai && apiGenerationEnabled()}
-                      />
-                    </div>
-                  </details>
-                </>
+                <p className="text-sm leading-6 text-zinc-500">
+                  {!connected
+                    ? "Connect EMDEE to read this entry."
+                    : kind === "morning"
+                      ? "Your morning brief will appear here once it’s saved in EMDEE."
+                      : "Your evening closeout will appear here once it’s saved in EMDEE."}
+                </p>
               )}
             </section>
           );
@@ -179,16 +162,21 @@ export default async function TodayPage() {
             Commitments & follow-through
           </h2>
           <p className="mt-2 text-sm leading-6 text-zinc-600">
-            Proposals become commitments when you accept them. Unfinished work
-            stays here until you complete it, move its check-in date, or
-            explicitly drop it.
+            Your accepted work and proposals, with their latest status.
           </p>
         </div>
-        <NewTask
-          key={tasks.active.length + tasks.completed.length}
-          day={day}
-          id={randomUUID()}
-        />
+        <details className="rounded-xl border border-zinc-200 p-4">
+          <summary className="cursor-pointer text-sm font-medium">
+            Add a commitment
+          </summary>
+          <div className="mt-4">
+            <NewTask
+              key={tasks.active.length + tasks.completed.length}
+              day={day}
+              id={randomUUID()}
+            />
+          </div>
+        </details>
         <div className="grid gap-3 lg:grid-cols-2">
           {due.map((task) => (
             <TaskRow
@@ -199,9 +187,7 @@ export default async function TodayPage() {
           ))}
         </div>
         {!due.length ? (
-          <p className="text-sm text-zinc-500">
-            Nothing due yet. Choose one action worth committing to.
-          </p>
+          <p className="text-sm text-zinc-500">Nothing due today.</p>
         ) : null}
       </section>
       {upcoming.length ? (
@@ -233,10 +219,8 @@ export default async function TodayPage() {
         </section>
       ) : null}
       <p className="text-xs leading-5 text-zinc-500">
-        Showing up to 100 unfinished commitments and 100 completions. Briefs
-        live in EMDEE; operational status lives here. Your scheduled ChatGPT
-        tasks save these records to EMDEE. Refresh after a run to see the latest
-        saved changes.
+        Briefs are read from EMDEE. Showing up to 100 unfinished commitments and
+        100 completions.
       </p>
     </div>
   );

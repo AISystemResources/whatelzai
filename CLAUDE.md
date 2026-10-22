@@ -423,3 +423,11 @@ Today keeps source editing behind Edit Markdown; empty entries open the writer.
 Tables scroll within their container on phones; overview previews scroll without
 cutting Markdown syntax. No raw HTML or remote image fetching; no source mutation.
 See docs/admin-overview.md; mirrored in EMDEE INSTRUCTIONS.
+
+## Read-first Today (SPR-133 follow-up)
+
+Today reads rendered briefs without briefing editors or Save to EMDEE controls.
+Missing entries show a short message; yesterday’s handoff and optional commitment
+forms are collapsed. The page no longer reads OpenAI credentials. Canonical EMDEE
+writes, schedules, permissions and existing actions remain unchanged. This supersedes
+the preceding Today source-editor UI description. Mirrored in EMDEE INSTRUCTIONS.

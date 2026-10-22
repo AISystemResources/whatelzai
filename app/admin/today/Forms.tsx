@@ -103,6 +103,10 @@ export function TaskRow({ task, day }: { task: Task; day: string }) {
       <input type="hidden" name="revision" value={task.revision} />
       <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-500">
         <span>{laneLabels[task.lane]}</span>
+        <span className="capitalize">
+          {task.status === "open" ? "Accepted" : task.status}
+        </span>
+        <span>Next check-in · {task.due_on}</span>
         {task.due_on < day && task.status !== "done" ? (
           <span className="text-amber-800">
             Carried forward · {task.due_on}
@@ -119,45 +123,50 @@ export function TaskRow({ task, day }: { task: Task; day: string }) {
       >
         {task.title}
       </p>
-      <div className="flex flex-wrap items-end gap-2">
-        <label className="min-w-32 flex-1 text-xs text-zinc-600">
-          Status
-          <select
-            aria-label={`Status for ${task.title}`}
-            className={`${field} mt-1`}
-            name="status"
-            defaultValue={task.status}
-          >
-            {statuses.map((s) => (
-              <option key={s} value={s}>
-                {
+      <details>
+        <summary className="cursor-pointer text-xs text-zinc-500">
+          Update commitment
+        </summary>
+        <div className="mt-3 flex flex-wrap items-end gap-2">
+          <label className="min-w-32 flex-1 text-xs text-zinc-600">
+            Status
+            <select
+              aria-label={`Status for ${task.title}`}
+              className={`${field} mt-1`}
+              name="status"
+              defaultValue={task.status}
+            >
+              {statuses.map((s) => (
+                <option key={s} value={s}>
                   {
-                    proposed: "Proposed",
-                    open: "Accepted",
-                    blocked: "Blocked",
-                    waiting: "Waiting",
-                    done: "Done",
-                    deferred: "Deferred",
-                    dropped: "Dropped",
-                  }[s]
-                }
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="min-w-36 flex-1 text-xs text-zinc-600">
-          Next check-in
-          <input
-            aria-label={`Next check-in for ${task.title}`}
-            className={`${field} mt-1`}
-            name="due_on"
-            type="date"
-            required
-            defaultValue={task.due_on}
-          />
-        </label>
-        <Submit>Update</Submit>
-      </div>
+                    {
+                      proposed: "Proposed",
+                      open: "Accepted",
+                      blocked: "Blocked",
+                      waiting: "Waiting",
+                      done: "Done",
+                      deferred: "Deferred",
+                      dropped: "Dropped",
+                    }[s]
+                  }
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="min-w-36 flex-1 text-xs text-zinc-600">
+            Next check-in
+            <input
+              aria-label={`Next check-in for ${task.title}`}
+              className={`${field} mt-1`}
+              name="due_on"
+              type="date"
+              required
+              defaultValue={task.due_on}
+            />
+          </label>
+          <Submit>Update</Submit>
+        </div>
+      </details>
       <Feedback state={state} />
     </form>
   );

@@ -24,8 +24,11 @@ loaded set. Completion is counted only from explicit done records.
 
 Morning/evening previews render the existing canonical EMDEE Notes as Markdown
 in a bounded scrolling area, preserving complete headings, lists and GFM tables.
-Today and weekly reflection render Markdown too; Today keeps explicit Edit Markdown
-controls. Raw HTML and remote image loading are disabled. Source content is unchanged. Before04:30 and21:00 Singapore,
+Today and weekly reflection render Markdown too. Today is a reading surface:
+no briefing editor or Save to EMDEE control; missing entries show a short message.
+Yesterday’s handoff and optional commitment forms are collapsed. Raw HTML and
+remote image loading are disabled. Source content is unchanged. Before 04:30 and
+21:00 Singapore,
 a missing current entry is not due yet. Afterward it is not found, not proof that
 a schedule failed. Saved entries similarly do not prove an unattended run.
 Yesterday's closeout remains a read-only preview. No inference, schedule change,

@@ -393,6 +393,19 @@ Private HQH/HHH notes live in member_briefings, with RLS/no browser grants, inde
 
 The member root is an attention dashboard inspired by EMDEE: personal welcome, overdue/due follow-ups, accepted due/blocked/waiting commitments, private HQH/HHH drafts and permitted events from this month and next. Counts are exact with bounded lists and partial-source errors shown. No provider calls on page load; no inferred completions or RSVPs. API Chat is now Edmund-only: `memberActor` requires the configured stable owner ID plus privileged stored role before access lookup, reservation or provider use, even if another pilot account is active. Shared member leads, notes and resources keep their existing permissions.
 
+## AI-business owner overview (SPR-133)
+
+Admin root prioritizes accepted AI-business commitments, overdue/blocked/waiting
+attention, saved personal Daily previews, marketing review queues and product
+signals. `lib/admin-overview/server.ts` independently checks the configured owner
+before every source. Missing sources stay unknown; proposals, deferred work and
+other lanes never become accepted focus automatically. All reads are bounded or
+exact aggregate counts; no inference or publishing runs on load. Existing Daily
+schedules, owner/member access and app.whatelz.ai behavior remain unchanged.
+Local active accounts and website visitors are distinct metrics; unmeasured ARR
+and workspace counts are null. Remote product contracts are validated and stale
+snapshots flagged. See docs/admin-overview.md; mirrored in EMDEE INSTRUCTIONS.
+
 ## fcOS navigation and linked notes (SPR-132)
 
 The mobile member navigation is fixed at the bottom: Leads, Chat, raised central Home, Resources, Profile. Notebook, calendar, team, catalogue and culture select Resources; desktop retains a top row. fcOS-only bottom padding and viewport safe areas prevent content overlap. `/profile` is a focused fcOS identity page; public commerce account pages stay separate.

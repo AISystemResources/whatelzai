@@ -197,3 +197,132 @@ test("vault reads reject shared wrappers, traversal and sibling collections", as
   );
   assert.equal(calls, 0);
 });
+
+test("API pilot requires the configured owner before reading active pilot access", async () => {
+  const owner = "00000000-0000-4000-8000-000000000001";
+  const { isOwnerUser } = await import("../lib/admin-policy");
+  for (const [user, configured, allowed] of [
+    [null, owner, false],
+    [
+      { id: "00000000-0000-4000-8000-000000000002", role: "admin" },
+      owner,
+      false,
+    ],
+    [{ id: owner, role: "unauthorized" }, owner, false],
+    [{ id: owner, role: "admin" }, undefined, false],
+    [{ id: owner, role: "admin" }, owner, true],
+  ] as const) {
+    let reads = 0;
+    const server = load<{
+      memberActor: () => Promise<{ user: { id: string } }>;
+    }>("lib/member-ai/server.ts", {
+      "@/lib/users": { ensureUserRow: async () => user },
+      "@/lib/admin-policy": {
+        isOwnerUser: (value: typeof user) => isOwnerUser(value, configured),
+      },
+      "@/lib/member-ai/model": model,
+      "./model": model,
+      "@/lib/daily/connections": {
+        openaiConnection: () => {
+          throw Error("Must not read provider key");
+        },
+      },
+      "@/lib/supabase-server": {
+        supabaseAdmin: {
+          from: () => {
+            reads++;
+            return {
+              select() {
+                return this;
+              },
+              eq() {
+                return this;
+              },
+              maybeSingle: async () => ({
+                data: { active: true, model: "gpt-6-luna" },
+                error: null,
+              }),
+            };
+          },
+        },
+      },
+    });
+    if (allowed) assert.equal((await server.memberActor()).user.id, owner);
+    else await assert.rejects(server.memberActor());
+    assert.equal(reads, allowed ? 1 : 0);
+  }
+});
+
+test("attention loader verifies identity, scopes private sources and preserves source failures", async () => {
+  const attention = await import("../lib/fcos/attention");
+  const fcos = await import("../lib/fcos/model");
+  const calls: { table: string; filters: unknown[][] }[] = [];
+  const dashboard = load<{
+    loadAttentionDashboard: () => Promise<{
+      leads: { count: number | null };
+      tasks: { count: number | null };
+      items: unknown[];
+      calendarAvailable: boolean;
+    }>;
+  }>("lib/fcos/dashboard.ts", {
+    "./server": { fcosOwner: async () => "verified-owner" },
+    "./attention": attention,
+    "./model": fcos,
+    "@/lib/leads/model": { todayUtc8: () => "2026-10-22" },
+    "@/lib/community-calendar/server": {
+      loadCommunityCalendar: async () => {
+        throw Error("Unavailable");
+      },
+    },
+    "@/lib/supabase-server": {
+      supabaseAdmin: {
+        from: (table: string) => {
+          const entry = { table, filters: [] as unknown[][] };
+          calls.push(entry);
+          const query = {
+            select() {
+              return this;
+            },
+            eq(...args: unknown[]) {
+              entry.filters.push(args);
+              return this;
+            },
+            not() {
+              return this;
+            },
+            lte() {
+              return this;
+            },
+            in() {
+              return this;
+            },
+            or() {
+              return this;
+            },
+            order() {
+              return this;
+            },
+            limit: async () => ({
+              data: [],
+              count: table === "daily_tasks" ? 8 : 0,
+              error:
+                table === "member_leads" ? { message: "Unavailable" } : null,
+            }),
+          };
+          return query;
+        },
+      },
+    },
+  });
+  const result = await dashboard.loadAttentionDashboard();
+  assert.equal(result.leads.count, null);
+  assert.equal(result.tasks.count, 8);
+  assert.equal(result.calendarAvailable, false);
+  for (const call of calls)
+    assert.ok(
+      call.filters.some(
+        (filter) => filter[0] === "owner_id" && filter[1] === "verified-owner",
+      ),
+    );
+  assert.equal(calls.length, 3);
+});

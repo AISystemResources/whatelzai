@@ -1,6 +1,6 @@
 # Member assistant pilot
 
-The member assistant lives at `app.whatelz.ai/assistant`. The owner manages pilot
+The member assistant lives at `app.whatelz.ai/assistant`. The current API pilot is Edmund-only. The owner manages stored pilot
 access and allowance resets at `admin.whatelz.ai/users`. Personal admin Daily
 remains ChatGPT/MCP based; `DAILY_API_GENERATION_ENABLED` stays off. EMDEE only
 stores/retrieves knowledge and verifies OAuth identity. It performs no inference.
@@ -10,7 +10,11 @@ stores/retrieves knowledge and verifies OAuth identity. It performs no inference
 Every conversation, request, allowance and commitment belongs to immutable
 `public.users.id`, not an email. Activation requires an existing authenticated
 account chosen by the configured sole owner. Names/emails never claim accounts
-or team profiles. Inactive members cannot read chats or invoke tools.
+or team profiles. Inactive members cannot read chats or invoke tools. In this phase, even an activated
+non-owner cannot use the assistant: `memberActor` verifies the configured stable owner
+ID and privileged stored role before reading pilot access, reserving allowance or
+reaching the provider. Missing owner configuration fails closed. Leads, notes and
+resources retain their independent member permissions.
 
 An optional EMDEE PKCE connection uses the member's own account and read scope.
 The identity endpoint verifies the resource-bound OAuth subject and vault UUID.
@@ -33,7 +37,7 @@ original cycle. The server rechecks the configured owner for each admin action.
 The server uses only the provider key in the owner's encrypted OpenAI connection,
 never the owner's EMDEE token or personal notes. Provider calls are accepted only
 on the member origin (or exact deployment preview/development origin), with a
-matching Origin header and verified activated account.
+matching Origin header and verified activated owner account.
 
 Default GPT-6 Luna pricing: US$0.10/M input and US$0.50/M output tokens. Optional
 GPT-6.1 Sol: US$2/M input and US$10/M output. Checked 2026-10-21 against the OpenAI

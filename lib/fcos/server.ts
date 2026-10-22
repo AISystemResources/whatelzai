@@ -1,9 +1,9 @@
 import "server-only";
 import { supabaseAdmin } from "@/lib/supabase-server";
-import { ensureUserRow } from "@/lib/users";
+import { requireAssignedUser } from "@/lib/app-access";
 import type { Briefing } from "./model";
 export async function fcosOwner() {
-  const user = await ensureUserRow();
+  const user = await requireAssignedUser();
   if (!user) throw Error("Sign in to continue.");
   return user.id;
 }

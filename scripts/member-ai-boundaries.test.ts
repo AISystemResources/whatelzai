@@ -216,6 +216,7 @@ test("API pilot requires the configured owner before reading active pilot access
     const server = load<{
       memberActor: () => Promise<{ user: { id: string } }>;
     }>("lib/member-ai/server.ts", {
+      "@/lib/team-assignment": { hasTeamAssignment: async () => true },
       "@/lib/users": { ensureUserRow: async () => user },
       "@/lib/admin-policy": {
         isOwnerUser: (value: typeof user) => isOwnerUser(value, configured),
@@ -536,6 +537,7 @@ test("blank Chat skips transcript reads while latest Chat loads only its owner's
         blank?: boolean,
       ) => Promise<{ selected: string | null; messages: unknown[] }>;
     }>("lib/member-ai/server.ts", {
+      "@/lib/team-assignment": { hasTeamAssignment: async () => true },
       "@/lib/users": {
         ensureUserRow: async () => ({
           id: "owner",

@@ -1,3 +1,4 @@
+import { hasTeamAssignment } from "@/lib/team-assignment";
 import { createServerClient } from "@supabase/ssr";
 import type { NextRequest } from "next/server";
 import { authCookieOptions } from "@/lib/auth/redirect";
@@ -88,6 +89,45 @@ export default async function proxy(req: NextRequest) {
             { status: 403 },
           ),
         );
+    }
+  }
+
+  // A verified sign-in is not member activation. Check the stored tree link
+  // before rendering app pages or executing actions on them.
+  const appPage = route.surface === "app" && route.protect;
+  if (
+    appPage &&
+    (req.nextUrl.pathname !== "/pending-assignment" ||
+      !["GET", "HEAD"].includes(req.method))
+  ) {
+    try {
+      const account = await supabaseAdmin
+        .from("users")
+        .select("id")
+        .eq("supabase_auth_user_id", user!.id)
+        .maybeSingle();
+      if (account.error) throw Error("Account lookup unavailable");
+      const assigned =
+        account.data && (await hasTeamAssignment(account.data.id));
+      if (!assigned) {
+        if (req.method !== "GET" && req.method !== "HEAD")
+          return finish(
+            NextResponse.json(
+              { error: "tree_assignment_required" },
+              { status: 403 },
+            ),
+          );
+        return finish(
+          NextResponse.redirect(new URL("/pending-assignment", req.url)),
+        );
+      }
+    } catch {
+      return finish(
+        NextResponse.json(
+          { error: "Member access could not be checked" },
+          { status: 503 },
+        ),
+      );
     }
   }
 

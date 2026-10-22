@@ -57,7 +57,7 @@ export function MemberControls({
           onClick={() => change("access", !active)}
           className="rounded-lg bg-yellow-300 px-3 py-2 text-sm font-medium disabled:opacity-50"
         >
-          {active ? "Pause access" : "Activate · US$5/month"}
+          {active ? "Pause AI allowance" : "Enable AI allowance · US$5/month"}
         </button>
         {active && selected !== model && (
           <button

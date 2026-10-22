@@ -434,4 +434,4 @@ the preceding Today source-editor UI description. Mirrored in EMDEE INSTRUCTIONS
 
 ## fcOS installation (SPR-135)
 
-Only the app surface links `/fcos/app.webmanifest`, with canonical app origin identity/scope/start URL, standalone display, PNG/maskable icons and Apple home-screen metadata. The app shell captures `beforeinstallprompt` across navigation; Profile exposes native installation or platform instructions and standalone state. No service worker or offline private-data cache is installed. Auth and member API gates remain unchanged; the app requires a network connection.
+Only the app surface links `/fcos/app.webmanifest`, with canonical app origin identity/scope/start URL, standalone display, PNG/maskable icons and Apple home-screen metadata. The app shell captures `beforeinstallprompt` across navigation; Profile exposes native installation or platform instructions and standalone state. The app-only shell registers `/fcos-sw.js` for older Chromium install promotion. Its fetch handler is strictly network-only and stores no offline private-data cache. Auth and member API gates remain unchanged; the app requires a network connection.

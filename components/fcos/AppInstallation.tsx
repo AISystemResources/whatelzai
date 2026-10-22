@@ -51,6 +51,13 @@ export function AppInstallationProvider({ children }: { children: ReactNode }) {
   const ios = useSyncExternalStore(subscribePlatform, browserIos, serverFalse);
   const installed = standalone || justInstalled;
   useEffect(() => {
+    // Older Chromium install promotion requires a fetch-capable worker.
+    // This worker is network-only; browser-menu installation remains the fallback.
+    if ("serviceWorker" in navigator) {
+      void navigator.serviceWorker
+        .register("/fcos-sw.js", { scope: "/", updateViaCache: "none" })
+        .catch(() => {});
+    }
     const capture = (event: Event) => {
       event.preventDefault();
       setPrompt(event as InstallPrompt);

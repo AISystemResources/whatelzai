@@ -113,7 +113,10 @@ export default async function MemberHome() {
               {data.leads.count ?? "—"} follow-ups
             </Link>
             {canChat && (
-              <Link href="/assistant" className="rounded-full border px-3 py-2">
+              <Link
+                href="/assistant/commitments"
+                className="rounded-full border px-3 py-2"
+              >
                 {data.tasks.count ?? "—"} commitments
               </Link>
             )}

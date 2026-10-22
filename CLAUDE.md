@@ -472,3 +472,7 @@ a secondary admin section. See docs/user-activation.md; mirrored in EMDEE.
 ## Member Profile and Usage (SPR-138)
 
 `/profile` uses a mobile orange welcome/avatar, verified calendar persona and fcOS Member Pass, with Profile/Usage links (`?tab=usage`). Profile alone opts into orange navigation/install accents; existing app tabs retain yellow. No invented points, streak, next tier or automatic team linking. `loadProfileData` independently verifies identity and scopes every membership/access/cycle/reset read to that immutable users.id, never accepting a target account. Usage shows current allowance spent/reserved/remaining, Singapore renewal, actual latest admin reset/count and 20-cycle history. Expired cycles stay historical; read-only monthly projection never resets credit. No provider/key access, quota write, access grant, self-reset or inference from this view. Unavailable data is explicit; owner-only Chat remains independently enforced.
+
+## Conversation-first Chat sidebar (SPR-140)
+
+Chat’s native modal drawer contains New chat, title/date search across the latest 30 owned conversations, selected history and a small Profile/Usage link. Usage stays in Profile. Commitments are at `/assistant/commitments`, linked from Home and owner Resources alongside the optional knowledge connection. No inference or conversation creation on navigation; first-send creation and all owner/assignment/access checks remain intact. Projects and further harness automation are deferred until their context and sharing boundaries are defined.

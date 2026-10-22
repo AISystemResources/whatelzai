@@ -431,3 +431,7 @@ Missing entries show a short message; yesterday’s handoff and optional commitm
 forms are collapsed. The page no longer reads OpenAI credentials. Canonical EMDEE
 writes, schedules, permissions and existing actions remain unchanged. This supersedes
 the preceding Today source-editor UI description. Mirrored in EMDEE INSTRUCTIONS.
+
+## fcOS installation (SPR-135)
+
+Only the app surface links `/fcos/app.webmanifest`, with canonical app origin identity/scope/start URL, standalone display, PNG/maskable icons and Apple home-screen metadata. The app shell captures `beforeinstallprompt` across navigation; Profile exposes native installation or platform instructions and standalone state. No service worker or offline private-data cache is installed. Auth and member API gates remain unchanged; the app requires a network connection.

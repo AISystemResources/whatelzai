@@ -4,6 +4,7 @@ import { type ReactNode } from "react";
 import { AppHeader } from "./AppHeader";
 import { SiteFooter } from "./SiteFooter";
 import { DeviceTracker } from "./DeviceTracker";
+import { AppInstallationProvider } from "@/components/fcos/AppInstallation";
 import { usePathname } from "next/navigation";
 
 interface Props {
@@ -29,7 +30,11 @@ export function ShellProvider({
         tabIndex={-1}
         className={isPublic ? "public-site" : "admin-theme"}
       >
-        {children}
+        {surface === "app" ? (
+          <AppInstallationProvider>{children}</AppInstallationProvider>
+        ) : (
+          children
+        )}
       </div>
       {isPublic && <SiteFooter ownerName={ownerName} />}
       {isPublic && !isAdmin && <DeviceTracker />}

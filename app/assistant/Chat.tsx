@@ -1,5 +1,7 @@
 "use client";
 import Link from "next/link";
+import { ChatMarkdown } from "./ChatMarkdown";
+import { readReply } from "@/lib/member-ai/stream";
 import { useState, useRef, useLayoutEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowUp, LoaderCircle } from "lucide-react";
@@ -22,6 +24,10 @@ export function Chat({
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const [submitted, setSubmitted] = useState<string | null>(null);
+  const [streamed, setStreamed] = useState("");
+  const [startedFrom, setStartedFrom] = useState<string | undefined>(undefined);
+  const [draftSaved, setDraftSaved] = useState(false);
+  const pinned = useRef(true);
   const sending = useRef(false);
   const pending = useRef<{ text: string; id: string } | null>(null);
   const activeConversation = useRef(conversationId);
@@ -30,9 +36,9 @@ export function Chat({
   const router = useRouter();
   const lastMessage = messages.at(-1)?.id;
   useLayoutEffect(() => {
-    if (transcript.current)
+    if (transcript.current && pinned.current)
       transcript.current.scrollTop = transcript.current.scrollHeight;
-  }, [lastMessage, busy]);
+  }, [lastMessage, busy, streamed]);
   async function send(event: React.FormEvent) {
     event.preventDefault();
     if (sending.current || busy || !enabled || !text.trim()) return;
@@ -40,6 +46,10 @@ export function Chat({
     setBusy(true);
     setNotice("");
     setSubmitted(text);
+    setStreamed("");
+    setStartedFrom(lastMessage);
+    setDraftSaved(false);
+    pinned.current = true;
     const requestId =
       pending.current?.text === text ? pending.current.id : crypto.randomUUID();
     pending.current = { text, id: requestId };
@@ -50,19 +60,23 @@ export function Chat({
         activeConversation.current = (await createConversation()).id;
       const response = await fetch("/api/member/assistant", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/x-ndjson",
+        },
         body: JSON.stringify({
           requestId,
           conversationId: activeConversation.current,
           text,
         }),
       });
-      const result = await response.json();
-      if (!response.ok)
-        throw Error(result.error ?? "Your reply could not be prepared.");
+      const result = await readReply(response, (chunk) =>
+        setStreamed((previous) => previous + chunk),
+      );
       if (result.duplicate && result.status === "running")
         setNotice("Your reply is still being prepared. Refresh shortly.");
       else {
+        setDraftSaved(true);
         setText("");
         pending.current = null;
         if (textarea.current) textarea.current.style.height = "auto";
@@ -78,7 +92,6 @@ export function Chat({
     } finally {
       sending.current = false;
       setBusy(false);
-      setSubmitted(null);
       if (conversationId) router.refresh();
     }
   }
@@ -103,6 +116,12 @@ export function Chat({
         ref={transcript}
         role="log"
         className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-1 py-5 md:px-5"
+        onScroll={() => {
+          const el = transcript.current;
+          if (el)
+            pinned.current =
+              el.scrollHeight - el.scrollTop - el.clientHeight < 100;
+        }}
         aria-label="Conversation"
         aria-live="polite"
         aria-busy={busy}
@@ -129,9 +148,13 @@ export function Chat({
               <p className="sr-only">
                 {message.role === "user" ? "You" : "fcOS"}
               </p>
-              <div className="whitespace-pre-wrap break-words text-[15px] leading-7">
-                {message.body}
-              </div>
+              {message.role === "assistant" ? (
+                <ChatMarkdown body={message.body} />
+              ) : (
+                <div className="whitespace-pre-wrap break-words text-[15px] leading-7">
+                  {message.body}
+                </div>
+              )}
               {message.role === "assistant" && (
                 <details className="mt-2 text-xs text-zinc-500">
                   <summary className="w-fit cursor-pointer py-2">
@@ -173,7 +196,7 @@ export function Chat({
               ))}
             </article>
           ))}
-          {submitted && (
+          {submitted && lastMessage === startedFrom && (
             <article className="ml-10 rounded-3xl bg-zinc-100 px-4 py-3">
               <p className="sr-only">You</p>
               <p className="whitespace-pre-wrap break-words text-[15px] leading-7">
@@ -181,7 +204,21 @@ export function Chat({
               </p>
             </article>
           )}
-          {busy && (
+          {streamed && (!draftSaved || lastMessage === startedFrom) && (
+            <article
+              className="min-w-0 px-1 py-2"
+              aria-label={busy ? "Reply in progress" : "Reply"}
+            >
+              <ChatMarkdown body={streamed} />
+              {busy && (
+                <span
+                  className="mt-2 inline-block h-2 w-2 motion-safe:animate-pulse rounded-full bg-zinc-400"
+                  aria-hidden="true"
+                />
+              )}
+            </article>
+          )}
+          {busy && !streamed && (
             <p className="flex items-center gap-2 px-1 text-sm text-zinc-500">
               <LoaderCircle
                 size={16}

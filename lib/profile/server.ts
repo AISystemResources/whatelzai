@@ -61,7 +61,7 @@ export async function loadProfileData() {
     usage: {
       ...summarizeUsage(stored, history),
       assigned: Boolean(stored),
-      active: Boolean(stored?.active),
+      active: true,
       canChat: Boolean(memberApiEnabled()),
       model: stored?.model ?? null,
       history,

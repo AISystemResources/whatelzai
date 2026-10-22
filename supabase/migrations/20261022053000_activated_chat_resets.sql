@@ -108,4 +108,3 @@ begin
   insert into member_ai_messages(user_id,conversation_id,request_id,role,body) values(p_user,p_conversation,p_request,'user',p_text);
   return jsonb_build_object('duplicate',false,'model',a.model,'cycle_id',c.id);
 end $$;
-

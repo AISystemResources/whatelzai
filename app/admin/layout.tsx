@@ -1,7 +1,7 @@
 import { isOwnerUser } from "@/lib/admin-policy";
 import { notFound } from "next/navigation";
 import { ensureUserRow } from "@/lib/users";
-import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { AdminNavigation } from "@/components/admin/AdminNavigation";
 
 export default async function AdminLayout({
   children,
@@ -13,10 +13,10 @@ export default async function AdminLayout({
 
   return (
     <>
-      <div className="flex min-h-screen flex-col bg-zinc-50 md:flex-row">
-        <AdminSidebar />
-        <main className="flex-1 overflow-x-hidden bg-white">
-          <div className="mx-auto max-w-5xl px-4 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-6 sm:py-8 md:px-10 md:py-10">
+      <div className="min-h-dvh bg-white">
+        <AdminNavigation />
+        <main id="admin-main" className="min-w-0 overflow-x-hidden bg-white">
+          <div className="mx-auto max-w-5xl px-4 pt-6 pb-[calc(7rem+env(safe-area-inset-bottom))] sm:px-6 sm:pt-8 md:px-10 md:pt-10">
             {children}
           </div>
         </main>

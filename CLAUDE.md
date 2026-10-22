@@ -517,3 +517,7 @@ Lead forms/search/sharing use MobilePicker: a native modal dialog with rounded o
 ## Baobeis list (SPR-148)
 
 Member /leads and navigation are labelled Baobeis. The default list shows title, plus-button add dialog, rounded search bar and cards without introductory text, counts or priority section headings. Search submits on Enter. The sharing toolbar is removed; existing grants/permissions remain unchanged. Add uses the same owner-verified action in a native modal, with nested community picker and cancel/focus restoration. No record is created until submission.
+
+## Shared Admin navigation (SPR-149)
+
+All admin pages share `AdminNavigation` in the owner-guarded admin layout. It supersedes the left sidebar/hamburger with a sticky, horizontally swipeable workstream strip (Overview, AI Business, Network Marketing, Day Job) and a fixed Users | Home | Settings bottom bar. Home opens Overview; Today remains a header shortcut. `lib/admin-navigation.ts` maps clean host and preview `/admin` paths plus deep tools to their owning workstream/tab. Users and Settings do not highlight a workstream. Native header scrolling only reveals links; it never changes pages by itself. Active sections scroll into view on change, content clears the bottom bar and both bars account for safe areas. Install/sign-out live in Settings. PWA launch/identity, owner checks and member navigation remain unchanged. See docs/admin-navigation.md and mirrored EMDEE INSTRUCTIONS.

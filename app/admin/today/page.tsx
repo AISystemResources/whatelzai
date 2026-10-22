@@ -130,6 +130,7 @@ export default async function TodayPage() {
           return (
             <section
               key={kind}
+              id={kind}
               className="rounded-2xl border border-zinc-200 p-5 sm:p-6"
             >
               <p className="text-xs uppercase tracking-widest text-zinc-500">
@@ -158,7 +159,7 @@ export default async function TodayPage() {
           );
         })}
       </div>
-      <section className="space-y-4">
+      <section id="commitments" className="space-y-4">
         <div>
           <h2 className="text-2xl font-semibold">
             Commitments & follow-through

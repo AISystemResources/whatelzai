@@ -494,3 +494,8 @@ Chat’s native modal drawer contains New chat, title/date search across the lat
 ## Weekly percentage usage (SPR-142)
 
 The baseline is now internal US$1 per seven-day window (full reset US$1 / 100%, half US$0.50 / 50%), superseding SPR-141's monthly amounts. Profile Usage exposes percentages and a live countdown, never dollar amounts. Exact reset timestamps use Singapore time. Current-cycle spend/reservations and historical records are preserved on conversion. New members start a seven-day window on first send; expired windows roll forward on the existing anchor without credit accumulation. Read-only projection and reservation SQL agree. Owner resets restart the seven-day clock; a partial grant is measured against the normal weekly baseline. No member self-reset entitlement is invented. Apply migration 20261022053300 after 20261022053000 before publishing code.
+
+
+## Streamed Markdown Chat (SPR-143)
+
+Assistant replies render safe GFM (tables/lists/links/code/bold); tables/code scroll within the message and remote images/raw HTML do not execute or auto-load. The member client requests NDJSON and displays real Responses output_text deltas, not delayed typing animation. Tool arguments/results remain server-side. Terminal provider usage is validated before receipt settlement; done is sent only after persistence. Next after() tracks generation/settlement if a browser disconnects, within the existing route duration; an interrupted provider stream retains the uncertain reservation. Existing request IDs deduplicate retries; incomplete drafts cannot be saved/accepted until persisted server messages refresh. JSON compatibility, tree activation, rate/budget/call bounds and privacy are unchanged. Scroll follows new content only while near the bottom.

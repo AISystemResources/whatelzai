@@ -83,7 +83,15 @@ export function AppInstallationProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function InstallAppButton() {
+export function InstallAppButton({
+  accent = "yellow",
+}: {
+  accent?: "yellow" | "orange";
+}) {
+  const buttonTone =
+    accent === "orange"
+      ? "bg-orange-500 text-white"
+      : "bg-yellow-300 text-zinc-950";
   const { prompt, installed, ios, clear } = useContext(Installation);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -115,7 +123,7 @@ export function InstallAppButton() {
         type="button"
         onClick={install}
         disabled={busy}
-        className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-yellow-300 px-5 py-3 font-semibold disabled:opacity-50"
+        className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 py-3 font-semibold disabled:opacity-50 ${buttonTone}`}
       >
         <Download size={18} aria-hidden="true" />
         {busy ? "Opening installer…" : "Install fcOS"}
@@ -159,7 +167,9 @@ export function InstallAppButton() {
           )}
         </p>
         <form method="dialog" className="mt-5">
-          <button className="w-full rounded-xl bg-yellow-300 px-4 py-3 font-semibold">
+          <button
+            className={`w-full rounded-xl px-4 py-3 font-semibold ${buttonTone}`}
+          >
             Got it
           </button>
         </form>

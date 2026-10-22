@@ -9,6 +9,9 @@ export const memberApiEnabled = () => process.env.MEMBER_AI_ENABLED === "true";
 export async function memberActor() {
   const user = await ensureUserRow();
   if (!user) throw Error("Sign in to continue");
+  // The current API pilot is Edmund-only, even if another account has active access.
+  if (!isOwnerUser(user))
+    throw Error("fcOS Chat is currently available only to Edmund");
   const { data, error } = await supabaseAdmin
     .from("member_ai_access")
     .select("active,model,allowance_micro,current_cycle_id")

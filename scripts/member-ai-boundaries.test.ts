@@ -5,6 +5,8 @@ import { createRequire } from "node:module";
 import vm from "node:vm";
 import ts from "typescript";
 import * as model from "../lib/member-ai/model";
+import { createReplyStream } from "../lib/member-ai/reply-stream";
+import { readReply } from "../lib/member-ai/stream";
 import * as profileUsage from "../lib/profile/usage";
 const requireNode = createRequire(import.meta.url);
 function load<T>(
@@ -71,6 +73,8 @@ test("member route rejects disabled, cross-origin and inactive calls before prov
         },
         "@/lib/member-ai/model": model,
         "@/lib/member-ai/agent": {},
+        "@/lib/member-ai/reply-stream": { createReplyStream },
+        "next/server": { after: () => {} },
         "@/lib/fcos/resources": {
           readFcosResource: async () => {
             throw Error("must not read resources before authorization");
@@ -767,4 +771,176 @@ test("Profile usage rejects anonymous reads and scopes every private query to th
       ([, key, value]) => key === "reason" && value === "owner-reset",
     ),
   );
+});
+
+test("streaming route keeps settlement alive after disconnect and replay cannot invoke provider twice", async () => {
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const pendingAfter: Promise<unknown>[] = [];
+  const settlements: Record<string, unknown>[] = [];
+  let invoked = 0;
+  let reserved = false;
+  let complete = false;
+  const user = "11111111-1111-4111-8111-111111111111";
+  const route = load<{ POST: (request: Request) => Promise<Response> }>(
+    "app/api/member/assistant/route.ts",
+    {
+      "next/server": {
+        after: (task: Promise<unknown>) => pendingAfter.push(task),
+      },
+      "@/lib/member-ai/reply-stream": { createReplyStream },
+      "@/lib/supabase-server": {
+        supabaseAdmin: {
+          rpc: async (name: string, args: Record<string, unknown>) => {
+            if (name === "reserve_member_ai") {
+              if (reserved)
+                return {
+                  data: {
+                    duplicate: true,
+                    status: complete ? "completed" : "running",
+                  },
+                  error: null,
+                };
+              reserved = true;
+              return { data: { duplicate: false }, error: null };
+            }
+            assert.equal(name, "finish_member_ai");
+            settlements.push(args);
+            complete = true;
+            return { error: null };
+          },
+        },
+      },
+      "@/lib/member-ai/server": {
+        memberApiEnabled: () => true,
+        memberActor: async () => ({
+          user: { id: user },
+          access: { model: "gpt-6-luna" },
+        }),
+        platformKey: async () => "fixture",
+        conversationMessages: async () => [],
+      },
+      "@/lib/member-ai/http": { memberOriginAllowed: () => true },
+      "@/lib/member-ai/model": model,
+      "@/lib/member-ai/agent": {
+        runMemberAgent: async (options: {
+          onText: (text: string) => void;
+          receipt: Record<string, unknown>;
+        }) => {
+          invoked++;
+          options.onText("First chunk");
+          await gate;
+          Object.assign(options.receipt, {
+            input: 10,
+            output: 2,
+            charge: 2,
+            uncertain: false,
+          });
+          return { body: "First chunk", proposals: [] };
+        },
+      },
+      "@/lib/fcos/resources": { readFcosResource: async () => ({}) },
+      "@/lib/member-ai/emdee": { readMemberVault: async () => ({}) },
+      "@/lib/daily/model": { singaporeDay: () => "2026-10-22" },
+    },
+  );
+  const request = () =>
+    new Request("https://app.whatelz.ai/api/member/assistant", {
+      method: "POST",
+      headers: { Accept: "application/x-ndjson" },
+      body: JSON.stringify({
+        requestId: "22222222-2222-4222-8222-222222222222",
+        conversationId: "33333333-3333-4333-8333-333333333333",
+        text: "Hello",
+      }),
+    });
+  const response = await route.POST(request());
+  const reader = response.body!.getReader();
+  assert.match(new TextDecoder().decode((await reader.read()).value), /start/);
+  assert.match(
+    new TextDecoder().decode((await reader.read()).value),
+    /First chunk/,
+  );
+  assert.equal(settlements.length, 0);
+  assert.equal(pendingAfter.length, 1);
+  await reader.cancel();
+  release();
+  await Promise.all(pendingAfter);
+  assert.equal(settlements.length, 1);
+  assert.equal(settlements[0].p_user, user);
+  assert.equal(settlements[0].p_charge, 2);
+  assert.equal(settlements[0].p_uncertain, false);
+  const duplicate = await route.POST(request());
+  assert.equal((await duplicate.json()).status, "completed");
+  assert.equal(invoked, 1);
+});
+
+test("streaming route sends an explicit error only after retaining an uncertain provider reservation", async () => {
+  const settlements: Record<string, unknown>[] = [];
+  const tasks: Promise<unknown>[] = [];
+  const route = load<{ POST: (request: Request) => Promise<Response> }>(
+    "app/api/member/assistant/route.ts",
+    {
+      "next/server": { after: (task: Promise<unknown>) => tasks.push(task) },
+      "@/lib/member-ai/reply-stream": { createReplyStream },
+      "@/lib/supabase-server": {
+        supabaseAdmin: {
+          rpc: async (name: string, args: Record<string, unknown>) => {
+            if (name === "finish_member_ai") settlements.push(args);
+            return { data: { duplicate: false }, error: null };
+          },
+        },
+      },
+      "@/lib/member-ai/server": {
+        memberApiEnabled: () => true,
+        memberActor: async () => ({
+          user: { id: "fixture-user" },
+          access: { model: "gpt-6-luna" },
+        }),
+        platformKey: async () => "fixture",
+        conversationMessages: async () => [],
+      },
+      "@/lib/member-ai/http": { memberOriginAllowed: () => true },
+      "@/lib/member-ai/model": model,
+      "@/lib/member-ai/agent": {
+        runMemberAgent: async (options: {
+          onText: (text: string) => void;
+          receipt: { uncertain: boolean };
+        }) => {
+          options.onText("Partial");
+          options.receipt.uncertain = true;
+          throw Error("Stream interrupted");
+        },
+      },
+      "@/lib/fcos/resources": {},
+      "@/lib/member-ai/emdee": {},
+      "@/lib/daily/model": { singaporeDay: () => "2026-10-22" },
+    },
+  );
+  const response = await route.POST(
+    new Request("https://app.whatelz.ai/api/member/assistant", {
+      method: "POST",
+      headers: { Accept: "application/x-ndjson" },
+      body: JSON.stringify({
+        requestId: "22222222-2222-4222-8222-222222222222",
+        conversationId: "33333333-3333-4333-8333-333333333333",
+        text: "Hello",
+      }),
+    }),
+  );
+  let text = "";
+  await assert.rejects(
+    () =>
+      readReply(response, (chunk) => {
+        text += chunk;
+      }),
+    /allowance remains reserved/,
+  );
+  await Promise.all(tasks);
+  assert.equal(text, "Partial");
+  assert.equal(settlements[0].p_failed, true);
+  assert.equal(settlements[0].p_uncertain, true);
+  assert.equal(settlements[0].p_body, "");
 });

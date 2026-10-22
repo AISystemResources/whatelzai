@@ -87,3 +87,10 @@ owner-only pilot descriptions. The global API flag still applies and personal
 Daily remains on ChatGPT. Enrollment is validated by a service-only database
 function; the normal US$1 weekly baseline and private per-user data boundaries remain.
 Owner-selected full/half resets are documented in docs/member-credit-resets.md.
+
+
+## Markdown and streaming
+
+The Chat client opts into `application/x-ndjson`. After the existing authorization and atomic reservation, the route streams visible text deltas from the Responses API, followed by a terminal saved message or explicit error. Private tool payloads never cross this transport. Provider usage is taken only from a validated terminal response; truncated/unknown outcomes retain the maximum reservation. Next `after()` keeps settlement tracked even if the client leaves. Legacy JSON requests remain supported. Existing request IDs are reused on transport retries; no automatic provider retry is introduced.
+
+Assistant Markdown uses the installed GFM renderer, with local table/code scrolling, safe URL handling, skipped raw HTML and text-only embedded images. Note review and proposal acceptance appear only on the canonical saved message after refresh. New text scrolls into view while the reader stays near the bottom; scrolling up pauses following.

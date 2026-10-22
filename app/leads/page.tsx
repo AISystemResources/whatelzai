@@ -54,20 +54,21 @@ export default async function LeadsPage({
     <main className="mx-auto max-w-5xl space-y-6 px-5 py-10 sm:px-8">
       <MemberNav current="/leads" />
       <header>
-        <p className="text-sm text-zinc-500">
-          Network Marketing · Private to you
-        </p>
+        <p className="text-sm text-zinc-500">Network Marketing · Your people</p>
         <h1 className="mt-2 text-3xl font-semibold">Leads</h1>
         <p className="mt-3 text-zinc-600">
           Your priority people and what’s coming up next.
         </p>
       </header>
-      <LeadSharing {...settings} />
-      <div className="grid items-start gap-3 sm:grid-cols-2">
+      <div className="flex flex-wrap items-start gap-2">
+        <LeadSharing {...settings} />
         <NewLead />
-        <details open={filtered} className="rounded-xl border p-4">
-          <summary className="cursor-pointer font-semibold">
-            Search & filter
+        <details
+          open={filtered}
+          className="rounded-2xl border border-zinc-200 p-3 open:w-full"
+        >
+          <summary className="cursor-pointer text-sm font-medium">
+            Search
           </summary>
           <form className="mt-4 grid gap-3 sm:grid-cols-2">
             <label>

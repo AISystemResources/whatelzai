@@ -8,15 +8,14 @@ import {
   ArrowUpRight,
   ShieldCheck,
   UsersRound,
-  ChevronDown,
 } from "lucide-react";
 import { ensureUserRow } from "@/lib/users";
 import { MemberNav } from "@/components/culture/MemberNav";
 import { SignOutButton } from "@/components/auth/AuthControls";
 import { InstallAppButton } from "@/components/fcos/AppInstallation";
 import { loadProfileData } from "@/lib/profile/server";
-import { percentage } from "@/lib/profile/usage";
 import { UsageLimit } from "./UsageLimit";
+import { ResetCreditButton } from "./ResetCreditButton";
 export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Profile · fcOS",
@@ -36,11 +35,12 @@ const card =
 export default async function Profile({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; resets?: string }>;
 }) {
   const user = await ensureUserRow();
   if (!user) redirect("/sign-in");
-  const { tab } = await searchParams;
+  const { tab, resets } = await searchParams;
+  const resetHistory = resets === "history";
   const usageTab = tab === "usage";
   const { persona, usage } = await loadProfileData();
   const firstName = user.name?.split(" ")[0] || "friend";
@@ -128,6 +128,7 @@ export default async function Profile({
             <>
               <section className={card}>
                 <UsageLimit
+                  key={usage.renewsAt ?? "not-started"}
                   remaining={usage.remaining}
                   baseline={usage.baseline}
                   reserved={usage.reserved}
@@ -140,64 +141,96 @@ export default async function Profile({
                   </p>
                 )}
               </section>
-              <details className={`${card} group`}>
-                <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold [&::-webkit-details-marker]:hidden">
-                  Resets & history
-                  <ChevronDown
-                    aria-hidden="true"
-                    size={18}
-                    className="shrink-0 text-zinc-400 transition-transform group-open:rotate-180"
-                  />
-                </summary>
-                <p className="mt-3 text-sm leading-6 text-zinc-500">
-                  {usage.lastReset
-                    ? `Last admin reset: ${date(usage.lastReset.started_at)}.`
-                    : "No admin resets yet."}
-                </p>
-                <p className="mt-1 text-xs text-zinc-400">
-                  Only your admin can grant a full reset.
-                </p>
-                <ul className="mt-4 divide-y divide-zinc-100">
-                  {usage.history.map((c) => (
-                    <li key={c.id} className="py-4 first:pt-0">
-                      <div className="flex flex-wrap justify-between gap-2 text-sm">
-                        <strong>
-                          {c.reason === "owner-reset"
-                            ? "Admin allowance reset"
-                            : c.reason === "weekly"
-                              ? "Weekly allowance"
-                              : "Previous monthly allowance"}
-                        </strong>
-                        <span className="font-semibold">
-                          {percentage(
-                            Number(c.spent_micro),
-                            Number(c.allowance_micro),
-                          ).toFixed(1)}
-                          % used
-                        </span>
-                      </div>
-                      <p className="mt-1 text-xs text-zinc-400">
-                        {date(c.started_at)} · {date(c.ends_at)} end
-                        {c.id === usage.current?.id ? " · Current" : ""}
-                      </p>
-                      {Number(c.reserved_micro) > 0 && (
-                        <p className="mt-1 text-xs text-orange-600">
-                          {percentage(
-                            Number(c.reserved_micro),
-                            Number(c.allowance_micro),
-                          ).toFixed(1)}
-                          % reserved
+              <section className={card}>
+                <h2 className="text-lg font-semibold">Usage limit resets</h2>
+                <nav
+                  aria-label="Reset sections"
+                  className="mt-4 flex gap-1 border-b border-zinc-100 pb-3"
+                >
+                  {[
+                    {
+                      label: `Available ${usage.resetCredits.filter((c) => !c.used_at).length}`,
+                      href: "/profile?tab=usage",
+                      selected: !resetHistory,
+                    },
+                    {
+                      label: "History",
+                      href: "/profile?tab=usage&resets=history",
+                      selected: resetHistory,
+                    },
+                  ].map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      aria-current={item.selected ? "page" : undefined}
+                      className={`min-h-11 rounded-xl px-4 py-3 text-sm font-medium ${item.selected ? "bg-zinc-100 text-zinc-900" : "text-zinc-500 hover:bg-zinc-50"}`}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </nav>
+                {resetHistory ? (
+                  <div className="divide-y divide-zinc-100">
+                    {usage.resetCredits
+                      .filter((c) => c.used_at)
+                      .map((c) => (
+                        <div key={c.id} className="py-4">
+                          <p className="text-sm font-semibold">
+                            Full reset used
+                          </p>
+                          <p className="mt-1 text-xs text-zinc-500">
+                            {date(c.used_at!)}
+                          </p>
+                        </div>
+                      ))}
+                    {usage.history
+                      .filter((c) => c.reason === "owner-reset")
+                      .map((c) => (
+                        <div key={c.id} className="py-4">
+                          <p className="text-sm font-semibold">Admin reset</p>
+                          <p className="mt-1 text-xs text-zinc-500">
+                            {date(c.started_at)}
+                          </p>
+                        </div>
+                      ))}
+                    {!usage.resetCredits.some((c) => c.used_at) &&
+                      !usage.history.some(
+                        (c) => c.reason === "owner-reset",
+                      ) && (
+                        <p className="py-5 text-sm text-zinc-500">
+                          No resets used yet.
                         </p>
                       )}
-                    </li>
-                  ))}
-                </ul>
-                {!usage.history.length && (
-                  <p className="mt-4 text-sm text-zinc-500">
-                    Your history starts when your first allowance cycle begins.
-                  </p>
+                  </div>
+                ) : (
+                  <div>
+                    {usage.resetCredits
+                      .filter((c) => !c.used_at)
+                      .map((c) => (
+                        <div
+                          key={c.id}
+                          className="flex flex-wrap items-start justify-between gap-3 pt-5"
+                        >
+                          <div>
+                            <p className="text-sm font-semibold">Full reset</p>
+                            <p className="mt-1 text-xs text-zinc-500">
+                              Restore to 100%.
+                            </p>
+                          </div>
+                          <ResetCreditButton
+                            credit={c.id}
+                            cycle={usage.currentCycleId}
+                          />
+                        </div>
+                      ))}
+                    {!usage.resetCredits.some((c) => !c.used_at) && (
+                      <p className="py-5 text-sm text-zinc-500">
+                        No resets available.
+                      </p>
+                    )}
+                  </div>
                 )}
-              </details>
+              </section>
             </>
           )}
         </div>

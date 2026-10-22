@@ -18,12 +18,13 @@ export function percentage(value: number, total: number) {
   return total > 0 ? Math.max(0, Math.min(100, (value / total) * 100)) : 0;
 }
 export function resetCountdown(endsAt: string, now: number) {
-  const seconds = Math.max(0, Math.ceil((Date.parse(endsAt) - now) / 1000));
-  if (!seconds) return "Resetting…";
-  const days = Math.floor(seconds / 86400);
-  const hours = Math.floor((seconds % 86400) / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  return `Resets in ${days ? `${days}d ` : ""}${hours}h ${minutes}m ${seconds % 60}s`;
+  const remaining = Date.parse(endsAt) - now;
+  if (remaining <= 0) return "Resetting…";
+  const totalMinutes = Math.ceil(remaining / 60000);
+  const days = Math.floor(totalMinutes / 1440);
+  const hours = Math.floor((totalMinutes % 1440) / 60);
+  const minutes = totalMinutes % 60;
+  return `Resets in ${days ? `${days}d ` : ""}${hours}h ${minutes}m`;
 }
 export function summarizeUsage(
   access: UsageAccess | null,

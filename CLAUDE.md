@@ -533,3 +533,7 @@ Resources uses two compact HQH/HHH creation actions, grouped Notes & events and 
 ## Quiet Profile Usage (SPR-152)
 
 Profile removes the Grow with intention card. Usage omits the welcome block and model/explanatory copy, keeping weekly remaining percentage, progress bar and live renewal countdown. Resets/history are collapsed by default; in-flight usage appears only when nonzero. Quotas, private identity-scoped loaders, renewal and admin-reset authorization are unchanged. Mirrored in EMDEE INSTRUCTIONS.
+
+## Member reset credits (SPR-153)
+
+Profile Usage shows whole-number percentages and minute countdowns, plus Available/History reset links. Every existing/future user gets one lifetime full-reset credit (no expiry); signup insert trigger and unique user constraint prevent repeat grants. Redemption is explicit, verified assigned-session only, account-scoped and atomic with a new USD1 seven-day cycle. Access-row/credit locks, expected-cycle guard, reservation guard and replay returning the recorded result prevent duplicated reset spend. Service-only invoker functions and RLS deny browser database access. Existing admin reset/access/provider/history behavior remains. Apply 20261022095557 before publication; see docs/member-credit-resets.md. Mirrored in EMDEE INSTRUCTIONS.

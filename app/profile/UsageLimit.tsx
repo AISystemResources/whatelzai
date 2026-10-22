@@ -19,7 +19,7 @@ export function UsageLimit({
   const [now, setNow] = useState(Date.parse(observedAt));
   const router = useRouter();
   useEffect(() => {
-    const interval = window.setInterval(() => setNow(Date.now()), 1000);
+    const interval = window.setInterval(() => setNow(Date.now()), 60000);
     return () => window.clearInterval(interval);
   }, []);
   useEffect(() => {
@@ -43,7 +43,7 @@ export function UsageLimit({
             : "Your seven-day window starts with your first message."}
         </span>
         <strong className="text-lg font-semibold text-zinc-900">
-          {left.toFixed(1).replace(/\.0$/, "")}% left
+          {Math.round(left)}% left
         </strong>
       </div>
       <div
@@ -51,7 +51,7 @@ export function UsageLimit({
         aria-label="Weekly AI allowance remaining"
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-valuenow={Number(left.toFixed(1))}
+        aria-valuenow={Math.round(left)}
         className="mt-3 h-2.5 overflow-hidden rounded-full bg-zinc-100"
       >
         <div
@@ -61,7 +61,7 @@ export function UsageLimit({
       </div>
       {reserved > 0 && (
         <p className="mt-3 text-xs text-zinc-500">
-          {percentage(reserved, baseline).toFixed(1)}% in progress
+          {Math.round(percentage(reserved, baseline))}% in progress
         </p>
       )}
     </>

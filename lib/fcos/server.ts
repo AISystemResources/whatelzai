@@ -23,7 +23,7 @@ export async function loadBriefing(id: string) {
   const { data, error } = await supabaseAdmin
     .from("member_briefings")
     .select(
-      "id,kind,title,event_name,occurred_on,lead_ids,observations,reflections,next_steps,status,revision",
+      "id,kind,title,event_name,event_key,event_month,occurred_on,lead_ids,observations,reflections,next_steps,status,revision",
     )
     .eq("owner_id", owner)
     .eq("id", id)
@@ -41,5 +41,24 @@ export async function loadBriefings(page = 1) {
     .order("id")
     .range((page - 1) * 30, page * 30 - 1);
   if (error) throw Error("Notes unavailable.");
+  return { items: data ?? [], count: count ?? 0 };
+}
+
+export async function contextBriefings(
+  context: { lead: string } | { event: string },
+) {
+  const owner = await fcosOwner();
+  let query = supabaseAdmin
+    .from("member_briefings")
+    .select("id,kind,title,status,occurred_on", { count: "exact" })
+    .eq("owner_id", owner);
+  query =
+    "lead" in context
+      ? query.contains("lead_ids", [context.lead])
+      : query.eq("event_key", context.event);
+  const { data, error, count } = await query
+    .order("updated_at", { ascending: false })
+    .limit(20);
+  if (error) throw Error("Linked notes unavailable.");
   return { items: data ?? [], count: count ?? 0 };
 }

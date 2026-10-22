@@ -1,3 +1,4 @@
+import { ContextNotes } from "@/components/fcos/ContextNotes";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ensureUserRow } from "@/lib/users";
@@ -40,6 +41,7 @@ export default async function LeadPage({
         <h1 className="mt-2 text-3xl font-semibold">{data.lead.name}</h1>
         {age !== null && <p className="mt-2 text-zinc-500">Age {age}</p>}
       </header>
+      <ContextNotes context={{ lead: id }} createQuery={`lead=${id}`} />
       <LeadEditor lead={data.lead} />
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold">Activity history</h2>

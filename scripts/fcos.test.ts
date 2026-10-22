@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { briefingSchema, sourceQuerySchema } from "../lib/fcos/model";
+import { memberTab } from "../lib/fcos/navigation";
+import { eventHref } from "../lib/fcos/links";
 import { domainRoute } from "../lib/domain-routing";
 import { runMemberAgent, type Receipt } from "../lib/member-ai/agent";
 const id = "00000000-0000-4000-8000-000000000001";
@@ -121,4 +123,44 @@ test("chat reads resource context without saving notes or requiring a vault", as
   assert.equal(reads, 1);
   assert.equal(result.proposals.length, 0);
   assert.match(result.body, /draft/);
+});
+
+test("context navigation keeps the notebook under Resources and protects event/profile routes", () => {
+  assert.equal(memberTab("/briefings/example"), "/resources");
+  assert.equal(memberTab("/calendar/event"), "/resources");
+  assert.equal(memberTab("/leads/example"), "/leads");
+  assert.equal(memberTab("/profile"), "/profile");
+  for (const path of ["/profile", "/calendar/event"]) {
+    assert.equal(domainRoute("app.whatelz.ai", path).protect, true);
+    assert.equal(
+      domainRoute("whatelz.ai", path).redirect,
+      "https://app.whatelz.ai" + path,
+    );
+  }
+  assert.equal(
+    eventHref("2026-10", "example|2026-10-22"),
+    "/calendar/event?month=2026-10&event=example%7C2026-10-22",
+  );
+});
+test("a calendar link requires both an occurrence key and a valid month", () => {
+  assert.equal(
+    briefingSchema.safeParse({ ...note, event_key: "example" }).success,
+    false,
+  );
+  assert.equal(
+    briefingSchema.safeParse({
+      ...note,
+      event_key: "example",
+      event_month: "2026-13",
+    }).success,
+    false,
+  );
+  assert.equal(
+    briefingSchema.safeParse({
+      ...note,
+      event_key: "example",
+      event_month: "2026-10",
+    }).success,
+    true,
+  );
 });

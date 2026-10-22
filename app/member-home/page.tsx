@@ -333,7 +333,7 @@ export default async function MemberHome() {
       <footer className="flex flex-wrap gap-5 px-1 py-3 text-sm text-zinc-500">
         <Link href="/resources">Explore resources →</Link>
         <Link href="/team">My team</Link>
-        <Link href="/account">My account</Link>
+        <Link href="/profile">My account</Link>
       </footer>
     </main>
   );

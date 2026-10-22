@@ -14,7 +14,7 @@ export default async function Resources() {
       <MemberNav current="/resources" />
       <header>
         <p className="text-xs uppercase tracking-widest text-zinc-500">
-          fcOS · Shared resources
+          fcOS · Resources
         </p>
         <h1 className="mt-2 text-3xl font-semibold">
           Learn. Prepare. Connect.
@@ -25,6 +25,11 @@ export default async function Resources() {
       </header>
       <div className="grid gap-4 sm:grid-cols-2">
         {[
+          {
+            href: "/briefings",
+            title: "HQH & HHH",
+            body: "Your pre-briefings and takeaways, linked to leads and events. Read notes shared with you here too.",
+          },
           {
             href: "/catalogue",
             title: "Products",

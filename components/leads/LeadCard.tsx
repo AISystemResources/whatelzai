@@ -1,3 +1,4 @@
+import { LeadAvatar } from "./LeadAvatar";
 import Link from "next/link";
 import type { LeadSummary } from "@/lib/leads/model";
 import { dateLabel } from "@/lib/leads/model";
@@ -14,12 +15,15 @@ export function LeadCard({
   return (
     <Link
       href={`/leads/${lead.id}`}
-      className="block min-w-0 rounded-2xl border border-zinc-200 bg-white p-5 transition hover:border-zinc-400"
+      className="block min-w-0 rounded-3xl border border-zinc-100 bg-white p-5 shadow-[0_4px_24px_-12px_rgba(0,0,0,0.12)] transition hover:-translate-y-0.5 hover:shadow-md"
     >
       <div className="flex items-start justify-between gap-3">
-        <div>
-          <h3 className="text-lg font-semibold">{lead.name}</h3>
-          <p className="mt-1 text-xs text-zinc-500">{lead.region}</p>
+        <div className="flex min-w-0 items-center gap-4">
+          <LeadAvatar lead={lead} />
+          <div>
+            <h3 className="text-lg font-semibold">{lead.name}</h3>
+            <p className="mt-1 text-xs text-zinc-500">{lead.region}</p>
+          </div>
         </div>
         {lead.is_priority && (
           <span className="rounded-full bg-yellow-100 px-2.5 py-1 text-[11px] font-medium text-yellow-900">

@@ -43,6 +43,7 @@ test("lead plans query is restricted to verified owner and displayed lead IDs; s
         requireAssignedUser: async () => ({ id: "verified-owner" }),
       },
       "./model": model,
+      "./sharing": {},
       "@/lib/supabase-server": {
         supabaseAdmin: {
           from: (table: string) => {

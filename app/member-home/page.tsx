@@ -12,7 +12,7 @@ import { ensureUserRow } from "@/lib/users";
 import { isOwnerUser } from "@/lib/admin-policy";
 import { memberApiEnabled } from "@/lib/member-ai/server";
 import { loadAttentionDashboard } from "@/lib/fcos/dashboard";
-import { dateLabel } from "@/lib/leads/model";
+import { dateLabel, todayUtc8 } from "@/lib/leads/model";
 import { MemberNav } from "@/components/culture/MemberNav";
 import { SignOutButton } from "@/components/auth/AuthControls";
 export const dynamic = "force-dynamic";
@@ -46,7 +46,7 @@ export default async function MemberHome() {
         <SignOutButton />
       </header>
       <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.5fr)]">
-        <section className="rounded-3xl bg-zinc-950 p-6 text-white sm:p-8 lg:sticky lg:top-6">
+        <section className="order-2 rounded-3xl bg-zinc-950 p-6 text-white sm:p-8 lg:sticky lg:top-6 lg:order-1">
           <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-400">
             Welcome back
           </p>
@@ -82,7 +82,10 @@ export default async function MemberHome() {
             )}
           </div>
         </section>
-        <section className={card} aria-labelledby="attention-heading">
+        <section
+          className={`${card} order-1 lg:order-2`}
+          aria-labelledby="attention-heading"
+        >
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className={eyebrow}>Start here</p>
@@ -213,7 +216,7 @@ export default async function MemberHome() {
             {data.upcoming.map((event) => (
               <li key={event.id}>
                 <Link
-                  href={`/calendar?month=${event.start.slice(0, 7)}`}
+                  href={`/calendar?month=${todayUtc8(new Date(event.start)).slice(0, 7)}`}
                   className="block py-3"
                 >
                   <h3 className="font-medium hover:underline">{event.title}</h3>
@@ -242,7 +245,8 @@ export default async function MemberHome() {
           </Link>
           {data.importedAt && (
             <p className="mt-1 text-xs text-zinc-500">
-              Schedule imported {dateLabel(data.importedAt.slice(0, 10))}
+              Schedule imported{" "}
+              {dateLabel(todayUtc8(new Date(data.importedAt)))}
             </p>
           )}
         </section>

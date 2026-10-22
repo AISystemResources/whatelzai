@@ -1,4 +1,5 @@
 "use client";
+import { AppHeader } from "@/components/fcos/AppHeader";
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -34,29 +35,32 @@ export function ChatMenu({
   );
   return (
     <>
-      <header className="flex h-16 shrink-0 items-center justify-between gap-3 border-b border-zinc-100">
-        <button
-          type="button"
-          aria-label="Chat menu"
-          aria-haspopup="dialog"
-          onClick={() => dialog.current?.showModal()}
-          className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-zinc-100"
-        >
-          <Menu size={22} aria-hidden="true" />
-        </button>
-        <h1 className="text-base font-semibold">
-          fcOS Chat<span className="text-yellow-500">.</span>
-        </h1>
-        <button
-          type="button"
-          onClick={newChat}
-          aria-label="New chat"
-          title="New chat"
-          className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-zinc-100"
-        >
-          <SquarePen size={21} aria-hidden="true" />
-        </button>
-      </header>
+      <AppHeader
+        title="Chat"
+        chat
+        start={
+          <button
+            type="button"
+            aria-label="Chat menu"
+            aria-haspopup="dialog"
+            onClick={() => dialog.current?.showModal()}
+            className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-zinc-100"
+          >
+            <Menu size={22} aria-hidden="true" />
+          </button>
+        }
+        end={
+          <button
+            type="button"
+            aria-label="New chat"
+            title="New chat"
+            onClick={newChat}
+            className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-zinc-100"
+          >
+            <SquarePen size={21} aria-hidden="true" />
+          </button>
+        }
+      />
       <dialog
         ref={dialog}
         aria-labelledby="chat-menu-title"

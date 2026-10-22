@@ -114,6 +114,7 @@ export function Chat({
     >
       <div
         ref={transcript}
+        data-fcos-scroll
         role="log"
         className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-1 py-5 md:px-5"
         onScroll={() => {

@@ -1,3 +1,4 @@
+import { AppHeader } from "@/components/fcos/AppHeader";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
@@ -13,7 +14,6 @@ import { memberApiEnabled } from "@/lib/member-ai/server";
 import { loadAttentionDashboard } from "@/lib/fcos/dashboard";
 import { dateLabel, todayUtc8 } from "@/lib/leads/model";
 import { MemberNav } from "@/components/culture/MemberNav";
-import { SignOutButton } from "@/components/auth/AuthControls";
 export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Today · fcOS",
@@ -32,8 +32,9 @@ export default async function MemberHome() {
     ? (data.leads.count ?? 0) + (data.tasks.count ?? 0)
     : null;
   return (
-    <main className="mx-auto max-w-6xl space-y-5 px-4 py-6 sm:px-6 sm:py-8">
-      <MemberNav current="/" />
+    <main className="fcos-tab-page mx-auto max-w-5xl space-y-5 px-5 py-6 sm:px-6 sm:py-8">
+      <AppHeader title="Home" />
+      <MemberNav current="/" compact persistent />
       <header className="flex items-center justify-between gap-3 py-1">
         <div>
           <p className={eyebrow}>Your day, at a glance</p>
@@ -42,17 +43,16 @@ export default async function MemberHome() {
             time
           </p>
         </div>
-        <SignOutButton />
       </header>
       <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.5fr)]">
-        <section className="order-2 rounded-3xl bg-zinc-950 p-6 text-white sm:p-8 lg:sticky lg:top-6 lg:order-1">
+        <section className="order-2 rounded-3xl bg-zinc-950 p-6 text-white sm:p-8 lg:sticky lg:top-24 lg:order-1">
           <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-400">
             Welcome back
           </p>
-          <h1 className="mt-3 break-words text-4xl font-semibold tracking-tight sm:text-5xl">
+          <h2 className="mt-3 break-words text-4xl font-semibold tracking-tight sm:text-5xl">
             {user.name?.split(" ")[0] || "Hello"}
             <span className="text-yellow-300">.</span>
-          </h1>
+          </h2>
           <p className="mt-4 max-w-xs text-sm leading-6 text-zinc-300">
             People to reconnect with.
             <br />A next step worth taking.
@@ -182,8 +182,8 @@ export default async function MemberHome() {
           )}
           {total !== null && total > data.items.length && (
             <p className="mt-3 text-xs text-zinc-500">
-              Showing {data.items.length} of {total}. Open Leads or Chat for the
-              full lists.
+              Showing {data.items.length} of {total}. Open Baobeis or Chat for
+              the full lists.
             </p>
           )}
           <p className="mt-3 border-t pt-3 text-xs leading-5 text-zinc-500">

@@ -1,3 +1,4 @@
+import { AppHeader } from "@/components/fcos/AppHeader";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ensureUserRow } from "@/lib/users";
@@ -12,15 +13,13 @@ export default async function Resources() {
   const user = await ensureUserRow();
   if (!user) redirect("/sign-in");
   return (
-    <main className="mx-auto max-w-4xl space-y-7 px-5 py-8">
-      <MemberNav current="/resources" />
+    <main className="fcos-tab-page mx-auto max-w-5xl space-y-7 px-5 py-8">
+      <AppHeader title="Resources" />
+      <MemberNav current="/resources" compact persistent />
       <header>
-        <p className="text-xs uppercase tracking-widest text-zinc-500">
-          fcOS · Resources
-        </p>
-        <h1 className="mt-2 text-3xl font-semibold">
+        <h2 className="mt-2 text-3xl font-semibold">
           Learn. Prepare. Connect.
-        </h1>
+        </h2>
         <p className="mt-3 text-zinc-600">
           Useful references for the conversations and experiences ahead.
         </p>

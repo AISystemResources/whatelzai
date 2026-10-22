@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { AdminArea } from "@/components/admin/AdminArea";
 import { MCPConnectHint } from "@/components/admin/MCPConnectHint";
 import { InstallAppButton } from "@/components/fcos/AppInstallation";
+import { SignOutButton } from "@/components/auth/AuthControls";
 
 export const metadata: Metadata = { title: "Settings — Admin" };
 
@@ -54,6 +55,22 @@ export default function SettingsPage() {
           separately from your website sign-in.
         </p>
         <MCPConnectHint />
+      </section>
+      <section
+        aria-labelledby="admin-account"
+        className="max-w-2xl rounded-2xl border border-zinc-200 p-6"
+      >
+        <h2 id="admin-account" className="font-semibold">
+          Your account
+        </h2>
+        <p className="mt-2 mb-4 text-sm text-zinc-600">
+          Sign out of this device when you’re finished.
+        </p>
+        <SignOutButton redirectUrl="/sign-in">
+          <button className="min-h-11 rounded-xl border border-zinc-300 px-5 py-3 text-sm font-medium">
+            Sign out
+          </button>
+        </SignOutButton>
       </section>
     </AdminArea>
   );

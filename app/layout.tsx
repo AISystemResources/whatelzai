@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import { siteSurface } from "@/lib/domain-routing";
 import { Geist, Geist_Mono, Fraunces } from "next/font/google";
@@ -27,6 +27,12 @@ const fraunces = Fraunces({
   subsets: ["latin"],
   axes: ["SOFT", "opsz"],
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 const SITE_URL = "https://whatelz.ai";
 const SITE_NAME = "whatelz.ai";

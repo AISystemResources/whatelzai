@@ -5,9 +5,13 @@ import type { Briefing } from "@/lib/fcos/model";
 export function BriefingEditor({
   note,
   leads,
+  events,
+  calendarMonth,
 }: {
   note: Briefing;
   leads: { id: string; name: string }[];
+  events: { key: string; month: string; title: string; date: string }[];
+  calendarMonth: string;
 }) {
   const [draft, setDraft] = useState(note);
   const [state, action, pending] = useActionState(saveBriefing, {});
@@ -57,10 +61,47 @@ export function BriefingEditor({
           className={input}
         />
       </label>
+      <input type="hidden" name="event_key" value={draft.event_key ?? ""} />
+      <input type="hidden" name="event_month" value={draft.event_month ?? ""} />
       <label className="block">
-        Event or class (optional)
+        Link a calendar event (optional)
+        <select
+          className={input}
+          value={draft.event_key ?? ""}
+          onChange={(e) => {
+            const event = events.find((item) => item.key === e.target.value);
+            setDraft({
+              ...draft,
+              event_key: event?.key ?? null,
+              event_month: event?.month ?? null,
+              event_name: event?.title ?? draft.event_name,
+            });
+          }}
+        >
+          <option value="">No calendar link · standalone note</option>
+          {draft.event_key &&
+            !events.some((event) => event.key === draft.event_key) && (
+              <option value={draft.event_key}>
+                Saved event · currently unavailable
+              </option>
+            )}
+          {events.map((event) => (
+            <option key={event.key} value={event.key}>
+              {event.date} · {event.title}
+            </option>
+          ))}
+        </select>
+        <span className="mt-2 block text-xs text-zinc-500">
+          Your permitted events for {calendarMonth}. For another month, open the
+          event from Calendar and start a note there. Linking never shares a
+          note with attendees.
+        </span>
+      </label>
+      <label className="block">
+        Event or class name (optional)
         <input
           name="event_name"
+          readOnly={!!draft.event_key}
           maxLength={240}
           value={draft.event_name}
           onChange={(e) => setDraft({ ...draft, event_name: e.target.value })}
@@ -156,8 +197,9 @@ export function BriefingEditor({
         </select>
       </label>
       <p className="text-sm text-zinc-500">
-        Private to you. Saving does not send invitations, share the note or
-        accept a commitment.
+        Private unless you share this saved note with selected accounts. Saving
+        does not send invitations or accept a commitment. People with access to
+        this note can read future saved edits too.
       </p>
       <p role="status" className="text-sm text-red-700">
         {state.error}

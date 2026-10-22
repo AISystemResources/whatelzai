@@ -326,3 +326,203 @@ test("attention loader verifies identity, scopes private sources and preserves s
     );
   assert.equal(calls.length, 3);
 });
+
+test("shared-note reads require an active grant to the verified recipient and select only the note", async () => {
+  for (const granted of [false, true]) {
+    const calls: { table: string; columns: string; filters: unknown[][] }[] =
+      [];
+    const sharing = load<{
+      loadSharedBriefing: (id: string) => Promise<unknown>;
+    }>("lib/fcos/sharing.ts", {
+      "./server": { fcosOwner: async () => "verified-recipient" },
+      "@/lib/team/server": {},
+      "@/lib/supabase-server": {
+        supabaseAdmin: {
+          from: (table: string) => {
+            const entry = { table, columns: "", filters: [] as unknown[][] };
+            calls.push(entry);
+            return {
+              select(value: string) {
+                entry.columns = value;
+                return this;
+              },
+              eq(...args: unknown[]) {
+                entry.filters.push(args);
+                return this;
+              },
+              is(...args: unknown[]) {
+                entry.filters.push(args);
+                return this;
+              },
+              maybeSingle: async () => ({
+                data:
+                  table === "member_briefing_shares"
+                    ? granted
+                      ? { briefing_id: "note" }
+                      : null
+                    : { id: "note", title: "Shared example" },
+                error: null,
+              }),
+            };
+          },
+        },
+      },
+    });
+    const result = await sharing.loadSharedBriefing("note");
+    assert.ok(
+      calls[0].filters.some(
+        (value) =>
+          value[0] === "recipient_user_id" && value[1] === "verified-recipient",
+      ),
+    );
+    assert.ok(
+      calls[0].filters.some(
+        (value) => value[0] === "revoked_at" && value[1] === null,
+      ),
+    );
+    if (!granted) {
+      assert.equal(result, null);
+      assert.equal(calls.length, 1);
+    } else {
+      assert.equal(calls.length, 2);
+      assert.doesNotMatch(
+        calls[1].columns,
+        /lead_ids|owner_id|event_key|email|phone/,
+      );
+    }
+  }
+});
+
+test("sharing cannot mutate another owner's note or grant an unlisted account", async () => {
+  for (const owned of [false, true]) {
+    let writes = 0;
+    const actions = load<{
+      changeNoteSharing: (
+        state: unknown,
+        form: FormData,
+      ) => Promise<{ message: string }>;
+    }>(
+      "app/briefings/sharing-actions.ts",
+      {
+        "next/cache": { revalidatePath: () => {} },
+        "@/lib/fcos/server": {
+          fcosOwner: async () => "owner",
+          loadBriefing: async () => (owned ? { id: "note" } : null),
+        },
+        "@/lib/fcos/sharing": { shareRecipients: async () => [] },
+        "@/lib/supabase-server": {
+          supabaseAdmin: {
+            from: () => {
+              writes++;
+              throw Error("Must not write");
+            },
+          },
+        },
+      },
+      { FormData },
+    );
+    const form = new FormData();
+    form.set("id", "00000000-0000-4000-8000-000000000001");
+    form.set("recipient", "00000000-0000-4000-8000-000000000002");
+    form.set("operation", "share");
+    assert.match(
+      (await actions.changeNoteSharing({}, form)).message,
+      /unavailable/,
+    );
+    assert.equal(writes, 0);
+  }
+});
+
+test("note event lookups use the real calendar membership and no preview persona", async () => {
+  const calls: unknown[][] = [];
+  const events = load<{
+    calendarEvent: (month: string, key: string) => Promise<unknown>;
+  }>("lib/fcos/events.ts", {
+    "@/lib/community-calendar/server": {
+      loadCommunityCalendar: async (...args: unknown[]) => {
+        calls.push(args);
+        return { events: [{ id: "permitted" }] };
+      },
+    },
+    "@/lib/community-calendar/model": {
+      validMonth: (month: string) => month === "2026-10",
+      localDay: () => "2026-10-22",
+    },
+  });
+  assert.equal(await events.calendarEvent("bad", "permitted"), null);
+  assert.equal(await events.calendarEvent("2026-10", "restricted"), null);
+  assert.ok(await events.calendarEvent("2026-10", "permitted"));
+  for (const args of calls) assert.deepEqual(args, ["2026-10"]);
+});
+
+test("note grants use the verified owner and selected team label; revocation is owner-scoped", async () => {
+  for (const operation of ["share", "revoke"]) {
+    const owner = "00000000-0000-4000-8000-000000000001",
+      recipient = "00000000-0000-4000-8000-000000000002";
+    let written: Record<string, unknown> | undefined;
+    const filters: unknown[][] = [];
+    const query = {
+      eq(...args: unknown[]) {
+        filters.push(args);
+        return this;
+      },
+      then(resolve: (value: unknown) => unknown) {
+        return Promise.resolve({ error: null }).then(resolve);
+      },
+    };
+    const actions = load<{
+      changeNoteSharing: (
+        state: unknown,
+        form: FormData,
+      ) => Promise<{ message: string }>;
+    }>(
+      "app/briefings/sharing-actions.ts",
+      {
+        "next/cache": { revalidatePath: () => {} },
+        "@/lib/fcos/server": {
+          fcosOwner: async () => owner,
+          loadBriefing: async () => ({ id: "note" }),
+        },
+        "@/lib/fcos/sharing": {
+          shareRecipients: async () => [
+            { id: recipient, label: "Verified team person" },
+          ],
+        },
+        "@/lib/supabase-server": {
+          supabaseAdmin: {
+            from: () => ({
+              upsert: async (value: Record<string, unknown>) => {
+                written = value;
+                return { error: null };
+              },
+              update: (value: Record<string, unknown>) => {
+                written = value;
+                return query;
+              },
+            }),
+          },
+        },
+      },
+      { FormData },
+    );
+    const form = new FormData();
+    form.set("id", "00000000-0000-4000-8000-000000000003");
+    form.set("recipient", recipient);
+    form.set("operation", operation);
+    form.set("owner_id", recipient);
+    form.set("recipient_label", "Forged label");
+    assert.match(
+      (await actions.changeNoteSharing({}, form)).message,
+      operation === "share" ? /now shared/ : /revoked/,
+    );
+    if (operation === "share") {
+      assert.equal(written?.owner_id, owner);
+      assert.equal(written?.recipient_label, "Verified team person");
+    } else {
+      assert.ok(
+        filters.some((value) => value[0] === "owner_id" && value[1] === owner),
+      );
+      assert.ok(written?.revoked_at);
+    }
+  }
+});

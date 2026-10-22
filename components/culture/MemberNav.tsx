@@ -1,45 +1,60 @@
 import Link from "next/link";
 import {
-  CalendarDays,
+  House,
   MessageCircle,
-  NotebookPen,
   UsersRound,
   Library,
+  UserRound,
 } from "lucide-react";
+import { memberTab } from "@/lib/fcos/navigation";
 const items = [
-  { href: "/", label: "Today", icon: CalendarDays },
-  { href: "/assistant", label: "Chat", icon: MessageCircle },
   { href: "/leads", label: "Leads", icon: UsersRound },
-  { href: "/briefings", label: "HQH / HHH", icon: NotebookPen },
+  { href: "/assistant", label: "Chat", icon: MessageCircle },
+  { href: "/", label: "Home", icon: House },
   { href: "/resources", label: "Resources", icon: Library },
+  { href: "/profile", label: "Profile", icon: UserRound },
 ];
 export function MemberNav({ current }: { current: string }) {
-  const selected = ["/team", "/catalogue", "/calendar", "/culture"].includes(
-    current,
-  )
-    ? "/resources"
-    : current;
+  const selected = memberTab(current);
   return (
     <nav
       aria-label="fcOS workspace"
+      data-fcos-nav
       className="mb-2 border-b border-zinc-200 pb-4"
     >
-      <div className="mb-4 flex items-baseline justify-between">
+      <div className="flex items-baseline justify-between md:mb-4">
         <Link href="/" className="text-xl font-bold tracking-tight">
           fc<span className="text-yellow-500">OS</span>
         </Link>
         <span className="text-xs text-zinc-500">Prepare · connect · grow</span>
       </div>
-      <div className="grid grid-cols-5 gap-1">
+      <div className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-zinc-200 bg-white px-2 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_24px_rgba(0,0,0,0.04)] md:static md:gap-1 md:border-0 md:p-0 md:shadow-none">
         {items.map((item) => (
           <Link
             key={item.href}
             href={item.href}
             aria-current={selected === item.href ? "page" : undefined}
-            className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-center text-[11px] sm:flex-row sm:gap-2 sm:text-sm ${selected === item.href ? "bg-yellow-100 font-semibold text-zinc-900" : "text-zinc-600 hover:bg-zinc-100"}`}
+            className={`flex min-h-[76px] min-w-0 flex-col items-center justify-center gap-1 px-1 text-[11px] font-medium focus-visible:outline-2 focus-visible:outline-yellow-600 md:min-h-14 md:flex-row md:gap-2 md:rounded-xl md:px-2 md:text-sm ${selected === item.href ? "text-zinc-950 md:bg-yellow-100" : "text-zinc-500 hover:text-zinc-950"}`}
           >
-            <item.icon size={17} aria-hidden="true" />
-            {item.label}
+            <span
+              className={
+                item.href === "/"
+                  ? `-mt-6 flex h-14 w-14 items-center justify-center rounded-full border-4 border-white bg-yellow-300 text-zinc-950 shadow-md md:mt-0 md:h-auto md:w-auto md:border-0 md:bg-transparent md:shadow-none ${selected === "/" ? "ring-2 ring-yellow-500 md:ring-0" : ""}`
+                  : `flex h-8 w-10 items-center justify-center rounded-xl md:h-auto md:w-auto ${selected === item.href ? "bg-yellow-100 text-zinc-950 md:bg-transparent" : ""}`
+              }
+            >
+              <item.icon
+                size={item.href === "/" ? 25 : 22}
+                aria-hidden="true"
+              />
+            </span>
+            <span
+              className={
+                item.href === "/" ? "font-bold uppercase md:normal-case" : ""
+              }
+            >
+              {item.label}
+            </span>
           </Link>
         ))}
       </div>

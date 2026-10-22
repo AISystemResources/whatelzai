@@ -1,6 +1,7 @@
 "use client";
 import { useActionState, useState } from "react";
 import {
+  setLeadPriority,
   createLead,
   saveLead,
   addActivity,
@@ -283,6 +284,26 @@ export function ActivityStatus({ activity }: { activity: Activity }) {
       />
       <button className={button} disabled={pending}>
         Save status
+      </button>
+      <Message state={state} />
+    </form>
+  );
+}
+
+export function LeadPriority({ lead }: { lead: Lead }) {
+  const [state, action, pending] = useActionState(setLeadPriority, {});
+  return (
+    <form action={action} className="space-y-2">
+      <input type="hidden" name="id" value={lead.id} />
+      <input type="hidden" name="revision" value={lead.revision} />
+      <input type="hidden" name="priority" value={String(!lead.is_priority)} />
+      <button
+        disabled={pending}
+        className="min-h-11 rounded-full border border-zinc-200 px-4 py-2 text-sm font-medium disabled:opacity-50"
+      >
+        {lead.is_priority
+          ? "★ Priority lead · remove"
+          : "☆ Add to priority leads"}
       </button>
       <Message state={state} />
     </form>

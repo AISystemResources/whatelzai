@@ -6,6 +6,7 @@ import { loadLead } from "@/lib/leads/server";
 import { ageOn, dateLabel } from "@/lib/leads/model";
 import { MemberNav } from "@/components/culture/MemberNav";
 import {
+  LeadPriority,
   LeadEditor,
   NewActivity,
   ActivityStatus,
@@ -41,13 +42,14 @@ export default async function LeadPage({
         <h1 className="mt-2 text-3xl font-semibold">{data.lead.name}</h1>
         {age !== null && <p className="mt-2 text-zinc-500">Age {age}</p>}
       </header>
+      <LeadPriority key={data.lead.revision} lead={data.lead} />
       <ContextNotes context={{ lead: id }} createQuery={`lead=${id}`} />
       <LeadEditor lead={data.lead} />
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold">Activity history</h2>
         <p className="text-sm text-zinc-500">
-          Your personal record. Planned and “to invite” activities are not
-          confirmed attendance or calendar bookings.
+          Your personal record. Planned, tentative and “to invite” activities
+          are not confirmed attendance or calendar bookings.
         </p>
         {data.activities.map((activity) => (
           <article key={activity.id} className="rounded-xl border p-4">

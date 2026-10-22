@@ -7,6 +7,7 @@ import {
   type Lead,
   type LeadSummary,
   type Activity,
+  todayUtc8,
 } from "./model";
 
 export async function leadOwner() {
@@ -29,21 +30,51 @@ export async function loadLeads(params: {
     : 1;
   let query = supabaseAdmin
     .from("member_leads")
-    .select("id,name,region,membership,stage,goal,next_action,follow_up_on", {
-      count: "exact",
-    })
+    .select(
+      "id,name,region,membership,stage,goal,next_action,follow_up_on,is_priority",
+      {
+        count: "exact",
+      },
+    )
     .eq("owner_id", owner);
   if (q) query = query.ilike("name", `%${q.replace(/[\\%_]/g, "\\$&")}%`);
   if (region) query = query.eq("region", region);
   if (stage) query = query.eq("stage", stage);
   const { data, error, count } = await query
+    .order("is_priority", { ascending: false })
     .order("follow_up_on", { ascending: true, nullsFirst: false })
     .order("name")
     .order("id")
     .range((page - 1) * 50, page * 50 - 1);
   if (error) throw new Error("Your leads could not be loaded.");
+  const leads = (data ?? []) as LeadSummary[];
+  const activityResult = leads.length
+    ? await supabaseAdmin
+        .from("member_lead_activities")
+        .select("lead_id,title,activity_on,status")
+        .eq("owner_id", owner)
+        .in(
+          "lead_id",
+          leads.map((lead) => lead.id),
+        )
+        .gte("activity_on", todayUtc8())
+        .in("status", ["Planned", "Tentative", "To invite"])
+        .order("activity_on")
+        .order("id")
+        .limit(1001)
+    : { data: [], error: null };
+  const plansUnavailable = Boolean(
+    activityResult.error || (activityResult.data?.length ?? 0) > 1000,
+  );
   return {
-    leads: (data ?? []) as LeadSummary[],
+    leads,
+    upcoming: plansUnavailable
+      ? []
+      : ((activityResult.data ?? []) as Pick<
+          Activity,
+          "lead_id" | "title" | "activity_on" | "status"
+        >[]),
+    plansUnavailable,
     count: count ?? 0,
     page,
     q,
@@ -56,7 +87,7 @@ export async function loadLead(id: string) {
   const { data, error } = await supabaseAdmin
     .from("member_leads")
     .select(
-      "id,name,region,membership,stage,goal,email,phone,birthday,zodiac,relationship,story,interests,concerns,notes,next_action,follow_up_on,revision,updated_at",
+      "id,name,region,membership,stage,goal,email,phone,birthday,zodiac,relationship,story,interests,concerns,notes,next_action,follow_up_on,is_priority,revision,updated_at",
     )
     .eq("owner_id", owner)
     .eq("id", id)

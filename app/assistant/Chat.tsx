@@ -1,45 +1,61 @@
 "use client";
 import Link from "next/link";
-import { useState, useRef } from "react";
+import { useState, useRef, useLayoutEffect } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowUp, LoaderCircle } from "lucide-react";
 import type { ChatMessage } from "@/lib/member-ai/model";
-import { acceptCommitment } from "./actions";
-const starters = [
-  "Help me prepare an HQH (会前会). Ask which lead and event, then help me think it through.",
-  "Help me write an HHH (会后会). Separate what happened, what I learned and next steps.",
-  "Who should I follow up with today? Read my own leads and commitments.",
-  "Help me reflect on today without assuming what I completed.",
-  "What have I committed to, and what needs following up?",
-];
+import { acceptCommitment, createConversation } from "./actions";
 export function Chat({
   messages,
   conversationId,
   enabled,
   initialPrompt = "",
+  name = "",
 }: {
   messages: ChatMessage[];
-  conversationId: string;
+  conversationId: string | null;
   enabled: boolean;
   initialPrompt?: string;
+  name?: string;
 }) {
   const [text, setText] = useState(initialPrompt);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
+  const [submitted, setSubmitted] = useState<string | null>(null);
+  const sending = useRef(false);
   const pending = useRef<{ text: string; id: string } | null>(null);
+  const activeConversation = useRef(conversationId);
+  const transcript = useRef<HTMLDivElement>(null);
+  const textarea = useRef<HTMLTextAreaElement>(null);
   const router = useRouter();
+  const lastMessage = messages.at(-1)?.id;
+  useLayoutEffect(() => {
+    if (transcript.current)
+      transcript.current.scrollTop = transcript.current.scrollHeight;
+  }, [lastMessage, busy]);
   async function send(event: React.FormEvent) {
     event.preventDefault();
-    if (busy || !text.trim()) return;
+    if (sending.current || busy || !enabled || !text.trim()) return;
+    sending.current = true;
     setBusy(true);
     setNotice("");
+    setSubmitted(text);
     const requestId =
       pending.current?.text === text ? pending.current.id : crypto.randomUUID();
     pending.current = { text, id: requestId };
     try {
+      // A blank slate stays ephemeral until the first send. Keep this ID for
+      // retrying an interrupted request; never create a new chat on each retry.
+      if (!activeConversation.current)
+        activeConversation.current = (await createConversation()).id;
       const response = await fetch("/api/member/assistant", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ requestId, conversationId, text }),
+        body: JSON.stringify({
+          requestId,
+          conversationId: activeConversation.current,
+          text,
+        }),
       });
       const result = await response.json();
       if (!response.ok)
@@ -49,16 +65,21 @@ export function Chat({
       else {
         setText("");
         pending.current = null;
+        if (textarea.current) textarea.current.style.height = "auto";
       }
+      if (activeConversation.current !== conversationId)
+        router.replace(`/assistant?chat=${activeConversation.current}`);
     } catch (error) {
       setNotice(
         error instanceof Error
           ? error.message
-          : "Connection interrupted. Reload to check the reply before retrying.",
+          : "Connection interrupted. Check the reply before retrying.",
       );
     } finally {
+      sending.current = false;
       setBusy(false);
-      router.refresh();
+      setSubmitted(null);
+      if (conversationId) router.refresh();
     }
   }
   async function accept(message: string, proposal: string) {
@@ -74,110 +95,162 @@ export function Chat({
     }
   }
   return (
-    <>
-      <div className="space-y-5" aria-label="Conversation" aria-busy={busy}>
-        {!messages.length && (
-          <div className="rounded-2xl bg-yellow-50 p-5">
-            <h2 className="font-semibold">A little clarity. A next step.</h2>
-            <p className="mt-2 text-sm text-zinc-600">
-              Start with what is on your mind. fcOS can read your leads, notes
-              and shared resources, help draft an HQH or HHH, and suggest a plan
-              for you to accept.
-            </p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {starters.map((prompt) => (
-                <button
-                  key={prompt}
-                  disabled={busy}
-                  onClick={() => setText(prompt)}
-                  className="rounded-xl border border-yellow-300 bg-white p-3 text-left text-sm"
-                >
-                  {prompt}
-                </button>
-              ))}
+    <section
+      className="flex min-h-0 flex-1 flex-col"
+      aria-label="Chat workspace"
+    >
+      <div
+        ref={transcript}
+        role="log"
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-1 py-5 md:px-5"
+        aria-label="Conversation"
+        aria-live="polite"
+        aria-busy={busy}
+      >
+        {!messages.length && !submitted && (
+          <div className="grid min-h-full place-items-center">
+            <div className="max-w-xs pb-10 text-center">
+              <span
+                className="mx-auto mb-5 block h-3 w-3 rounded-full bg-yellow-300"
+                aria-hidden="true"
+              />
+              <h2 className="text-2xl font-medium leading-snug tracking-tight">
+                What’s on your mind{name ? `, ${name}` : ""}?
+              </h2>
             </div>
           </div>
         )}
-        {messages.map((message) => (
-          <article
-            key={message.id}
-            className={`min-w-0 rounded-2xl p-4 sm:p-5 ${message.role === "user" ? "ml-6 bg-zinc-100" : "border border-zinc-200 bg-white"}`}
-          >
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              {message.role === "user" ? "You" : "Your assistant"}
+        <div className="mx-auto max-w-3xl space-y-6">
+          {messages.map((message) => (
+            <article
+              key={message.id}
+              className={`min-w-0 ${message.role === "user" ? "ml-10 rounded-3xl bg-zinc-100 px-4 py-3" : "px-1 py-2"}`}
+            >
+              <p className="sr-only">
+                {message.role === "user" ? "You" : "fcOS"}
+              </p>
+              <div className="whitespace-pre-wrap break-words text-[15px] leading-7">
+                {message.body}
+              </div>
+              {message.role === "assistant" && (
+                <details className="mt-2 text-xs text-zinc-500">
+                  <summary className="w-fit cursor-pointer py-2">
+                    Save as a note
+                  </summary>
+                  <div className="mt-1 flex gap-4">
+                    <Link
+                      className="min-h-9 py-2 underline"
+                      href={`/briefings/new?kind=HQH&message=${message.id}`}
+                    >
+                      Review as HQH
+                    </Link>
+                    <Link
+                      className="min-h-9 py-2 underline"
+                      href={`/briefings/new?kind=HHH&message=${message.id}`}
+                    >
+                      Review as HHH
+                    </Link>
+                  </div>
+                </details>
+              )}
+              {message.proposals?.map((proposal) => (
+                <div
+                  key={proposal.id}
+                  className="mt-4 rounded-xl border border-yellow-300 bg-yellow-50 p-4"
+                >
+                  <p className="font-medium">{proposal.title}</p>
+                  <p className="mt-1 text-xs text-zinc-600">
+                    {proposal.due_on} · {proposal.lane}
+                  </p>
+                  <button
+                    disabled={busy}
+                    onClick={() => accept(message.id, proposal.id)}
+                    className="mt-3 min-h-11 rounded-lg bg-yellow-300 px-4 py-2 text-sm font-semibold disabled:opacity-50"
+                  >
+                    Accept commitment
+                  </button>
+                </div>
+              ))}
+            </article>
+          ))}
+          {submitted && (
+            <article className="ml-10 rounded-3xl bg-zinc-100 px-4 py-3">
+              <p className="sr-only">You</p>
+              <p className="whitespace-pre-wrap break-words text-[15px] leading-7">
+                {submitted}
+              </p>
+            </article>
+          )}
+          {busy && (
+            <p className="flex items-center gap-2 px-1 text-sm text-zinc-500">
+              <LoaderCircle
+                size={16}
+                className="animate-spin"
+                aria-hidden="true"
+              />
+              Thinking…
             </p>
-            <div className="whitespace-pre-wrap break-words text-sm leading-7">
-              {message.body}
-            </div>
-            {message.role === "assistant" && (
-              <div className="mt-3 flex flex-wrap gap-4 text-xs">
-                <Link
-                  className="underline"
-                  href={`/briefings/new?kind=HQH&message=${message.id}`}
-                >
-                  Review as HQH
-                </Link>
-                <Link
-                  className="underline"
-                  href={`/briefings/new?kind=HHH&message=${message.id}`}
-                >
-                  Review as HHH
-                </Link>
-              </div>
-            )}
-            {message.proposals?.map((proposal) => (
-              <div
-                key={proposal.id}
-                className="mt-4 rounded-xl border border-yellow-300 bg-yellow-50 p-4"
-              >
-                <p className="font-medium">{proposal.title}</p>
-                <p className="mt-1 text-xs text-zinc-600">
-                  {proposal.due_on} · {proposal.lane}
-                </p>
-                <button
-                  disabled={busy}
-                  onClick={() => accept(message.id, proposal.id)}
-                  className="mt-3 rounded-lg bg-yellow-300 px-4 py-2 text-sm font-semibold disabled:opacity-50"
-                >
-                  Accept commitment
-                </button>
-              </div>
-            ))}
-          </article>
-        ))}
+          )}
+        </div>
       </div>
       <form
         onSubmit={send}
-        className="sticky bottom-0 mt-6 border-t border-zinc-200 bg-white py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+        className="fcos-chat-composer shrink-0 bg-white px-1 pt-3 md:px-5"
       >
-        <label htmlFor="member-message" className="text-sm font-medium">
-          What would help right now?
-        </label>
-        <textarea
-          id="member-message"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          maxLength={6000}
-          rows={3}
-          disabled={busy || !enabled}
-          className="mt-2 w-full resize-y rounded-xl border border-zinc-300 p-3 text-base"
-          placeholder="Think out loud…"
-        />
-        <div className="mt-2 flex items-center justify-between gap-3">
-          <p className="text-xs text-zinc-500">
-            Suggestions are drafts. You choose what to commit to.
-          </p>
+        <div className="mx-auto flex max-w-3xl items-end gap-2 rounded-[28px] border border-zinc-300 bg-white p-2 shadow-sm focus-within:border-zinc-500">
+          <label htmlFor="member-message" className="sr-only">
+            Message fcOS
+          </label>
+          <textarea
+            ref={textarea}
+            id="member-message"
+            value={text}
+            onChange={(e) => {
+              setText(e.target.value);
+              e.target.style.height = "auto";
+              e.target.style.height = `${Math.min(e.target.scrollHeight, 144)}px`;
+            }}
+            onKeyDown={(e) => {
+              if (
+                e.key === "Enter" &&
+                !e.shiftKey &&
+                !e.nativeEvent.isComposing &&
+                window.matchMedia("(min-width:768px)").matches
+              ) {
+                e.preventDefault();
+                e.currentTarget.form?.requestSubmit();
+              }
+            }}
+            maxLength={6000}
+            rows={1}
+            disabled={busy || !enabled}
+            className="max-h-36 min-h-11 min-w-0 flex-1 resize-none bg-transparent px-3 py-2.5 text-base leading-6 outline-none disabled:opacity-60"
+            placeholder="Message fcOS…"
+          />
           <button
+            aria-label={busy ? "Preparing reply" : "Send message"}
+            title="Send message"
             disabled={busy || !enabled || !text.trim()}
-            className="min-h-11 shrink-0 rounded-xl bg-yellow-300 px-5 font-semibold text-zinc-950 disabled:opacity-50"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-yellow-300 text-zinc-950 disabled:bg-zinc-100 disabled:text-zinc-400"
           >
-            {busy ? "Thinking…" : "Send"}
+            {busy ? (
+              <LoaderCircle
+                size={20}
+                className="animate-spin"
+                aria-hidden="true"
+              />
+            ) : (
+              <ArrowUp size={22} aria-hidden="true" />
+            )}
           </button>
         </div>
-        <p role="status" className="mt-2 text-sm text-zinc-700">
-          {notice || (!enabled ? "Member AI is currently paused." : "")}
+        <p
+          role="status"
+          className="mx-auto max-w-3xl px-2 pt-2 text-xs leading-5 text-zinc-600"
+        >
+          {notice || (!enabled ? "Chat is currently paused." : "")}
         </p>
       </form>
-    </>
+    </section>
   );
 }

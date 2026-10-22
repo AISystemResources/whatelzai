@@ -178,3 +178,22 @@ body::after {
     padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
   }
 }
+
+/* Chat scrolls its transcript while the composer stays clear of the raised Home tab. */
+body:has(.fcos-chat-page) {
+  padding-bottom: 0;
+}
+.fcos-chat-page {
+  padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+}
+.fcos-chat-composer {
+  padding-bottom: 24px;
+}
+@media (min-width: 768px) {
+  .fcos-chat-page {
+    padding-bottom: 0;
+  }
+  .fcos-chat-composer {
+    padding-bottom: 20px;
+  }
+}

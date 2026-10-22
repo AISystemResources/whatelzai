@@ -14,15 +14,29 @@ const items = [
   { href: "/resources", label: "Resources", icon: Library },
   { href: "/profile", label: "Profile", icon: UserRound },
 ];
-export function MemberNav({ current }: { current: string }) {
+export function MemberNav({
+  current,
+  compact = false,
+}: {
+  current: string;
+  compact?: boolean;
+}) {
   const selected = memberTab(current);
   return (
     <nav
       aria-label="fcOS workspace"
       data-fcos-nav
-      className="mb-2 border-b border-zinc-200 pb-4"
+      className={
+        compact
+          ? "shrink-0 md:mb-2 md:border-b md:border-zinc-200 md:pb-3"
+          : "mb-2 border-b border-zinc-200 pb-4"
+      }
     >
-      <div className="flex items-baseline justify-between md:mb-4">
+      <div
+        className={
+          compact ? "hidden" : "flex items-baseline justify-between md:mb-4"
+        }
+      >
         <Link href="/" className="text-xl font-bold tracking-tight">
           fc<span className="text-yellow-500">OS</span>
         </Link>

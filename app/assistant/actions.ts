@@ -6,7 +6,7 @@ import { memberActor } from "@/lib/member-ai/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { proposalSchema } from "@/lib/member-ai/model";
 import { singaporeDay } from "@/lib/daily/model";
-export async function newConversation(form: FormData) {
+export async function createConversation() {
   const { user } = await memberActor();
   const { data, error } = await supabaseAdmin
     .from("member_ai_conversations")
@@ -14,6 +14,10 @@ export async function newConversation(form: FormData) {
     .select("id")
     .single();
   if (error || !data) throw Error("Could not create a conversation.");
+  return { id: data.id as string };
+}
+export async function newConversation(form: FormData) {
+  const data = await createConversation();
   const prompt = form.get("prompt");
   const workflow =
     prompt === "hqh" || prompt === "hhh" ? `&prompt=${prompt}` : "";

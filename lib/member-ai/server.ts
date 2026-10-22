@@ -59,7 +59,7 @@ export async function conversationMessages(
   if (error) throw Error("Messages unavailable");
   return (data ?? []).reverse() as ChatMessage[];
 }
-export async function memberWorkspace(conversationId?: string) {
+export async function memberWorkspace(conversationId?: string, blank = false) {
   const actor = await memberActor();
   const [chats, tasks, cycle, link] = await Promise.all([
     supabaseAdmin
@@ -91,7 +91,7 @@ export async function memberWorkspace(conversationId?: string) {
   ]);
   if (chats.error || tasks.error || cycle.error || link.error)
     throw Error("Your workspace could not be loaded");
-  const selected = conversationId ?? chats.data?.[0]?.id;
+  const selected = blank ? undefined : (conversationId ?? chats.data?.[0]?.id);
   return {
     name: actor.user.name,
     userId: actor.user.id,

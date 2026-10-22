@@ -526,3 +526,135 @@ test("note grants use the verified owner and selected team label; revocation is 
     }
   }
 });
+
+test("blank Chat skips transcript reads while latest Chat loads only its owner's messages", async () => {
+  for (const blank of [true, false]) {
+    const calls: { table: string; filters: unknown[][] }[] = [];
+    const server = load<{
+      memberWorkspace: (
+        id?: string,
+        blank?: boolean,
+      ) => Promise<{ selected: string | null; messages: unknown[] }>;
+    }>("lib/member-ai/server.ts", {
+      "@/lib/users": {
+        ensureUserRow: async () => ({
+          id: "owner",
+          role: "admin",
+          name: "Example",
+        }),
+      },
+      "@/lib/admin-policy": { isOwnerUser: () => true },
+      "@/lib/daily/connections": {},
+      "./model": model,
+      "@/lib/supabase-server": {
+        supabaseAdmin: {
+          from: (table: string) => {
+            const call = { table, filters: [] as unknown[][] };
+            calls.push(call);
+            return {
+              select() {
+                return this;
+              },
+              eq(...args: unknown[]) {
+                call.filters.push(args);
+                return this;
+              },
+              in() {
+                return this;
+              },
+              order() {
+                return this;
+              },
+              limit: async () => ({
+                error: null,
+                data:
+                  table === "member_ai_conversations"
+                    ? [{ id: "latest" }]
+                    : table === "member_ai_messages"
+                      ? [
+                          {
+                            id: "message",
+                            role: "assistant",
+                            body: "Example",
+                            proposals: [],
+                          },
+                        ]
+                      : [],
+              }),
+              maybeSingle: async () => ({
+                error: null,
+                data:
+                  table === "member_ai_access"
+                    ? {
+                        active: true,
+                        model: "gpt-6-luna",
+                        current_cycle_id: null,
+                      }
+                    : table === "member_ai_conversations"
+                      ? { id: "latest" }
+                      : null,
+              }),
+            };
+          },
+        },
+      },
+    });
+    const workspace = await server.memberWorkspace(undefined, blank);
+    assert.equal(workspace.selected, blank ? null : "latest");
+    assert.equal(workspace.messages.length, blank ? 0 : 1);
+    const transcriptCalls = calls.filter(
+      (call) => call.table === "member_ai_messages",
+    );
+    assert.equal(transcriptCalls.length, blank ? 0 : 1);
+    for (const call of transcriptCalls)
+      assert.ok(
+        call.filters.some(
+          (filter) => filter[0] === "user_id" && filter[1] === "owner",
+        ),
+      );
+  }
+});
+test("first-send conversation creation verifies the owner and never accepts a caller-supplied identity", async () => {
+  for (const allowed of [false, true]) {
+    let row: Record<string, unknown> | undefined;
+    const actions = load<{ createConversation: () => Promise<{ id: string }> }>(
+      "app/assistant/actions.ts",
+      {
+        "next/navigation": {},
+        "next/cache": {},
+        "@/lib/member-ai/server": {
+          memberActor: async () => {
+            if (!allowed) throw Error("Owner required");
+            return { user: { id: "verified-owner" } };
+          },
+        },
+        "@/lib/member-ai/model": model,
+        "@/lib/daily/model": { singaporeDay: () => "2026-10-22" },
+        "@/lib/supabase-server": {
+          supabaseAdmin: {
+            from: () => ({
+              insert: (value: Record<string, unknown>) => {
+                row = value;
+                return {
+                  select: () => ({
+                    single: async () => ({
+                      data: { id: "created" },
+                      error: null,
+                    }),
+                  }),
+                };
+              },
+            }),
+          },
+        },
+      },
+    );
+    if (allowed) {
+      assert.equal((await actions.createConversation()).id, "created");
+      assert.equal(row?.user_id, "verified-owner");
+    } else {
+      await assert.rejects(actions.createConversation(), /Owner required/);
+      assert.equal(row, undefined);
+    }
+  }
+});

@@ -5,7 +5,7 @@ import { ensureUserRow } from "@/lib/users";
 import { MemberNav } from "@/components/culture/MemberNav";
 import { memberWorkspace } from "@/lib/member-ai/server";
 import { money } from "@/lib/member-ai/model";
-import { newConversation } from "./actions";
+import { ChatMenu } from "./ChatMenu";
 import { Chat } from "./Chat";
 import { CompleteTask } from "./CompleteTask";
 export const dynamic = "force-dynamic";
@@ -16,7 +16,12 @@ export const metadata = {
 export default async function AssistantPage({
   searchParams,
 }: {
-  searchParams: Promise<{ chat?: string; prompt?: string }>;
+  searchParams: Promise<{
+    chat?: string;
+    prompt?: string;
+    new?: string;
+    draft?: string;
+  }>;
 }) {
   if (!(await ensureUserRow())) redirect("/sign-in");
   const query = await searchParams;
@@ -24,7 +29,10 @@ export default async function AssistantPage({
   if (chat && !chat.success) redirect("/assistant");
   let workspace;
   try {
-    workspace = await memberWorkspace(chat?.success ? chat.data : undefined);
+    workspace = await memberWorkspace(
+      chat?.success ? chat.data : undefined,
+      query.new === "1",
+    );
   } catch {
     return (
       <main className="mx-auto max-w-3xl px-5 py-10">
@@ -44,43 +52,16 @@ export default async function AssistantPage({
     workspace.cycle?.allowance_micro ?? workspace.allowance,
   );
   return (
-    <main className="mx-auto max-w-6xl px-4 py-6 text-zinc-900 sm:px-6 sm:py-10">
-      <MemberNav current="/assistant" />
-      <header className="my-7 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="text-xs uppercase tracking-widest text-zinc-500">
-            A space to move forward
-          </p>
-          <h1 className="mt-2 text-3xl font-semibold sm:text-4xl">
-            fcOS Chat<span className="text-yellow-500">.</span>
-          </h1>
-        </div>
-        <form action={newConversation}>
-          <input
-            type="hidden"
-            name="prompt"
-            value={
-              query.prompt === "hqh" || query.prompt === "hhh"
-                ? query.prompt
-                : ""
-            }
-          />
-          <button className="min-h-11 rounded-xl bg-yellow-300 px-5 font-semibold">
-            + New conversation
-          </button>
-        </form>
-      </header>
-      <p className="mb-5 rounded-xl bg-yellow-50 px-4 py-3 text-sm lg:hidden">
-        {money(Math.max(0, allowance - used - held))} remaining this month ·{" "}
-        <a href="#assistant-details" className="underline">
-          Usage & conversations
-        </a>
-      </p>
-      <div className="grid min-w-0 gap-6 lg:grid-cols-[230px_minmax(0,1fr)]">
-        <aside
-          id="assistant-details"
-          className="order-2 min-w-0 space-y-5 lg:order-1"
-        >
+    <main className="fcos-chat-page mx-auto flex h-dvh max-w-5xl flex-col overflow-hidden px-3 text-zinc-900 md:px-6">
+      <MemberNav current="/assistant" compact />
+      <ChatMenu>
+        <aside className="space-y-6">
+          <Link
+            href="/assistant?new=1"
+            className="block rounded-xl bg-yellow-300 px-4 py-3 text-center font-semibold"
+          >
+            + New chat
+          </Link>
           <section className="rounded-2xl bg-zinc-950 p-5 text-white">
             <h2 className="text-sm font-medium">Your monthly AI allowance</h2>
             <p className="mt-3 text-2xl font-semibold">
@@ -96,10 +77,8 @@ export default async function AssistantPage({
             </p>
             <p className="mt-3 text-xs text-yellow-300">{workspace.model}</p>
           </section>
-          <details className="rounded-2xl border p-4">
-            <summary className="cursor-pointer font-medium">
-              Conversations
-            </summary>
+          <section className="rounded-2xl border p-4">
+            <h3 className="font-medium">Conversations</h3>
             <nav
               className="mt-3 max-h-48 space-y-1 overflow-y-auto"
               aria-label="Your conversations"
@@ -117,7 +96,7 @@ export default async function AssistantPage({
                 </Link>
               ))}
             </nav>
-          </details>
+          </section>
           <section className="rounded-2xl border p-4">
             <h2 className="font-medium">Your commitments</h2>
             <p className="mt-1 text-xs text-zinc-500">
@@ -157,33 +136,24 @@ export default async function AssistantPage({
             </Link>
           </section>
         </aside>
-        <section className="order-1 min-w-0 lg:order-2">
-          {workspace.selected ? (
-            <Chat
-              key={workspace.selected}
-              messages={workspace.messages}
-              conversationId={workspace.selected}
-              enabled={workspace.enabled}
-              initialPrompt={
-                query.prompt === "hqh"
-                  ? "Help me prepare an HQH (会前会). Ask which lead and event before drafting."
-                  : query.prompt === "hhh"
-                    ? "Help me write an HHH (会后会). Ask what happened and what I learned."
-                    : ""
-              }
-            />
-          ) : (
-            <div className="rounded-3xl bg-yellow-50 p-8">
-              <h2 className="text-2xl font-semibold">
-                What have you been putting off?
-              </h2>
-              <p className="mt-3 text-zinc-600">
-                Start a conversation. Find one small step. Make it yours.
-              </p>
-            </div>
-          )}
-        </section>
-      </div>
+      </ChatMenu>
+      <Chat
+        key={
+          workspace.selected ??
+          (z.uuid().safeParse(query.draft).success ? query.draft : "blank")
+        }
+        messages={workspace.messages}
+        conversationId={workspace.selected}
+        enabled={workspace.enabled}
+        name={workspace.name?.split(" ")[0] ?? ""}
+        initialPrompt={
+          query.prompt === "hqh"
+            ? "Help me prepare an HQH (会前会). Ask which lead and event before drafting."
+            : query.prompt === "hhh"
+              ? "Help me write an HHH (会后会). Ask what happened and what I learned."
+              : ""
+        }
+      />
     </main>
   );
 }

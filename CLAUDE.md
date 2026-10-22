@@ -439,3 +439,12 @@ Only the app surface links `/fcos/app.webmanifest`, with canonical app origin id
 ## Simple install control (SPR-136)
 
 Profile shows one Install fcOS button, hidden when installed. A captured native prompt opens directly; otherwise platform guidance appears only after tapping, in a native accessible dialog with Escape/close and focus restoration. iOS continues to require Safari Share/Add to Home Screen; there is no fabricated install URL.
+
+## Private daily routine library (SPR-133 follow-up)
+
+Owner `/today/routines` reads three allowlisted, versioned SKILL.md sources from
+EMDEE Personal Daily/04-Routines. Personal instruction bodies stay out of the public
+repo. Detail pages render Markdown and owner-gated downloads return identical
+normalized sources with private/no-store headers. Skills and schedules remain
+separate; existing cloud task prompts/jobs are unchanged. Unknown sources do not
+fall back to fabricated instructions. See docs/daily/README.md; mirrored in EMDEE.

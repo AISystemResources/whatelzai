@@ -43,12 +43,11 @@ export async function AIAllowances() {
       </p>
       <h1 className="mt-2 text-3xl font-semibold">AI allowances & usage</h1>
       <p className="mt-4 max-w-3xl text-sm leading-6 text-zinc-600">
-        These controls manage the separate AI allowance; they do not assign a
-        tree identity. API Chat is currently owner-only. Each enrolled person
-        receives US$5 per calendar month, renewing on the 1st at midnight
-        Singapore time. Full reset grants another US$5 now and keeps previous
-        usage. API chat runs on app.whatelz.ai; personal Daily remains on
-        ChatGPT. Registered accounts shown: up to 200.
+        Every tree-activated member can use AI Chat. Each person receives US$5
+        per calendar month, renewing on the 1st at midnight Singapore time. Full
+        and half resets are managed above and keep previous usage. API chat runs
+        on app.whatelz.ai; personal Daily remains on ChatGPT. Registered
+        accounts shown: up to 200.
       </p>
       <div className="mt-7 grid gap-5 sm:grid-cols-2">
         {users.data?.map((user) => {
@@ -90,17 +89,14 @@ export async function AIAllowances() {
                 this allowance
               </p>
               <p className="mt-1 text-xs text-zinc-500">
-                Cap: US$5 ·{" "}
+                Cap: {money(Number(current?.allowance_micro ?? 5000000))} ·{" "}
                 {current
                   ? `Renews ${new Date(current.ends_at).toLocaleDateString("en-SG", { timeZone: "Asia/Singapore" })}`
                   : "Fresh allowance begins on first message"}
               </p>
               <MemberControls
                 userId={user.id}
-                active={member?.active ?? false}
-                enrolled={!!member}
                 model={modelSchema.parse(member?.model ?? "gpt-6-luna")}
-                cycle={member?.current_cycle_id ?? null}
               />
               {!!history.length && (
                 <details className="mt-3 text-xs">

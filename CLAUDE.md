@@ -472,3 +472,19 @@ a secondary admin section. See docs/user-activation.md; mirrored in EMDEE.
 ## Member Profile and Usage (SPR-138)
 
 `/profile` uses a mobile orange welcome/avatar, verified calendar persona and fcOS Member Pass, with Profile/Usage links (`?tab=usage`). Profile alone opts into orange navigation/install accents; existing app tabs retain yellow. No invented points, streak, next tier or automatic team linking. `loadProfileData` independently verifies identity and scopes every membership/access/cycle/reset read to that immutable users.id, never accepting a target account. Usage shows current allowance spent/reserved/remaining, Singapore renewal, actual latest admin reset/count and 20-cycle history. Expired cycles stay historical; read-only monthly projection never resets credit. No provider/key access, quota write, access grant, self-reset or inference from this view. Unavailable data is explicit; owner-only Chat remains independently enforced.
+
+## Activated Chat and credit resets (SPR-141)
+
+Every registered account linked to the fcOS tree can use AI Chat. This supersedes
+owner-only Chat and separate enrollment descriptions. The service-only enrollment
+RPC verifies activation and provides the normal US$5 baseline without changing
+existing cycles/history/models. Reservations recheck activation. Admin remains
+sole-owner; private member records and provider credentials retain their boundaries.
+
+Owner Users supports selected-member/all-activated full (US$5) or half (US$2.50)
+resets after reviewing targets and total. One transaction validates live assignment,
+compares current-cycle IDs, locks in stable order and creates audited fresh cycles;
+a stale or failed batch rolls back all. Reset replaces remaining credit rather
+than adding it; old spend/reservations remain and monthly baseline stays US$5.
+No reset is issued on page load or during deployment. See docs/member-credit-resets.md;
+mirrored in EMDEE INSTRUCTIONS.

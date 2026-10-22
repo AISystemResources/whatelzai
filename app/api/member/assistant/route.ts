@@ -28,7 +28,10 @@ export async function POST(request: Request) {
   try {
     actor = await memberActor();
   } catch {
-    return json({ error: "Sign in with an activated pilot account." }, 403);
+    return json(
+      { error: "Sign in with a tree-activated member account." },
+      403,
+    );
   }
   const raw = await request.text();
   if (Buffer.byteLength(raw) > 30000)

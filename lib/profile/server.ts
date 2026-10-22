@@ -1,7 +1,6 @@
 import "server-only";
 import { requireAssignedUser } from "@/lib/app-access";
 import { supabaseAdmin } from "@/lib/supabase-server";
-import { isOwnerUser } from "@/lib/admin-policy";
 import { isPersona } from "@/lib/community-calendar/personas";
 import { memberApiEnabled } from "@/lib/member-ai/server";
 import { summarizeUsage, type UsageAccess, type UsageCycle } from "./usage";
@@ -44,7 +43,12 @@ export async function loadProfileData() {
       : "Guest";
   if (access.error || cycles.error || resets.error)
     return { persona, usage: null };
-  const stored = access.data as UsageAccess | null;
+  const stored = (access.data as UsageAccess | null) ?? {
+    active: true,
+    model: "gpt-6-luna",
+    allowance_micro: 5000000,
+    current_cycle_id: null,
+  };
   const history = (cycles.data ?? []) as UsageCycle[];
   // If the current cycle is outside the history window, do not display false zero usage.
   if (
@@ -58,9 +62,7 @@ export async function loadProfileData() {
       ...summarizeUsage(stored, history),
       assigned: Boolean(stored),
       active: Boolean(stored?.active),
-      canChat: Boolean(
-        stored?.active && isOwnerUser(user) && memberApiEnabled(),
-      ),
+      canChat: Boolean(memberApiEnabled()),
       model: stored?.model ?? null,
       history,
       lastReset: resets.data?.[0] ?? null,

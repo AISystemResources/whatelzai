@@ -31,8 +31,7 @@ require assignment. AI Chat checks assignment after its existing owner rule and
 before access lookup/reservation/provider use. Existing owner administration and
 public website/customer account flows remain independent of tree assignment.
 
-AI allowance enrollment is a separate switch and never counts as activation.
-The allowance panel remains under a collapsed section on Users. Assignment alone
-does not enable AI Chat; the current owner-only pilot rule still applies.
-No migration, credential change, real account assignment or provider call is
-required to ship this feature.
+Tree activation also grants AI Chat eligibility and the normal US$5 monthly
+allowance (SPR-141), superseding the former owner-only Chat pilot. Private data
+and calendar permissions still apply per member. Global service availability
+remains controlled by MEMBER_AI_ENABLED. See docs/member-credit-resets.md.

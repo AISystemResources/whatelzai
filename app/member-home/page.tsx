@@ -9,7 +9,6 @@ import {
   CircleCheck,
 } from "lucide-react";
 import { ensureUserRow } from "@/lib/users";
-import { isOwnerUser } from "@/lib/admin-policy";
 import { memberApiEnabled } from "@/lib/member-ai/server";
 import { loadAttentionDashboard } from "@/lib/fcos/dashboard";
 import { dateLabel, todayUtc8 } from "@/lib/leads/model";
@@ -27,7 +26,7 @@ export default async function MemberHome() {
   const user = await ensureUserRow();
   if (!user) redirect("/sign-in");
   const data = await loadAttentionDashboard();
-  const canChat = isOwnerUser(user) && memberApiEnabled();
+  const canChat = memberApiEnabled();
   const complete = data.leads.available && data.tasks.available;
   const total = complete
     ? (data.leads.count ?? 0) + (data.tasks.count ?? 0)
@@ -72,7 +71,7 @@ export default async function MemberHome() {
               </Link>
             ) : (
               <p className="text-sm text-zinc-300">
-                AI Chat is Edmund’s personal pilot for now.
+                AI Chat is temporarily unavailable.
               </p>
             )}
             {canChat && (

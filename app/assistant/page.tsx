@@ -37,9 +37,8 @@ export default async function AssistantPage({
         <MemberNav current="/assistant" />
         <h1 className="mt-10 text-3xl font-semibold">fcOS Chat</h1>
         <p className="mt-4">
-          Chat is currently available only to Edmund. Other members can still
-          use leads, HQH / HHH notes and resources. If this is your owner
-          account, the workspace may be temporarily unavailable.
+          Chat is available to activated members. Your workspace could not be
+          loaded right now. Please refresh or ask Edmund to check your account.
         </p>
       </main>
     );

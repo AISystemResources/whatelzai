@@ -3,6 +3,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { dailyOwner } from "@/lib/daily/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
+import { hasTeamAssignment } from "@/lib/team-assignment";
 import { modelSchema } from "@/lib/member-ai/model";
 export async function manageMember(input: unknown) {
   const owner = await dailyOwner();
@@ -38,6 +39,18 @@ export async function manageMember(input: unknown) {
         error: "Allowance changed or reset failed. Reload before trying again.",
       };
   } else {
+    if (!change.active)
+      return {
+        error:
+          "Tree activation determines Chat access. Manage the tree assignment instead.",
+      };
+    if (!(await hasTeamAssignment(change.userId)))
+      return { error: "Choose an activated member." };
+    const enrollment = await supabaseAdmin.rpc("ensure_activated_member_ai", {
+      p_user: change.userId,
+    });
+    if (enrollment.error)
+      return { error: "Member activation could not be checked." };
     const existing = await supabaseAdmin
       .from("users")
       .select("id,supabase_auth_user_id")

@@ -95,6 +95,7 @@ test("admin changes independently require the configured owner", async () => {
     "app/admin/users/actions.ts",
     {
       "next/cache": { revalidatePath: () => {} },
+      "@/lib/team-assignment": { hasTeamAssignment: async () => true },
       "@/lib/daily/server": {
         dailyOwner: async () => {
           throw Error("Owner required");
@@ -199,59 +200,48 @@ test("vault reads reject shared wrappers, traversal and sibling collections", as
   assert.equal(calls, 0);
 });
 
-test("API pilot requires the configured owner before reading active pilot access", async () => {
-  const owner = "00000000-0000-4000-8000-000000000001";
-  const { isOwnerUser } = await import("../lib/admin-policy");
-  for (const [user, configured, allowed] of [
-    [null, owner, false],
-    [
-      { id: "00000000-0000-4000-8000-000000000002", role: "admin" },
-      owner,
-      false,
-    ],
-    [{ id: owner, role: "unauthorized" }, owner, false],
-    [{ id: owner, role: "admin" }, undefined, false],
-    [{ id: owner, role: "admin" }, owner, true],
+test("Chat eligibility follows tree activation, not owner identity, and enrollment failures deny access", async () => {
+  for (const [user, assigned, failure, allowed] of [
+    [null, true, false, false],
+    [{ id: "member", role: "unauthorized" }, true, false, true],
+    [{ id: "owner", role: "admin" }, false, false, false],
+    [{ id: "member", role: "unauthorized" }, true, true, false],
   ] as const) {
-    let reads = 0;
+    let enrollments = 0;
     const server = load<{
       memberActor: () => Promise<{ user: { id: string } }>;
     }>("lib/member-ai/server.ts", {
-      "@/lib/team-assignment": { hasTeamAssignment: async () => true },
+      "@/lib/team-assignment": { hasTeamAssignment: async () => assigned },
       "@/lib/users": { ensureUserRow: async () => user },
-      "@/lib/admin-policy": {
-        isOwnerUser: (value: typeof user) => isOwnerUser(value, configured),
-      },
-      "@/lib/member-ai/model": model,
+      "@/lib/admin-policy": { isOwnerUser: () => false },
       "./model": model,
       "@/lib/daily/connections": {
         openaiConnection: () => {
-          throw Error("Must not read provider key");
+          throw Error("No provider key in eligibility");
         },
       },
       "@/lib/supabase-server": {
         supabaseAdmin: {
-          from: () => {
-            reads++;
+          rpc: async (name: string, args: { p_user: string }) => {
+            enrollments++;
+            assert.equal(name, "ensure_activated_member_ai");
+            assert.equal(args.p_user, user?.id);
             return {
-              select() {
-                return this;
+              data: {
+                active: true,
+                model: "gpt-6-luna",
+                allowance_micro: 5000000,
+                current_cycle_id: null,
               },
-              eq() {
-                return this;
-              },
-              maybeSingle: async () => ({
-                data: { active: true, model: "gpt-6-luna" },
-                error: null,
-              }),
+              error: failure ? { message: "unavailable" } : null,
             };
           },
         },
       },
     });
-    if (allowed) assert.equal((await server.memberActor()).user.id, owner);
+    if (allowed) assert.equal((await server.memberActor()).user.id, user!.id);
     else await assert.rejects(server.memberActor());
-    assert.equal(reads, allowed ? 1 : 0);
+    assert.equal(enrollments, user && assigned ? 1 : 0);
   }
 });
 
@@ -551,6 +541,15 @@ test("blank Chat skips transcript reads while latest Chat loads only its owner's
       "./model": model,
       "@/lib/supabase-server": {
         supabaseAdmin: {
+          rpc: async () => ({
+            data: {
+              active: true,
+              model: "gpt-6-luna",
+              allowance_micro: 5000000,
+              current_cycle_id: null,
+            },
+            error: null,
+          }),
           from: (table: string) => {
             const call = { table, filters: [] as unknown[][] };
             calls.push(call);
@@ -756,7 +755,7 @@ test("Profile usage rejects anonymous reads and scopes every private query to th
     "./usage": profileUsage,
   });
   const result = await signedIn.loadProfileData();
-  assert.equal(result.usage.canChat, false);
+  assert.equal(result.usage.canChat, true);
   assert.equal(result.usage.allowance, 5000000);
   assert.equal(queries.length, 4);
   for (const query of queries) {

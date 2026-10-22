@@ -10,19 +10,15 @@ export const memberApiEnabled = () => process.env.MEMBER_AI_ENABLED === "true";
 export async function memberActor() {
   const user = await ensureUserRow();
   if (!user) throw Error("Sign in to continue");
-  // The current API pilot is Edmund-only, even if another account has active access.
-  if (!isOwnerUser(user))
-    throw Error("fcOS Chat is currently available only to Edmund");
   if (!(await hasTeamAssignment(user.id)))
     throw Error("Your account is awaiting a tree assignment");
-  const { data, error } = await supabaseAdmin
-    .from("member_ai_access")
-    .select("active,model,allowance_micro,current_cycle_id")
-    .eq("user_id", user.id)
-    .maybeSingle();
-  if (error) throw Error("Member assistant is temporarily unavailable");
-  if (!data?.active)
-    throw Error("Your assistant pilot access has not been activated yet");
+  const enrollment = await supabaseAdmin.rpc("ensure_activated_member_ai", {
+    p_user: user.id,
+  });
+  if (enrollment.error)
+    throw Error("Member assistant is temporarily unavailable");
+  const data = enrollment.data;
+  if (!data?.active) throw Error("Chat access could not be checked");
   return { user, access: { ...data, model: modelSchema.parse(data.model) } };
 }
 export async function platformKey() {

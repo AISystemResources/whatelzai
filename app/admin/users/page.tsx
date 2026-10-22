@@ -1,3 +1,5 @@
+import { CreditControls } from "./CreditControls";
+import { loadActivatedCredits } from "@/lib/admin-users/credits";
 import Link from "next/link";
 import { loadUserDirectory } from "@/lib/admin-users/server";
 import { statusLabels, type DirectoryStatus } from "@/lib/admin-users/model";
@@ -73,6 +75,17 @@ export default async function UsersPage({
           </Link>
         ))}
       </nav>
+      <details
+        id="member-credits"
+        className="rounded-2xl border border-zinc-200 p-5"
+      >
+        <summary className="cursor-pointer font-medium">
+          Manage AI credits & resets
+        </summary>
+        <div className="mt-5">
+          <CreditsPanel />
+        </div>
+      </details>
       <form
         method="get"
         action={adminUrl("/admin/users")}
@@ -146,8 +159,8 @@ export default async function UsersPage({
                 </summary>
                 <p className="mt-3 text-xs leading-5 text-zinc-500">
                   Confirm this account belongs to the person you select. This
-                  grants member app access; it does not enable AI Chat or admin
-                  access.
+                  grants member app access and AI Chat with US$5 per month. It
+                  does not grant admin access.
                 </p>
                 <form action={linkTeamAccount} className="mt-3 space-y-3">
                   <input
@@ -227,5 +240,21 @@ export default async function UsersPage({
         </div>
       </details>
     </div>
+  );
+}
+
+async function CreditsPanel() {
+  let members;
+  try {
+    members = await loadActivatedCredits();
+  } catch {
+    members = null;
+  }
+  return members ? (
+    <CreditControls members={members} />
+  ) : (
+    <p role="status" className="text-sm text-zinc-500">
+      Credit balances could not be loaded. Refresh before resetting anyone.
+    </p>
   );
 }

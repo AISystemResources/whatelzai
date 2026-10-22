@@ -4,34 +4,27 @@ import { manageMember } from "./actions";
 import type { MemberModel } from "@/lib/member-ai/model";
 export function MemberControls({
   userId,
-  active,
   model,
-  cycle,
-  enrolled,
 }: {
   userId: string;
-  active: boolean;
   model: MemberModel;
-  cycle: string | null;
-  enrolled: boolean;
 }) {
-  const [selected, setSelected] = useState(model);
-  const [busy, setBusy] = useState(false);
-  const [notice, setNotice] = useState("");
-  const [confirm, setConfirm] = useState(false);
-  async function change(action: "access" | "reset", value = active) {
+  const [selected, setSelected] = useState(model),
+    [busy, setBusy] = useState(false),
+    [notice, setNotice] = useState("");
+  async function save() {
     setBusy(true);
     setNotice("");
     try {
-      const result = await manageMember(
-        action === "reset"
-          ? { action, userId, cycle }
-          : { action, userId, active: value, model: selected },
-      );
+      const result = await manageMember({
+        action: "access",
+        userId,
+        active: true,
+        model: selected,
+      });
       setNotice(result.error ?? result.success ?? "");
-      setConfirm(false);
     } catch {
-      setNotice("Could not update this member. Reload and try again.");
+      setNotice("Could not save the model. Refresh and try again.");
     } finally {
       setBusy(false);
     }
@@ -43,7 +36,7 @@ export function MemberControls({
         <select
           aria-label="Assistant model"
           value={selected}
-          onChange={(e) => setSelected(e.target.value as MemberModel)}
+          onChange={(event) => setSelected(event.target.value as MemberModel)}
           disabled={busy}
           className="mt-1 block w-full rounded-lg border p-2 text-sm"
         >
@@ -51,51 +44,13 @@ export function MemberControls({
           <option value="gpt-6.1-sol">GPT-6.1 Sol</option>
         </select>
       </label>
-      <div className="flex flex-wrap gap-2">
-        <button
-          disabled={busy}
-          onClick={() => change("access", !active)}
-          className="rounded-lg bg-yellow-300 px-3 py-2 text-sm font-medium disabled:opacity-50"
-        >
-          {active ? "Pause AI allowance" : "Enable AI allowance · US$5/month"}
-        </button>
-        {active && selected !== model && (
-          <button
-            disabled={busy}
-            onClick={() => change("access")}
-            className="rounded-lg border px-3 py-2 text-sm"
-          >
-            Save model
-          </button>
-        )}
-        {enrolled && (
-          <button
-            disabled={busy}
-            onClick={() => setConfirm(true)}
-            className="rounded-lg border px-3 py-2 text-sm"
-          >
-            Full reset
-          </button>
-        )}
-      </div>
-      {confirm && (
-        <div className="rounded-lg bg-yellow-50 p-3 text-sm">
-          <p>
-            Restore a fresh US$5 allowance now? Usage history stays intact. This
-            grants additional spending before the next monthly renewal.
-          </p>
-          <div className="mt-3 flex gap-3">
-            <button
-              disabled={busy}
-              className="rounded bg-zinc-900 px-3 py-2 text-white"
-              onClick={() => change("reset")}
-            >
-              Confirm reset
-            </button>
-            <button onClick={() => setConfirm(false)}>Cancel</button>
-          </div>
-        </div>
-      )}
+      <button
+        disabled={busy || selected === model}
+        onClick={save}
+        className="rounded-lg border px-3 py-2 text-sm disabled:opacity-50"
+      >
+        Save model
+      </button>
       <p role="status" className="text-sm">
         {notice}
       </p>

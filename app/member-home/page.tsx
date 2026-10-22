@@ -46,7 +46,7 @@ export default async function MemberHome() {
         <SignOutButton />
       </header>
       <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.5fr)]">
-        <section className="rounded-3xl bg-zinc-950 p-6 text-white sm:p-8 lg:sticky lg:top-6">
+        <section className="order-2 rounded-3xl bg-zinc-950 p-6 text-white sm:p-8 lg:sticky lg:top-6 lg:order-1">
           <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-400">
             Welcome back
           </p>
@@ -82,7 +82,10 @@ export default async function MemberHome() {
             )}
           </div>
         </section>
-        <section className={card} aria-labelledby="attention-heading">
+        <section
+          className={`${card} order-1 lg:order-2`}
+          aria-labelledby="attention-heading"
+        >
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className={eyebrow}>Start here</p>

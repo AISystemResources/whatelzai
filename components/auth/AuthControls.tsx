@@ -65,9 +65,11 @@ export function SignInButton({
 export function SignOutButton({
   children,
   redirectUrl = "/sign-in",
+  className = "text-sm underline",
 }: {
   children?: ReactElement<{ onClick?: () => void; disabled?: boolean }>;
   redirectUrl?: string;
+  className?: string;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
@@ -91,7 +93,7 @@ export function SignOutButton({
           type="button"
           disabled={busy}
           onClick={signOut}
-          className="text-sm underline"
+          className={className}
         >
           {busy ? "Signing out…" : "Sign out"}
         </button>

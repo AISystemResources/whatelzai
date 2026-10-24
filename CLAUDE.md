@@ -561,3 +561,5 @@ Admin uses a bounded 1440px workspace. At 1024px and above Users/Home/Settings m
 ## Admin interaction feedback (SPR-159)
 
 AdminLink preserves Next Link props and uses useLinkStatus for actual pending navigation, with a pressed-link outline and nonblocking status. Root and Today/Users/Settings loading boundaries show neutral skeletons inside the owner-gated shell. Overview also uses the shared placeholder during source reads. Brief CSS section/disclosure fades are bounded and disabled for reduced motion; no artificial data delays or fake progress. Route errors provide retry without exposing private diagnostics. User assignment uses form pending feedback; existing write guards remain unchanged. See docs/admin-navigation.md.
+
+SPR-159 navigation verification exposed Settings cloning a server-provided button inside SignOutButton, which fails on client route transitions. Settings now uses SignOutButton’s own client-rendered button with optional className styling; sign-out behavior and auth gates remain unchanged. Do not pass server-rendered button children for cloning in this route.

@@ -73,11 +73,10 @@ export default function SettingsPage() {
         <p className="mt-2 mb-4 text-sm text-zinc-600">
           Sign out of this device when you’re finished.
         </p>
-        <SignOutButton redirectUrl="/sign-in">
-          <button className="min-h-11 rounded-xl border border-zinc-300 px-5 py-3 text-sm font-medium">
-            Sign out
-          </button>
-        </SignOutButton>
+        <SignOutButton
+          redirectUrl="/sign-in"
+          className="min-h-11 rounded-xl border border-zinc-300 px-5 py-3 text-sm font-medium disabled:opacity-50"
+        />
       </section>
     </AdminArea>
   );

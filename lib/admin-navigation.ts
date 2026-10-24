@@ -1,5 +1,6 @@
 export const adminWorkstreams = [
   { label: "Overview", path: "/admin" },
+  { label: "Personal", path: "/admin/personal" },
   { label: "AI Business", path: "/admin/ai-business" },
   { label: "Network Marketing", path: "/admin/network-marketing" },
   { label: "Day Job", path: "/admin/day-job" },
@@ -25,12 +26,14 @@ export function adminNavigation(pathname: string) {
     (root) => within(path, root),
   )
     ? "Network Marketing"
-    : within(path, "/day-job")
-      ? "Day Job"
-      : path === "/" ||
-          within(path, "/today") ||
-          within(path, "/command-center")
-        ? "Overview"
-        : "AI Business";
+    : within(path, "/personal")
+      ? "Personal"
+      : within(path, "/day-job")
+        ? "Day Job"
+        : path === "/" ||
+            within(path, "/today") ||
+            within(path, "/command-center")
+          ? "Overview"
+          : "AI Business";
   return { tab: "home" as const, workstream };
 }

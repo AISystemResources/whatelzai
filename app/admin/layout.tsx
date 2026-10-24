@@ -1,3 +1,4 @@
+import { AdminFocusProvider } from "@/components/admin/AdminFocus";
 import "./admin.css";
 import { isOwnerUser } from "@/lib/admin-policy";
 import { notFound } from "next/navigation";
@@ -13,7 +14,7 @@ export default async function AdminLayout({
   if (!user || !isOwnerUser(user)) notFound();
 
   return (
-    <>
+    <AdminFocusProvider owner={user.id}>
       <div className="min-h-dvh bg-white">
         <AdminNavigation />
         <main id="admin-main" className="min-w-0 overflow-x-hidden bg-white">
@@ -22,6 +23,6 @@ export default async function AdminLayout({
           </div>
         </main>
       </div>
-    </>
+    </AdminFocusProvider>
   );
 }

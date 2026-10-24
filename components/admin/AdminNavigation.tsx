@@ -1,5 +1,6 @@
 "use client";
 
+import { useAdminFocus } from "./AdminFocus";
 import Link from "@/components/admin/AdminLink";
 import { WhatelzMark } from "@/components/brand/WhatelzMark";
 import { usePathname } from "next/navigation";
@@ -20,6 +21,7 @@ const tabs = [
 ] as const;
 
 export function AdminNavigation() {
+  const focus = useAdminFocus();
   const pathname = usePathname();
   const current = adminNavigation(pathname);
   const switcher = useRef<HTMLDetailsElement>(null);
@@ -132,6 +134,36 @@ export function AdminNavigation() {
                     </Link>
                   );
                 })}
+                <div className="mt-1 border-t border-zinc-100 px-3 pt-3 pb-1 text-xs text-zinc-500">
+                  <p>
+                    {!focus?.ready
+                      ? "Checking schedule…"
+                      : !focus.settings.enabled
+                        ? "Automatic switching paused"
+                        : focus.manual
+                          ? "Manual choice · until next block"
+                          : "Following your schedule"}
+                  </p>
+                  {focus?.ready &&
+                    (!focus.settings.enabled || focus.manual) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (switcher.current) switcher.current.open = false;
+                          focus.follow();
+                        }}
+                        className="mt-2 min-h-11 text-left font-medium text-zinc-950"
+                      >
+                        Follow schedule now →
+                      </button>
+                    )}
+                  <Link
+                    href={adminUrl("/admin/settings#focus-schedule")}
+                    className="mt-1 flex min-h-11 items-center text-zinc-600"
+                  >
+                    Schedule settings →
+                  </Link>
+                </div>
               </nav>
             </details>
           </div>

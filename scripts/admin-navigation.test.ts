@@ -38,6 +38,7 @@ test("existing tools stay under their parent venture and Today stays reachable u
       workstream: "Network Marketing",
     });
   for (const path of [
+    "/design-system",
     "/blog/new",
     "/testimonials/templates/new",
     "/site-dashboard",

@@ -15,6 +15,7 @@ import { adminUrl } from "@/lib/admin-url";
 import { adminFocusSpaces, cleanAdminPath } from "@/lib/admin-navigation";
 import {
   DEFAULT_FOCUS,
+  normalizeFocusSettings,
   canAutoSwitch,
   focusAt,
   rootSpace,
@@ -95,7 +96,9 @@ export function AdminFocusProvider({
   const settings = useMemo(() => {
     try {
       const value = JSON.parse(raw ?? "null");
-      return validFocusSettings(value) ? value : DEFAULT_FOCUS;
+      return validFocusSettings(value)
+        ? normalizeFocusSettings(value)
+        : DEFAULT_FOCUS;
     } catch {
       return DEFAULT_FOCUS;
     }

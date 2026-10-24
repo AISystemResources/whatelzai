@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   DEFAULT_FOCUS,
+  normalizeFocusSettings,
   focusAt,
+  focusPath,
   validFocusSettings,
   canAutoSwitch,
   rootSpace,
@@ -32,11 +34,11 @@ test("Personal remains schedulable outside the four Home workstreams", () => {
 test("weekday transitions use exact Singapore boundaries and Overview outside the blocks", () => {
   for (const [time, space] of [
     ["07:59", "Overview"],
-    ["08:00", "Personal"],
-    ["08:59", "Personal"],
+    ["08:00", "Overview"],
+    ["08:59", "Overview"],
     ["09:00", "Day Job"],
     ["17:59", "Day Job"],
-    ["18:00", "Personal"],
+    ["18:00", "Overview"],
     ["19:00", "Network Marketing"],
     ["21:59", "Network Marketing"],
     ["22:00", "Overview"],
@@ -162,4 +164,26 @@ test("time editing handles end-of-day midnight and malformed inputs", () => {
   assert.equal(minuteInput(1440), "00:00");
   assert.ok(Number.isNaN(parseMinute("24:30")));
   assert.equal(minuteInput(NaN), "");
+});
+
+test("legacy Personal timetable blocks become Overview without losing schedule settings", () => {
+  const legacy = {
+    ...DEFAULT_FOCUS,
+    blocks: [
+      {
+        days: "weekdays" as const,
+        start: 480,
+        end: 540,
+        space: "Personal" as const,
+      },
+    ],
+  };
+  assert.equal(validFocusSettings(legacy), true);
+  assert.equal(normalizeFocusSettings(legacy).blocks[0].space, "Overview");
+  assert.equal(legacy.blocks[0].space, "Personal");
+  assert.equal(
+    focusAt(new Date("2026-10-26T08:30:00+08:00"), legacy).path,
+    "/admin",
+  );
+  assert.equal(focusPath("Personal"), "/admin/personal");
 });

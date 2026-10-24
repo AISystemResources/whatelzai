@@ -18,4 +18,6 @@ Settings sign-out uses the control’s own client-rendered button with className
 
 ## Personal and business boundaries (SPR-167)
 
-Home’s dropdown contains four workstreams only. Personal remains a separate permanent tab and a valid scheduled focus destination, preserving saved commuting-time blocks and push paths. User-management pages retain their automatic-navigation protection even though their visual ownership is now Home/Network Marketing. Personal remains eligible for the next scheduled boundary. Existing Today and weekly deep links remain under Overview and reachable from Personal. AI Business customer access is not implemented by reusing the member directory.
+Home’s dropdown contains four workstreams only. Personal remains a separate permanent tab, opened manually. Legacy Personal schedule blocks now resolve to Overview. User-management pages retain their automatic-navigation protection even though their visual ownership is now Home/Network Marketing. Personal remains eligible for the next scheduled boundary. Existing Today and weekly deep links remain under Overview and reachable from Personal. AI Business customer access is not implemented by reusing the member directory.
+
+SPR-167 steering: Personal is manual-only. Former Personal timetable blocks resolve to Overview, including legacy device/server schedules. Settings offers only the four Home workstreams for scheduling. Preserve manual Personal navigation and suppress unchanged Overview-to-Overview alerts.

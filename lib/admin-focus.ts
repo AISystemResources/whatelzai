@@ -19,13 +19,23 @@ export const DEFAULT_FOCUS: FocusSettings = {
   enabled: true,
   override: "block",
   blocks: [
-    { days: "weekdays", start: 480, end: 540, space: "Personal" },
+    { days: "weekdays", start: 480, end: 540, space: "Overview" },
     { days: "weekdays", start: 540, end: 1080, space: "Day Job" },
-    { days: "weekdays", start: 1080, end: 1140, space: "Personal" },
+    { days: "weekdays", start: 1080, end: 1140, space: "Overview" },
     { days: "weekdays", start: 1140, end: 1320, space: "Network Marketing" },
     { days: "weekends", start: 540, end: 1080, space: "AI Business" },
   ],
 };
+// Legacy saved schedules remain valid, but Personal is now manual-only.
+export function normalizeFocusSettings(settings: FocusSettings): FocusSettings {
+  return {
+    ...settings,
+    blocks: settings.blocks.map((block) => ({
+      ...block,
+      space: block.space === "Personal" ? "Overview" : block.space,
+    })),
+  };
+}
 export const focusPath = (space: FocusSpace) =>
   adminFocusSpaces.find((item) => item.label === space)!.path;
 export function rootSpace(path: string): FocusSpace | null {
@@ -99,7 +109,8 @@ export function focusAt(now: Date, config: FocusSettings = DEFAULT_FOCUS) {
   ].sort((a, b) => a - b);
   const start = Math.max(...boundaries.filter((time) => time <= minute));
   const end = Math.min(...boundaries.filter((time) => time > minute));
-  const space = block?.space ?? "Overview";
+  const space =
+    block?.space === "Personal" ? "Overview" : (block?.space ?? "Overview");
   return {
     space,
     path: focusPath(space),

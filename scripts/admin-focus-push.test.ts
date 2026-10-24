@@ -182,12 +182,12 @@ test("focus dispatch verifies sole owner before reading devices", async () => {
 });
 test("closed-app focus dispatch is independent of EMDEE and deduplicates concurrent repeats", async () => {
   const f = fixture();
-  const now = new Date("2026-10-23T00:00:00Z");
+  const now = new Date("2026-10-23T10:00:00Z");
   await Promise.all([f.api.checkFocusPush(now), f.api.checkFocusPush(now)]);
   assert.equal(f.sent.length, 1);
   const notice = JSON.parse(f.sent[0].payload);
-  assert.equal(notice.title, "Time for Personal");
-  assert.equal(notice.url, "/personal");
+  assert.equal(notice.title, "Time for Overview");
+  assert.equal(notice.url, "/");
   assert.equal(f.sent[0].options.TTL, 60);
   assert(!f.sent[0].payload.includes("encrypted_subscription"));
 });

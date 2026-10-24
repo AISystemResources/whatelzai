@@ -1,7 +1,7 @@
 "use client";
 import { useAdminPreferences } from "./AdminPreferences";
 import { useState } from "react";
-import { adminFocusSpaces } from "@/lib/admin-navigation";
+import { adminWorkstreams } from "@/lib/admin-navigation";
 import {
   DEFAULT_FOCUS,
   minuteInput,
@@ -172,7 +172,7 @@ export function FocusSettingsCard() {
                   }
                   className="mt-1 min-h-11 w-full min-w-0 rounded-lg border border-zinc-200 bg-white px-2 text-sm text-zinc-950"
                 >
-                  {adminFocusSpaces.map((item) => (
+                  {adminWorkstreams.map((item) => (
                     <option key={item.label} value={item.label}>
                       {t(item.label)}
                     </option>
@@ -210,7 +210,7 @@ export function FocusSettingsCard() {
                     days: "weekends",
                     start: 1080,
                     end: 1140,
-                    space: "Personal",
+                    space: "Overview",
                   },
                 ],
               })

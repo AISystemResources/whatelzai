@@ -557,3 +557,7 @@ Owner Settings supports per-device opt-in, status, test and disable. Permission 
 ## Responsive Admin workspace (SPR-158)
 
 Admin uses a bounded 1440px workspace. At 1024px and above Users/Home/Settings move into the header; smaller screens retain the safe-area bottom dock. The active-area dropdown remains shared. Overview uses a desktop priorities/signals grid, bounded rendered briefing previews and compact product snapshots with full metrics in disclosures. Today uses paired briefing columns at desktop width. Mobile remains one-column where appropriate. No data, authorization, PWA or push behavior changes.
+
+## Admin interaction feedback (SPR-159)
+
+AdminLink preserves Next Link props and uses useLinkStatus for actual pending navigation, with a pressed-link outline and nonblocking status. Root and Today/Users/Settings loading boundaries show neutral skeletons inside the owner-gated shell. Overview also uses the shared placeholder during source reads. Brief CSS section/disclosure fades are bounded and disabled for reduced motion; no artificial data delays or fake progress. Route errors provide retry without exposing private diagnostics. User assignment uses form pending feedback; existing write guards remain unchanged. See docs/admin-navigation.md.

@@ -1,6 +1,7 @@
+import { AdminSubmit } from "@/components/admin/AdminSubmit";
 import { CreditControls } from "./CreditControls";
 import { loadActivatedCredits } from "@/lib/admin-users/credits";
-import Link from "next/link";
+import Link from "@/components/admin/AdminLink";
 import { loadUserDirectory } from "@/lib/admin-users/server";
 import { statusLabels, type DirectoryStatus } from "@/lib/admin-users/model";
 import { adminUrl } from "@/lib/admin-url";
@@ -192,12 +193,13 @@ export default async function UsersPage({
                       ))}
                     </select>
                   </label>
-                  <button
+                  <AdminSubmit
+                    pendingLabel="Assigning…"
                     disabled={!directory.availablePeople.length}
                     className="rounded-lg bg-yellow-300 px-4 py-3 text-sm font-medium disabled:opacity-50"
                   >
                     Assign account
-                  </button>
+                  </AdminSubmit>
                 </form>
               </details>
             ) : null}

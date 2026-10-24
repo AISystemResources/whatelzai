@@ -1,7 +1,7 @@
 "use client";
 import { adminUrl } from "@/lib/admin-url";
 
-import Link from "next/link";
+import Link from "@/components/admin/AdminLink";
 import { useState, useTransition } from "react";
 import { toggleFeatured, togglePublished, setStatus } from "./actions";
 import type { Testimonial } from "@/lib/testimonials";

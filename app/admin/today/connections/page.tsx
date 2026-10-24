@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/admin/AdminLink";
 import type { Metadata } from "next";
 import { dailyOwner } from "@/lib/daily/server";
 import { emdeeConnection, openaiConnection } from "@/lib/daily/connections";

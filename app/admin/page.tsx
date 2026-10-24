@@ -1,5 +1,6 @@
+import { AdminLoading } from "@/components/admin/AdminLoading";
 import { BriefMarkdown } from "@/components/admin/BriefMarkdown";
-import Link from "next/link";
+import Link from "@/components/admin/AdminLink";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { dailyOwner } from "@/lib/daily/server";
@@ -50,12 +51,7 @@ export default async function OverviewPage() {
       </header>
       <Suspense
         fallback={
-          <p
-            role="status"
-            className="rounded-2xl border p-6 text-sm text-zinc-500"
-          >
-            Checking your commitments, saved briefs and business signals…
-          </p>
+          <AdminLoading title="Checking your commitments, briefs and business signals…" />
         }
       >
         <DecisionWorkspace />

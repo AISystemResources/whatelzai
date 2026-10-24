@@ -49,7 +49,7 @@ export function MemberControls({
         onClick={save}
         className="rounded-lg border px-3 py-2 text-sm disabled:opacity-50"
       >
-        Save model
+        {busy ? "Saving…" : "Save model"}
       </button>
       <p role="status" className="text-sm">
         {notice}

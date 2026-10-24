@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/admin/AdminLink";
 import { adminUrl } from "@/lib/admin-url";
 import { dailyOwner } from "@/lib/daily/server";
 import { routines } from "@/lib/daily/routines-model";

@@ -1,5 +1,5 @@
 import { isOwnerUser } from "@/lib/admin-policy";
-import Link from "next/link";
+import Link from "@/components/admin/AdminLink";
 import { ensureUserRow } from "@/lib/users";
 import { notFound } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase-server";

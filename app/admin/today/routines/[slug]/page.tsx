@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/admin/AdminLink";
 import { notFound } from "next/navigation";
 import { BriefMarkdown } from "@/components/admin/BriefMarkdown";
 import { adminUrl } from "@/lib/admin-url";

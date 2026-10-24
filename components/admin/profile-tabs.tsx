@@ -1,7 +1,7 @@
 "use client";
 import { adminUrl } from "@/lib/admin-url";
 
-import Link from "next/link";
+import Link from "@/components/admin/AdminLink";
 
 // Tab bar for /admin/profile/[section]. Each tab is a real URL so
 // deep-linking works and section-swaps don't re-mount the whole shell.

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/admin/AdminLink";
 import { ProfileTabs } from "@/components/admin/profile-tabs";
 
 export const metadata: Metadata = { title: "My Profile — Admin" };

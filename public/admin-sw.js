@@ -13,3 +13,40 @@ self.addEventListener("fetch", (event) => {
     }),
   );
 });
+
+// Notification text is deliberately generic; private routine content never leaves Admin.
+const adminPushPaths = new Set(["/today", "/today/weekly", "/settings"]);
+function adminPushUrl(value) {
+  try {
+    const url = new URL(value || "/today", self.location.origin);
+    if (url.origin === self.location.origin && adminPushPaths.has(url.pathname))
+      return url.href;
+  } catch {}
+  return new URL("/today", self.location.origin).href;
+}
+self.addEventListener("push", (event) => {
+  let notice = {};
+  try { notice = event.data?.json() || {}; } catch {}
+  const titles = new Set(["Your morning brief is ready", "Your evening debrief is ready", "Your weekly closeout is ready", "Whatelz Admin is connected"]);
+  event.waitUntil(self.registration.showNotification(titles.has(notice.title) ? notice.title : "Whatelz Admin", {
+    body: "Open Whatelz Admin to read it.",
+    icon: "/admin-pwa/icon-192-v2.png",
+    badge: "/admin-pwa/icon-192-v2.png",
+    tag: typeof notice.tag === "string" ? notice.tag.slice(0, 80) : "whatelz-admin",
+    renotify: false,
+    data: { url: adminPushUrl(notice.url) },
+  }));
+});
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = adminPushUrl(event.notification.data?.url);
+  event.waitUntil((async () => {
+    const windows = await self.clients.matchAll({type:"window",includeUncontrolled:true});
+    const existing = windows.find(client => new URL(client.url).origin === self.location.origin);
+    if (existing) {
+      await existing.navigate(url);
+      return existing.focus();
+    }
+    return self.clients.openWindow(url);
+  })());
+});

@@ -32,7 +32,7 @@ Instructions for any AI coding agent (Claude Code, Cursor, Aider, ...) working o
 - **Styling:** Tailwind CSS v4 (`@tailwindcss/postcss`) — _light mode only, see Hard Rule 5_
 - **Auth:** Supabase Auth (Google OAuth, `@supabase/ssr`)
 - **Data:** Supabase (Postgres) — `@supabase/supabase-js`
-- **Jobs:** none. Background/cron work is not supported in-repo — schedule remote agents via claude.ai if needed.
+- **Jobs:** production Vercel cron checks saved EMDEE routines for owner-opted-in Web Push. Personal AI generation remains subscription/MCP-based and API generation stays off. See docs/admin-push.md.
 - **AI runtime:** Personal admin uses ChatGPT/Codex and pure-data MCP. Explicitly authorized member API inference runs only on app.whatelz.ai behind MEMBER_AI_ENABLED; see docs/member-assistant.md. Personal API Daily stays off.
 - **PDF:** Puppeteer (`puppeteer-core` + `@sparticuz/chromium-min`) — resume renderer
 - **Email:** Resend
@@ -549,3 +549,7 @@ The approved rounded W/smile mark is canonical in public/brand/identity.json, wi
 ## Admin area dropdown (SPR-156)
 
 The shared Admin header now uses one top-right active-area disclosure for Overview, AI Business, Network Marketing and Day Job. It replaces Today and the horizontal workstream strip. Native disclosure/links retain keyboard navigation; selection, outside press, Escape and route changes dismiss it. Utility pages identify Users/Settings without false workstream selection. Today remains linked from Overview. The Users | Home | Settings bar, owner policy, URLs, brand and PWA identity remain unchanged. See docs/admin-navigation.md.
+
+## Admin Push notifications (SPR-157)
+
+Owner Settings supports per-device opt-in, status, test and disable. Permission is requested only on an explicit tap; iOS/iPadOS requires the installed home-screen app. Subscriptions are encrypted with the existing Daily integration key, browser-denied/RLS, and registered only through sole-owner same-origin Admin APIs. VAPID signing uses independent Production keys; no inference or OpenAI key is involved. A production-only CRON_SECRET-protected five-minute check reads the three canonical EMDEE routine paths and alerts only on nonempty, timestamp-verified entries saved after device opt-in. Per-device/document SQL claims deduplicate completed sends and bound retries; generic tags mitigate ambiguous transport retries. Expired endpoints are disabled. Notifications contain no private briefing text, and click destinations are restricted to Today/weekly/Settings. Existing ChatGPT schedules, source documents, personal API-off policy and member app remain unchanged. See docs/admin-push.md; migration20261024072128.

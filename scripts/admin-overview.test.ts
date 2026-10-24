@@ -1,3 +1,4 @@
+import { briefPreview } from "../lib/admin-overview/preview";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { readFileSync } from "node:fs";
@@ -148,37 +149,46 @@ test("product status distinguishes fresh, stale, invalid and future-dated signal
   );
 });
 function overview(mocks: Record<string, unknown>) {
-  return load<{
-    loadAdminOverview: (now: Date) => Promise<{
-      focus: { status: string };
-      morning: { status: string };
-      growth: { blog: { status: string } };
-    }>;
-  }>("lib/admin-overview/server.ts", {
-    "@/lib/supabase-server": {
-      supabaseAdmin: {
-        from: () => {
-          throw Error("source down");
+  return load<typeof import("../lib/admin-overview/server")>(
+    "lib/admin-overview/server.ts",
+    {
+      "@/lib/supabase-server": {
+        supabaseAdmin: {
+          from: () => {
+            throw Error("source down");
+          },
         },
       },
-    },
-    "@/lib/daily/connections": { emdeeConnection: async () => null },
-    "@/lib/daily/paths": { DAILY_PARENT: "example/DAILY.md" },
-    "@/lib/daily/emdee": {},
-    "@/lib/daily/model": dailyModel,
-    "@/lib/cockpit-self": {
-      getSelfMetrics: async () => {
-        throw Error("unavailable");
+      "@/lib/daily/connections": { emdeeConnection: async () => null },
+      "@/lib/daily/paths": { DAILY_PARENT: "example/DAILY.md" },
+      "@/lib/daily/emdee": {},
+      "@/lib/daily/model": dailyModel,
+      "@/lib/cockpit-self": {
+        getSelfMetrics: async () => {
+          throw Error("unavailable");
+        },
       },
+      "@/lib/cockpit": {
+        fetchRemoteWidgets: async () => ({
+          emdee: { status: "pending", reason: "not connected" },
+        }),
+      },
+      "./timing": {
+        timedRead: (_: string, read: () => Promise<unknown>) => read(),
+      },
+      "./metrics-cache": {
+        localMetricSnapshot: async () => {
+          throw Error("unavailable");
+        },
+        remoteMetricSnapshot: async () => ({
+          status: "pending",
+          reason: "not connected",
+        }),
+      },
+      "./model": overviewModel,
+      ...mocks,
     },
-    "@/lib/cockpit": {
-      fetchRemoteWidgets: async () => ({
-        emdee: { status: "pending", reason: "not connected" },
-      }),
-    },
-    "./model": overviewModel,
-    ...mocks,
-  });
+  );
 }
 test("overview checks sole owner before touching any source", async () => {
   let touched = false;
@@ -300,4 +310,146 @@ test("remote metrics reject malformed or wrong-product payloads", async () => {
       payload === valid ? "available" : "error",
     );
   }
+});
+
+test("overview priorities resolve without waiting for EMDEE and share one connection read", async () => {
+  let connectionReads = 0,
+    briefReads = 0;
+  let release!: () => void;
+  const blocked = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const api = overview({
+    "@/lib/daily/server": {
+      dailyOwner: async () => "test-owner",
+      loadDailyTasks: async () => ({ active: [], completed: [] }),
+    },
+    "@/lib/daily/connections": {
+      emdeeConnection: async () => {
+        connectionReads++;
+        return { parentPath: "example/DAILY.md" };
+      },
+    },
+    "@/lib/daily/emdee": {
+      loadBriefWithConnection: async () => {
+        briefReads++;
+        await blocked;
+        return { body: "saved", path: "fixture", hash: "hash", exists: true };
+      },
+    },
+  });
+  const sources = await api.loadAdminOverviewSources(now);
+  assert.equal((await sources.focus).status, "ready");
+  assert.equal(connectionReads, 1);
+  assert.equal(briefReads, 3);
+  release();
+  assert.equal((await sources.morning).status, "ready");
+  await api.collectAdminOverview(sources);
+});
+
+test("direct EMDEE reads need one request and only explicit absence becomes missing", async () => {
+  const calls: string[] = [];
+  let failure: string | null = null;
+  const api = load<typeof import("../lib/daily/emdee-client")>(
+    "lib/daily/emdee-client.ts",
+    {},
+    {
+      AbortSignal,
+      fetch: async (_: unknown, init: { body: string }) => {
+        calls.push(JSON.parse(init.body).params.name);
+        return Response.json({
+          result: {
+            isError: !!failure,
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(
+                  failure
+                    ? { error: failure }
+                    : {
+                        content: "## Notes\n\nSaved",
+                        sections: [],
+                        doc_content_hash: "fixture",
+                      },
+                ),
+              },
+            ],
+          },
+        });
+      },
+    },
+  );
+  const connection = {
+    parentPath: "fixture",
+    token: "test-only",
+    expiresAt: Date.now() + 60000,
+  };
+  assert.ok(await api.readEmdee(connection, "fixture/doc.md"));
+  assert.deepEqual(calls, ["get_doc"]);
+  failure = "no_such_doc";
+  assert.equal(await api.readEmdee(connection, "fixture/missing.md"), null);
+  failure = "forbidden";
+  await assert.rejects(api.readEmdee(connection, "fixture/private.md"));
+});
+
+test("brief preview keeps complete Markdown blocks and ignores headings inside fences", () => {
+  assert.equal(
+    briefPreview("### Morning\n\nIntro.\n\n### Sources\nLong sources"),
+    "### Morning\n\nIntro.",
+  );
+  const code =
+    "### Morning\n\n```md\n### Inside code\n```\n\n### Sources\nLater";
+  assert.equal(
+    briefPreview(code),
+    "### Morning\n\n```md\n### Inside code\n```",
+  );
+  assert.equal(
+    briefPreview("Intro\n\n| A | B |\n|---|---|\n| 1 | 2 |\n\n### Later\nText"),
+    "Intro\n\n| A | B |\n|---|---|\n| 1 | 2 |",
+  );
+});
+
+test("daily active and completed reads start together and retain owner filters", async () => {
+  const owners: string[] = [];
+  const resolvers: ((value: { data: unknown[]; error: null }) => void)[] = [];
+  const api = load<typeof import("../lib/daily/server")>(
+    "lib/daily/server.ts",
+    {
+      "next/navigation": {
+        notFound: () => {
+          throw Error("denied");
+        },
+      },
+      "@/lib/admin-policy": { isOwnerUser: () => true },
+      "@/lib/users": { ensureUserRow: async () => ({ id: "test-owner" }) },
+      "@/lib/supabase-server": {
+        supabaseAdmin: {
+          from: () => {
+            const chain = {
+              select: () => chain,
+              eq: (key: string, value: string) => {
+                if (key === "owner_id") owners.push(value);
+                return chain;
+              },
+              not: () => chain,
+              order: () => chain,
+              limit: () =>
+                new Promise<{ data: unknown[]; error: null }>((resolve) =>
+                  resolvers.push(resolve),
+                ),
+            };
+            return chain;
+          },
+        },
+      },
+    },
+  );
+  const pending = api.loadDailyTasks(day);
+  await new Promise(setImmediate);
+  assert.equal(resolvers.length, 2);
+  assert.deepEqual(owners, ["test-owner", "test-owner"]);
+  for (const resolve of resolvers) resolve({ data: [], error: null });
+  const result = await pending;
+  assert.equal(result.active.length, 0);
+  assert.equal(result.completed.length, 0);
 });

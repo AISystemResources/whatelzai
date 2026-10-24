@@ -3,36 +3,40 @@ import { supabaseAdmin } from "@/lib/supabase-server";
 import { dailyOwner, loadDailyTasks } from "@/lib/daily/server";
 import { emdeeConnection } from "@/lib/daily/connections";
 import { DAILY_PARENT } from "@/lib/daily/paths";
-import { loadBrief } from "@/lib/daily/emdee";
-import { singaporeDay, previousDay, type Brief } from "@/lib/daily/model";
-import { getSelfMetrics } from "@/lib/cockpit-self";
-import {
-  fetchRemoteWidgets,
-  type WidgetState,
-  type OwnerMetrics,
-} from "@/lib/cockpit";
+import { loadBriefWithConnection } from "@/lib/daily/emdee";
+import { singaporeDay, previousDay, type BriefKind } from "@/lib/daily/model";
+import type { WidgetState, OwnerMetrics } from "@/lib/cockpit";
 import { aiBusinessFocus, type Source } from "./model";
-async function safely<T>(operation: () => PromiseLike<T>): Promise<Source<T>> {
+import { timedRead } from "./timing";
+import { localMetricSnapshot, remoteMetricSnapshot } from "./metrics-cache";
+
+async function safely<T>(
+  source: string,
+  operation: () => PromiseLike<T>,
+): Promise<Source<T>> {
   try {
-    return { status: "ready", data: await operation() };
+    return { status: "ready", data: await timedRead(source, operation) };
   } catch {
     return { status: "unavailable" };
   }
 }
-export async function loadAdminOverview(now = new Date()) {
-  // This boundary is independent of layouts/proxy and runs before any query.
+
+export async function loadAdminOverviewSources(now = new Date()) {
+  // Fresh owner verification always precedes query initiation and cache access.
   const owner = await dailyOwner();
   const day = singaporeDay(now);
-  async function briefingSources() {
+  const connection = safely("emdee-connection", async () => {
     const connection = await emdeeConnection(owner);
     if (connection?.parentPath !== DAILY_PARENT)
       throw Error("Daily connection required");
-    return Promise.all([
-      safely(() => loadBrief(day, "morning")),
-      safely(() => loadBrief(day, "evening")),
-      safely(() => loadBrief(previousDay(day), "evening")),
-    ]);
-  }
+    return connection;
+  });
+  const brief = (date: string, kind: BriefKind) =>
+    safely(`brief-${kind}`, async () => {
+      const saved = await connection;
+      if (saved.status !== "ready") throw Error("Daily connection unavailable");
+      return loadBriefWithConnection(saved.data, date, kind);
+    });
   async function count(table: string, where: Record<string, string>) {
     let query = supabaseAdmin
       .from(table)
@@ -43,45 +47,81 @@ export async function loadAdminOverview(now = new Date()) {
     if (error || count === null) throw Error("Count unavailable");
     return count;
   }
-  const [tasks, briefs, blog, newsletter, testimonials, self, remote] =
-    await Promise.all([
-      safely(() => loadDailyTasks(day)),
-      safely(briefingSources),
-      safely(() => count("blog_posts", { status: "draft" })),
-      safely(() => count("newsletter_issues", { status: "draft" })),
-      safely(() => count("testimonials", { status: "pending" })),
-      safely(getSelfMetrics),
-      safely(fetchRemoteWidgets),
-    ]);
-  const unavailable: Source<Brief> = { status: "unavailable" };
-  const whatelz: WidgetState<OwnerMetrics> =
-    self.status === "ready"
-      ? { status: "available", data: self.data, fetched_at: now.toISOString() }
-      : {
-          status: "error",
-          reason: "Product metrics could not be loaded. Try refreshing.",
-        };
-  const emdee: WidgetState<OwnerMetrics> =
-    remote.status === "ready"
-      ? remote.data.emdee
-      : {
-          status: "error",
-          reason: "Product connection could not be checked. Try refreshing.",
-        };
-  return {
-    day,
-    loadedAt: now.toISOString(),
-    focus:
+  const focus = safely("commitments", () => loadDailyTasks(day)).then(
+    (tasks) =>
       tasks.status === "ready"
         ? {
             status: "ready" as const,
             data: aiBusinessFocus(tasks.data.active, tasks.data.completed, day),
           }
         : { status: "unavailable" as const },
-    morning: briefs.status === "ready" ? briefs.data[0] : unavailable,
-    evening: briefs.status === "ready" ? briefs.data[1] : unavailable,
-    handoff: briefs.status === "ready" ? briefs.data[2] : unavailable,
-    growth: { blog, newsletter, testimonials },
+  );
+  const morning = brief(day, "morning");
+  const evening = brief(day, "evening");
+  const handoff = brief(previousDay(day), "evening");
+  const growth = Promise.all([
+    safely("blog-count", () => count("blog_posts", { status: "draft" })),
+    safely("newsletter-count", () =>
+      count("newsletter_issues", { status: "draft" }),
+    ),
+    safely("testimonial-count", () =>
+      count("testimonials", { status: "pending" }),
+    ),
+  ]).then(([blog, newsletter, testimonials]) => ({
+    blog,
+    newsletter,
+    testimonials,
+  }));
+  async function metrics(
+    source: string,
+    read: () => Promise<WidgetState<OwnerMetrics>>,
+  ): Promise<WidgetState<OwnerMetrics>> {
+    const snapshot = await safely(source, read);
+    return snapshot.status === "ready"
+      ? snapshot.data
+      : {
+          status: "error",
+          reason: "Product metrics could not be loaded. Try refreshing.",
+        };
+  }
+  return {
+    day,
+    loadedAt: now.toISOString(),
+    focus,
+    morning,
+    evening,
+    handoff,
+    growth,
+    whatelz: metrics("local-metrics", () => localMetricSnapshot(owner)),
+    emdee: metrics("remote-metrics", () => remoteMetricSnapshot(owner)),
+  };
+}
+export type OverviewSources = Awaited<
+  ReturnType<typeof loadAdminOverviewSources>
+>;
+export async function collectAdminOverview(sources: OverviewSources) {
+  const [focus, morning, evening, handoff, growth, whatelz, emdee] =
+    await Promise.all([
+      sources.focus,
+      sources.morning,
+      sources.evening,
+      sources.handoff,
+      sources.growth,
+      sources.whatelz,
+      sources.emdee,
+    ]);
+  return {
+    day: sources.day,
+    loadedAt: sources.loadedAt,
+    focus,
+    morning,
+    evening,
+    handoff,
+    growth,
     products: { whatelz, emdee },
   };
+}
+// Aggregate compatibility for non-streaming callers; UI consumes each promise separately.
+export async function loadAdminOverview(now = new Date()) {
+  return collectAdminOverview(await loadAdminOverviewSources(now));
 }

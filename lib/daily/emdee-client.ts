@@ -47,7 +47,7 @@ export async function emdeeCall<T>(
           .slice(5)
       : raw,
   );
-  if (rpc.error || rpc.result?.isError)
+  if (rpc.error)
     throw new Error(
       "EMDEE could not complete this request. Your text has been kept in the editor.",
     );
@@ -55,12 +55,17 @@ export async function emdeeCall<T>(
     rpc.result.content.find((c: { type: string }) => c.type === "text").text,
   );
   if (result.error) {
-    if (result.error === "not_found" || result.error === "no_such_doc")
+    if (
+      name === "get_doc" &&
+      (result.error === "not_found" || result.error === "no_such_doc")
+    )
       throw new MissingDocument();
     throw new Error(
       "EMDEE rejected the change. Reload to check the latest document before saving.",
     );
   }
+  if (rpc.result?.isError)
+    throw Error("EMDEE could not complete this request.");
   return result as T;
 }
 class MissingDocument extends Error {}
@@ -68,14 +73,15 @@ export async function readEmdee(
   connection: EmdeeConnection,
   path: string,
 ): Promise<Envelope | null> {
-  // Discovery distinguishes a missing file from a failed/unauthorized read.
-  const docs = await emdeeCall<{ path: string }[]>(connection, "list_docs", {
-    prefix: path,
-    limit: 2,
-    format: "compact",
-  });
-  if (!Array.isArray(docs))
-    throw new Error("EMDEE returned an invalid document list.");
-  if (!docs.some((d) => d.path === path)) return null;
-  return emdeeCall<Envelope>(connection, "get_doc", { path, full: true });
+  // One exact read. Only an explicit missing-document result is absence;
+  // authentication, transport and malformed-response errors still fail closed.
+  try {
+    return await emdeeCall<Envelope>(connection, "get_doc", {
+      path,
+      full: true,
+    });
+  } catch (error) {
+    if (error instanceof MissingDocument) return null;
+    throw error;
+  }
 }

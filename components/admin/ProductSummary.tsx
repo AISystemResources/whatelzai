@@ -25,7 +25,7 @@ export function ProductSummary(props: {
             className={`rounded-full px-2 py-1 text-xs ${signal === "available" ? "bg-zinc-100 text-zinc-600" : "bg-yellow-100 text-zinc-800"}`}
           >
             {signal === "available"
-              ? "Latest snapshot"
+              ? "Metrics snapshot"
               : signal === "stale"
                 ? "Needs refresh"
                 : "Unavailable"}
@@ -43,6 +43,17 @@ export function ProductSummary(props: {
             </div>
           ))}
         </dl>
+        {state.status === "available" && (
+          <p className="mt-4 text-[11px] leading-5 text-zinc-500">
+            Read{" "}
+            {new Date(state.fetched_at).toLocaleString("en-SG", {
+              timeZone: "Asia/Singapore",
+              dateStyle: "medium",
+              timeStyle: "short",
+            })}{" "}
+            · Cached metrics; refresh may run in the background.
+          </p>
+        )}
       </div>
       <details className="border-t border-zinc-100">
         <summary className="cursor-pointer px-5 py-3 text-xs font-medium text-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-[-2px]">

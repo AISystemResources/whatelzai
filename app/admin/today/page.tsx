@@ -1,10 +1,12 @@
+import { Suspense } from "react";
+import { AdminLoading } from "@/components/admin/AdminLoading";
 import { BriefMarkdown } from "@/components/admin/BriefMarkdown";
 import { randomUUID } from "node:crypto";
 import type { Metadata } from "next";
 import Link from "@/components/admin/AdminLink";
 import { dailyOwner, loadDailyTasks } from "@/lib/daily/server";
 import { emdeeConnection } from "@/lib/daily/connections";
-import { loadBrief } from "@/lib/daily/emdee";
+import { loadBriefWithConnection } from "@/lib/daily/emdee";
 import { DAILY_PARENT } from "@/lib/daily/paths";
 import { singaporeDay, previousDay, type Brief } from "@/lib/daily/model";
 import { adminUrl } from "@/lib/admin-url";
@@ -17,29 +19,6 @@ export const dynamic = "force-dynamic";
 export default async function TodayPage() {
   const owner = await dailyOwner();
   const day = singaporeDay();
-  const [tasks, emdee] = await Promise.all([
-    loadDailyTasks(day),
-    emdeeConnection(owner),
-  ]);
-  const connected = emdee?.parentPath === DAILY_PARENT;
-  let morning: Brief | null = null,
-    evening: Brief | null = null,
-    yesterday: Brief | null = null;
-  let sourceError = "";
-  if (connected) {
-    try {
-      [morning, evening, yesterday] = await Promise.all([
-        loadBrief(day, "morning"),
-        loadBrief(day, "evening"),
-        loadBrief(previousDay(day), "evening"),
-      ]);
-    } catch {
-      sourceError =
-        "EMDEE could not be read. Reconnect or refresh to check your saved entries.";
-    }
-  }
-  const due = tasks.active.filter((t) => t.due_on <= day);
-  const upcoming = tasks.active.filter((t) => t.due_on > day);
   return (
     <div className="space-y-8 text-zinc-950">
       <header className="rounded-3xl bg-yellow-300 px-6 py-7 sm:px-8 lg:rounded-none lg:border-b lg:border-zinc-200 lg:bg-transparent lg:px-0 lg:pt-0 lg:pb-6">
@@ -67,6 +46,40 @@ export default async function TodayPage() {
           </p>
         </div>
       </header>
+      <Suspense
+        fallback={<AdminLoading title="Reading your daily workspace…" />}
+      >
+        <DailyWorkspace owner={owner} day={day} />
+      </Suspense>
+    </div>
+  );
+}
+async function DailyWorkspace({ owner, day }: { owner: string; day: string }) {
+  const [tasks, emdee] = await Promise.all([
+    loadDailyTasks(day),
+    emdeeConnection(owner),
+  ]);
+  const connected = emdee?.parentPath === DAILY_PARENT;
+  let morning: Brief | null = null,
+    evening: Brief | null = null,
+    yesterday: Brief | null = null;
+  let sourceError = "";
+  if (connected && emdee) {
+    try {
+      [morning, evening, yesterday] = await Promise.all([
+        loadBriefWithConnection(emdee, day, "morning"),
+        loadBriefWithConnection(emdee, day, "evening"),
+        loadBriefWithConnection(emdee, previousDay(day), "evening"),
+      ]);
+    } catch {
+      sourceError =
+        "EMDEE could not be read. Reconnect or refresh to check your saved entries.";
+    }
+  }
+  const due = tasks.active.filter((t) => t.due_on <= day);
+  const upcoming = tasks.active.filter((t) => t.due_on > day);
+  return (
+    <>
       <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
         <p className="text-zinc-600">
           {due.filter((t) => t.accepted_on).length} accepted ·{" "}
@@ -228,6 +241,6 @@ export default async function TodayPage() {
         Briefs are read from EMDEE. Showing up to 100 unfinished commitments and
         100 completions.
       </p>
-    </div>
+    </>
   );
 }

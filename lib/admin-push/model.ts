@@ -35,6 +35,7 @@ const key = (length: number) =>
 export const pushSubscriptionSchema = z
   .object({
     endpoint: z.string().refine(trustedPushEndpoint),
+    expirationTime: z.number().nonnegative().nullable().optional(),
     keys: z.object({ p256dh: key(65), auth: key(16) }),
   })
   .strict();

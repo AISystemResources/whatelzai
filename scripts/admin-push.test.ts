@@ -194,3 +194,15 @@ test("cron bearer rejects missing, wrong and multibyte credentials without throw
   assert(!validPushCronBearer("Bearer exämple", "example"));
   assert(!validPushCronBearer("", undefined));
 });
+
+test("browser subscription JSON accepts its standard nullable expiration field", () => {
+  const parsed = pushSubscriptionSchema.safeParse({
+    endpoint: "https://web.push.apple.com/example",
+    expirationTime: null,
+    keys: {
+      p256dh: Buffer.alloc(65).toString("base64url"),
+      auth: Buffer.alloc(16).toString("base64url"),
+    },
+  });
+  assert(parsed.success);
+});

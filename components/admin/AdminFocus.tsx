@@ -65,6 +65,7 @@ type Override = { key: string; space: string };
 type FocusContextValue = {
   settings: FocusSettings;
   ready: boolean;
+  pushSync: "checking" | "synced" | "off" | "error";
   block: ScheduledFocus | null;
   manual: Override | null;
   save: (settings: FocusSettings) => boolean;
@@ -99,6 +100,9 @@ export function AdminFocusProvider({
       return DEFAULT_FOCUS;
     }
   }, [raw]);
+  const [pushSync, setPushSync] = useState<
+    "checking" | "synced" | "off" | "error"
+  >("checking");
   const [block, setBlock] = useState<ScheduledFocus | null>(null),
     [manual, setManual] = useState<Override | null>(null),
     [pending, setPending] = useState<ScheduledFocus | null>(null);
@@ -114,6 +118,63 @@ export function AdminFocusProvider({
     dirty.current = false;
     navigating.current = null;
   }, [pathname]);
+  const syncQueue = useRef<Promise<void>>(Promise.resolve());
+  useEffect(() => {
+    if (!ready) return;
+    let active = true;
+    let running = false;
+    async function sync() {
+      if (running) return;
+      running = true;
+      try {
+        if (
+          !("serviceWorker" in navigator) ||
+          !("Notification" in window) ||
+          Notification.permission !== "granted"
+        ) {
+          if (active) setPushSync("off");
+          return;
+        }
+        const registration = await navigator.serviceWorker.getRegistration("/");
+        const subscription = await registration?.pushManager?.getSubscription();
+        if (!subscription) {
+          if (active) setPushSync("off");
+          return;
+        }
+        const response = await fetch("/api/admin/push", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "focus",
+            endpoint: subscription.endpoint,
+            focus: settings,
+          }),
+        });
+        if (!response.ok) throw Error("sync_failed");
+        const result = await response.json();
+        if (active) setPushSync(result.synced ? "synced" : "off");
+      } catch {
+        if (active) setPushSync("error");
+      } finally {
+        running = false;
+      }
+    }
+    const queuedSync = () => {
+      syncQueue.current = syncQueue.current.then(async () => {
+        if (active) await sync();
+      });
+    };
+    queuedSync();
+    window.addEventListener("online", queuedSync);
+    window.addEventListener("focus", queuedSync);
+    window.addEventListener("whatelz-push-change", queuedSync);
+    return () => {
+      active = false;
+      window.removeEventListener("online", queuedSync);
+      window.removeEventListener("focus", queuedSync);
+      window.removeEventListener("whatelz-push-change", queuedSync);
+    };
+  }, [ready, settings]);
   const save = useCallback(
     (next: FocusSettings) => {
       return (
@@ -288,7 +349,16 @@ export function AdminFocusProvider({
   }, [ready, settings, overrideKey, remember, move]);
   return (
     <FocusContext.Provider
-      value={{ settings, ready, block, manual, save, manualPath, follow }}
+      value={{
+        settings,
+        ready,
+        pushSync,
+        block,
+        manual,
+        save,
+        manualPath,
+        follow,
+      }}
     >
       {children}
       {pending && settings.enabled && !manual && (

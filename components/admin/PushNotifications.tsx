@@ -2,6 +2,7 @@
 import Link from "@/components/admin/AdminLink";
 import { useEffect, useState } from "react";
 import { Bell } from "lucide-react";
+import { useAdminFocus } from "./AdminFocus";
 import { adminUrl } from "@/lib/admin-url";
 
 type Config = {
@@ -68,6 +69,7 @@ async function worker() {
   return registration;
 }
 export function PushNotifications() {
+  const focus = useAdminFocus();
   const [state, setState] = useState<State | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -165,7 +167,10 @@ export function PushNotifications() {
         applicationServerKey: expected,
       });
       try {
-        await post("subscribe", { subscription: subscription.toJSON() });
+        await post("subscribe", {
+          subscription: subscription.toJSON(),
+          focus: focus?.settings,
+        });
       } catch (error) {
         if (created) await subscription.unsubscribe();
         throw error;
@@ -173,7 +178,8 @@ export function PushNotifications() {
       setState((old) =>
         old ? { ...old, enabled: true, error: null, errorCode: null } : old,
       );
-      setMessage("Enabled on this device. Send a test to check delivery.");
+      window.dispatchEvent(new Event("whatelz-push-change"));
+      setMessage("Notifications on.");
     } catch (error) {
       setMessage(
         error instanceof Error
@@ -195,7 +201,8 @@ export function PushNotifications() {
         await subscription.unsubscribe();
       }
       setState((old) => (old ? { ...old, enabled: false } : old));
-      setMessage("Disabled on this device.");
+      window.dispatchEvent(new Event("whatelz-push-change"));
+      setMessage("Notifications off.");
     } catch {
       setMessage(
         "Could not disable notifications. Please retry before closing this page.",
@@ -239,107 +246,112 @@ export function PushNotifications() {
   return (
     <section
       aria-labelledby="admin-push"
-      className="max-w-2xl rounded-2xl border border-zinc-200 p-6"
+      className="max-w-2xl rounded-2xl border border-zinc-200 px-5 py-4"
     >
-      <div className="mb-3 flex items-center gap-3">
-        <span className="grid h-10 w-10 place-items-center rounded-xl bg-yellow-100">
-          <Bell size={20} aria-hidden="true" />
-        </span>
-        <h2 id="admin-push" className="font-semibold text-zinc-900">
-          Push notifications
-        </h2>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <Bell
+            size={18}
+            aria-hidden="true"
+            className="shrink-0 text-zinc-500"
+          />
+          <div>
+            <h2 id="admin-push" className="text-sm font-semibold text-zinc-900">
+              Push notifications
+            </h2>
+            <p className="mt-1 text-xs text-zinc-500" role="status">
+              {busy ? "Updating…" : status}
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-label="Push notifications"
+          aria-checked={state?.enabled ?? false}
+          disabled={
+            busy ||
+            !state ||
+            !state.supported ||
+            state.iosInstall ||
+            Boolean(state.error) ||
+            (!state.enabled &&
+              (!state.config?.configured || state.permission === "denied"))
+          }
+          onClick={() => void (state?.enabled ? disable() : enable())}
+          className={`inline-flex min-h-11 min-w-14 shrink-0 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900 disabled:opacity-50`}
+        >
+          <span
+            aria-hidden="true"
+            className={`flex h-7 w-12 items-center rounded-full p-1 transition-colors ${state?.enabled ? "bg-yellow-300" : "bg-zinc-200"}`}
+          >
+            <span
+              className={`h-5 w-5 rounded-full bg-white shadow-sm transition-transform motion-reduce:transition-none ${state?.enabled ? "translate-x-5" : "translate-x-0"}`}
+            />
+          </span>
+        </button>
       </div>
-      <p className="text-sm leading-6 text-zinc-600">
-        A nudge when your morning brief, evening debrief or weekly closeout is
-        saved in EMDEE. Your private briefing stays inside Admin.
-      </p>
-      <p className="mt-4 text-sm font-medium" role="status">
-        {status}
-      </p>
-      {state?.iosInstall && (
-        <p className="mt-2 text-sm leading-6 text-zinc-600">
-          On iPhone or iPad, open Whatelz Admin from your home screen, then
-          enable notifications here. Requires iOS/iPadOS 16.4 or later.
-        </p>
-      )}
-      {state?.permission === "denied" && (
-        <p className="mt-2 text-sm leading-6 text-zinc-600">
-          Allow notifications for Whatelz Admin in your phone or browser
-          settings, then reopen the app.
-        </p>
-      )}
       {state?.error && (
-        <p role="alert" className="mt-2 text-sm text-amber-800">
+        <p role="alert" className="mt-3 text-sm text-amber-800">
           {state.error}
         </p>
       )}
-      {state && !state.iosInstall && state.supported && !state.error && (
-        <div className="mt-4 flex flex-wrap gap-3">
-          {state.enabled ? (
-            <>
-              <button
-                disabled={busy}
-                onClick={test}
-                className="min-h-11 rounded-xl bg-yellow-300 px-4 py-3 text-sm font-medium disabled:opacity-50"
-              >
-                Send test notification
-              </button>
-              <button
-                disabled={busy}
-                onClick={disable}
-                className="min-h-11 rounded-xl border border-zinc-300 px-4 py-3 text-sm disabled:opacity-50"
-              >
-                Disable on this device
-              </button>
-            </>
-          ) : (
-            <button
-              disabled={
-                busy ||
-                !state.config?.configured ||
-                state.permission === "denied"
-              }
-              onClick={enable}
-              className="min-h-11 rounded-xl bg-yellow-300 px-4 py-3 text-sm font-medium disabled:opacity-50"
-            >
-              {busy ? "Enabling…" : "Enable push notifications"}
-            </button>
-          )}
-        </div>
+      {state?.permission === "denied" && (
+        <p className="mt-3 text-xs text-zinc-600">
+          Allow notifications in your phone or browser settings.
+        </p>
       )}
       {state?.config && !state.config.configured && (
-        <p className="mt-3 text-sm text-amber-800">
-          Push delivery is not configured yet. Your browser permission has not
-          been changed.
+        <p className="mt-3 text-xs text-amber-800">
+          Push delivery is unavailable.
         </p>
       )}
-      {state?.enabled && (
-        <p className="mt-3 text-xs leading-5 text-zinc-500">
-          Checks for newly saved routines every five minutes. Existing entries
-          won’t be sent when you enable. This setting applies only to this
-          device.
+      {state?.iosInstall && (
+        <p className="mt-3 text-xs text-zinc-600">
+          Open the installed app to enable notifications.
         </p>
       )}
-      {state?.config?.monitor?.error_code && (
-        <p className="mt-3 text-sm text-amber-800">
-          {state.config.monitor.error_code === "delivery_failed" ? (
-            "Push delivery needs attention. Send a test and check your device’s notification settings."
-          ) : (
-            <>
+      <details className="mt-2 text-xs text-zinc-500">
+        <summary className="flex min-h-11 cursor-pointer items-center">
+          Notification options
+        </summary>
+        <div className="space-y-3 pb-1 leading-5">
+          <p>Saved routines and scheduled space changes. This device only.</p>
+          {state?.enabled && (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={test}
+              className="min-h-11 rounded-xl border border-zinc-200 px-4 text-zinc-900 disabled:opacity-50"
+            >
+              Send test notification
+            </button>
+          )}
+          <p>
+            Sound: long-press a notification on your Vivo, open its notification
+            settings and look for Sound. The available options depend on your
+            phone and browser; custom sounds cannot be set here.
+          </p>
+          {focus?.pushSync === "error" && (
+            <p role="alert" className="text-amber-800">
+              Timetable alerts haven’t synced. Reopen Admin online to retry.
+            </p>
+          )}
+          {state?.config?.monitor?.error_code && (
+            <p className="text-amber-800">
               Routine alerts need attention.{" "}
               <Link
                 className="underline"
                 href={adminUrl("/admin/today/connections")}
               >
-                Check your EMDEE connection
+                Check connection →
               </Link>
-              .
-            </>
+            </p>
           )}
-        </p>
-      )}
+        </div>
+      </details>
       {message && (
-        <p role="status" className="mt-3 text-sm leading-6 text-zinc-600">
+        <p role="status" className="mt-2 text-xs leading-5 text-zinc-600">
           {message}
         </p>
       )}

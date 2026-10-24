@@ -1,5 +1,5 @@
 import { validPushCronBearer } from "@/lib/admin-push/cron-auth";
-import { checkRoutinePush } from "@/lib/admin-push/server";
+import { checkRoutinePush, checkFocusPush } from "@/lib/admin-push/server";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -15,13 +15,28 @@ export async function GET(request: Request) {
       { status: 503, headers },
     );
   try {
-    return Response.json(await checkRoutinePush(), { headers });
+    const now = new Date();
+    const results = await Promise.allSettled([
+      checkFocusPush(now),
+      now.getUTCMinutes() % 5 === 0
+        ? checkRoutinePush()
+        : Promise.resolve({ skipped: true }),
+    ]);
+    if (results.some((result) => result.status === "rejected"))
+      throw Error("push_check_failed");
+    return Response.json(
+      {
+        focus: results[0].status === "fulfilled" ? results[0].value : null,
+        routines: results[1].status === "fulfilled" ? results[1].value : null,
+      },
+      { headers },
+    );
   } catch {
     console.error(
-      "Admin routine push check failed; inspect owner notification settings.",
+      "Admin push check failed; inspect owner notification settings.",
     );
     return Response.json(
-      { error: "Routine alert check needs attention" },
+      { error: "Notification check needs attention" },
       { status: 503, headers },
     );
   }

@@ -80,6 +80,12 @@ export function FocusSettingsCard() {
           : "pause automatic switching until you resume it"}
         .
       </p>
+      {focus.pushSync === "error" && (
+        <p role="alert" className="mt-3 text-xs text-amber-800">
+          Schedule saved locally. Push alerts haven’t synced; reopen Admin
+          online to retry.
+        </p>
+      )}
       <button
         type="button"
         disabled={!focus.ready}

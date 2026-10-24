@@ -104,6 +104,7 @@ export function focusAt(now: Date, config: FocusSettings = DEFAULT_FOCUS) {
     space,
     path: focusPath(space),
     key: `${date}:${start}:${end}:${space}`,
+    startsAt: Date.parse(`${date}T00:00:00+08:00`) + start * 60000,
     endsAt: Date.parse(`${date}T00:00:00+08:00`) + end * 60000,
   };
 }

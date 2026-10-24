@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { readFile } from "node:fs/promises";
 import vm from "node:vm";
+import { validPushCronBearer } from "../lib/admin-push/cron-auth";
 import { PGlite } from "@electric-sql/pglite";
 import {
   routineCandidates,
@@ -185,4 +186,11 @@ test("SQL denies browser roles, deduplicates completed documents and bounds leas
   } finally {
     await db.close();
   }
+});
+
+test("cron bearer rejects missing, wrong and multibyte credentials without throwing", () => {
+  assert(validPushCronBearer("Bearer example", "example"));
+  assert(!validPushCronBearer("Bearer wrong", "example"));
+  assert(!validPushCronBearer("Bearer exämple", "example"));
+  assert(!validPushCronBearer("", undefined));
 });

@@ -1,4 +1,4 @@
-import { timingSafeEqual } from "node:crypto";
+import { validPushCronBearer } from "@/lib/admin-push/cron-auth";
 import { checkRoutinePush } from "@/lib/admin-push/server";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -7,12 +7,7 @@ const headers = { "Cache-Control": "private, no-store" };
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;
   const supplied = request.headers.get("authorization") || "";
-  const expected = `Bearer ${secret}`;
-  if (
-    !secret ||
-    supplied.length !== expected.length ||
-    !timingSafeEqual(Buffer.from(supplied), Buffer.from(expected))
-  )
+  if (!validPushCronBearer(supplied, secret))
     return Response.json({ error: "Unauthorized" }, { status: 401, headers });
   if (process.env.VERCEL_ENV !== "production")
     return Response.json(

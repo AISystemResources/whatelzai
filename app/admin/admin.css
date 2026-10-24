@@ -215,3 +215,17 @@ html:has(.admin-shell[data-admin-size="larger"]) {
     color: #f4f4f5;
   }
 }
+
+.admin-shell[data-admin-theme="dark"] [role="switch"] > span > span {
+  background-color: #f4f4f5;
+}
+@media (min-width: 1024px) {
+  .admin-shell[data-admin-theme="dark"] header[class~="lg:bg-transparent"] {
+    color: #f4f4f5;
+  }
+  .admin-shell[data-admin-theme="dark"]
+    header[class~="lg:bg-transparent"]
+    :is(p.text-zinc-600, p.text-zinc-500, p.text-zinc-700) {
+    color: #b6b6bf;
+  }
+}

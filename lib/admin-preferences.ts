@@ -18,6 +18,7 @@ export function validPreferences(value: unknown): value is AdminPreferences {
   );
 }
 export const chinese: Record<string, string> = {
+  "Skip to content": "跳到正文",
   "Scheduled now": "当前时段",
   "Time block": "时段",
   "Remove block": "移除时段",

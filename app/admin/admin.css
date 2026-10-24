@@ -46,3 +46,92 @@
     margin-top: 0;
   }
 }
+
+/* Feedback follows actual router state; no timers or synthetic progress. */
+a[data-admin-link]:has([data-navigation-pending]) {
+  outline: 2px solid #facc15;
+  outline-offset: 3px;
+}
+.admin-navigation-pending {
+  position: fixed;
+  z-index: 60;
+  top: calc(4.5rem + env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: max-content;
+  max-width: calc(100vw - 2rem);
+  border: 1px solid #e4e4e7;
+  border-radius: 999px;
+  padding: 0.625rem 1rem;
+  background: #fff;
+  color: #18181b;
+  font-size: 0.75rem;
+  font-weight: 500;
+  box-shadow: 0 4px 16px #18181b0d;
+  pointer-events: none;
+}
+.admin-loading-dot {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #facc15;
+  animation: admin-loading-pulse 1.2s ease-in-out infinite;
+}
+.admin-skeleton {
+  animation: admin-loading-pulse 1.5s ease-in-out infinite;
+}
+.admin-content > :not([data-admin-loading]) > :not([data-admin-loading]),
+.admin-overview-grid > *,
+#admin-main details[open] > :not(summary) {
+  animation: admin-content-arrive 220ms ease-out both;
+}
+.admin-content > * > :nth-child(2),
+.admin-overview-grid > :nth-child(2) {
+  animation-delay: 35ms;
+}
+.admin-content > * > :nth-child(3),
+.admin-overview-grid > :nth-child(3) {
+  animation-delay: 70ms;
+}
+.admin-content > * > :nth-child(n + 4),
+.admin-overview-grid > :nth-child(n + 4) {
+  animation-delay: 105ms;
+}
+#admin-main :is(button, summary, a[data-admin-link]):not(:disabled):active {
+  opacity: 0.7;
+}
+header a[data-admin-link]:active,
+nav a[data-admin-link]:active {
+  opacity: 0.7;
+}
+@keyframes admin-content-arrive {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes admin-loading-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-content > * > *,
+  .admin-overview-grid > *,
+  .admin-skeleton,
+  .admin-loading-dot,
+  #admin-main details[open] > :not(summary) {
+    animation: none !important;
+  }
+}

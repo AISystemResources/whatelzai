@@ -1,7 +1,7 @@
 import { BriefMarkdown } from "@/components/admin/BriefMarkdown";
 import { randomUUID } from "node:crypto";
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/admin/AdminLink";
 import { dailyOwner, loadDailyTasks } from "@/lib/daily/server";
 import { emdeeConnection } from "@/lib/daily/connections";
 import { loadBrief } from "@/lib/daily/emdee";

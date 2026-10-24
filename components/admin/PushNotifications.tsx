@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import Link from "@/components/admin/AdminLink";
 import { useEffect, useState } from "react";
 import { Bell } from "lucide-react";
 import { adminUrl } from "@/lib/admin-url";

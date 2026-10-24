@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/admin/AdminLink";
 import { adminUrl } from "@/lib/admin-url";
 
 export function AdminArea({

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/admin/AdminLink";
 import { productSignal } from "@/lib/admin-overview/model";
 import type { OwnerMetrics, WidgetState } from "@/lib/cockpit";
 

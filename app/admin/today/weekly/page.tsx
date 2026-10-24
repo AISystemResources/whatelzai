@@ -1,5 +1,5 @@
 import { BriefMarkdown } from "@/components/admin/BriefMarkdown";
-import Link from "next/link";
+import Link from "@/components/admin/AdminLink";
 import { dailyOwner } from "@/lib/daily/server";
 import { weeklyStatus } from "@/lib/daily/weekly";
 import { emdeeConnection, openaiConnection } from "@/lib/daily/connections";

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/admin/AdminLink";
 import { WhatelzMark } from "@/components/brand/WhatelzMark";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";

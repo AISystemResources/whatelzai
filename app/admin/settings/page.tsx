@@ -46,12 +46,6 @@ export default function SettingsPage() {
           >
             MCP & API access →
           </Link>
-          <Link
-            href={adminUrl("/admin/developer")}
-            className="min-h-11 py-3 underline underline-offset-4"
-          >
-            Developer tools →
-          </Link>
         </div>
       </details>
       <section

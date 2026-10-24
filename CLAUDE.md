@@ -593,3 +593,7 @@ Settings uses a flat divided list, with appearance (light/dark), text size, Engl
 ## Reading-first Admin (SPR-166)
 
 Keep Admin calm: accepted focus first, supporting context and tools behind native disclosures, flat divided lists instead of per-item cards. Today puts commitments before Morning/Evening reading tabs. BriefDocument reveals original H3 sections with the full original entry available; highlighted source actions remain proposals unless accepted in the task system. SprintFocus selects only accepted, open, due commitments for the current lane, showing one first and others on demand. No invented priorities, source writes, auth changes or private caching. Admin-only typography/layout and preview-first ContentEditor apply across management pages; preserve form boundaries and sensitive controls. See docs/admin-reading.md.
+
+## Personal and business-owned People (SPR-167)
+
+Permanent Admin tabs are Personal | Home | Settings. Home’s selector has Overview, AI Business, Network Marketing and Day Job; Personal/Settings show a plain label. Existing member /users routes belong to Network Marketing → People, preserving URLs, account/credit actions and owner gates. Keep adminFocusSpaces separate from adminWorkstreams: Personal must remain valid for saved timetables, manual overrides and push paths. User-management routes remain protected from automatic boundary navigation. AI Business customer users remain a separately defined future feature.

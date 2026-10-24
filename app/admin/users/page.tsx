@@ -10,7 +10,7 @@ import { AIAllowances } from "./AIAllowances";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
-  title: "Users — Admin",
+  title: "People — Network Marketing — Admin",
   robots: { index: false, follow: false },
 };
 export default async function UsersPage({
@@ -45,7 +45,7 @@ export default async function UsersPage({
     <div className="space-y-7 text-zinc-950">
       <header className="rounded-3xl bg-yellow-300 p-6 sm:p-8">
         <p className="text-xs uppercase tracking-widest">Member access</p>
-        <h1 className="mt-3 text-3xl font-semibold">Users</h1>
+        <h1 className="mt-3 text-3xl font-semibold">People</h1>
         <details className="mt-3">
           <summary className="min-h-11 cursor-pointer py-2 text-sm text-zinc-500">
             Activation rules

@@ -1,9 +1,9 @@
 import {
-  adminWorkstreams,
+  adminFocusSpaces,
   cleanAdminPath,
   adminNavigation,
 } from "./admin-navigation";
-export type FocusSpace = (typeof adminWorkstreams)[number]["label"];
+export type FocusSpace = (typeof adminFocusSpaces)[number]["label"];
 export type FocusBlock = {
   days: "weekdays" | "weekends";
   start: number;
@@ -27,10 +27,10 @@ export const DEFAULT_FOCUS: FocusSettings = {
   ],
 };
 export const focusPath = (space: FocusSpace) =>
-  adminWorkstreams.find((item) => item.label === space)!.path;
+  adminFocusSpaces.find((item) => item.label === space)!.path;
 export function rootSpace(path: string): FocusSpace | null {
   return (
-    adminWorkstreams.find(
+    adminFocusSpaces.find(
       (item) => cleanAdminPath(item.path) === cleanAdminPath(path),
     )?.label ?? null
   );
@@ -49,7 +49,7 @@ export function validFocusSettings(value: unknown): value is FocusSettings {
     if (
       !block ||
       !["weekdays", "weekends"].includes(block.days) ||
-      !adminWorkstreams.some((item) => item.label === block.space) ||
+      !adminFocusSpaces.some((item) => item.label === block.space) ||
       !Number.isInteger(block.start) ||
       !Number.isInteger(block.end) ||
       block.start < 0 ||
@@ -128,7 +128,9 @@ export function canAutoSwitch(input: {
         cleanAdminPath(input.path) === "/today" &&
         !input.hash)
     );
-  return adminNavigation(input.path).tab === "home";
+  const path = cleanAdminPath(input.path);
+  if (path === "/users" || path.startsWith("/users/")) return false;
+  return ["home", "personal"].includes(adminNavigation(input.path).tab);
 }
 export function minuteInput(value: number) {
   if (!Number.isFinite(value)) return "";

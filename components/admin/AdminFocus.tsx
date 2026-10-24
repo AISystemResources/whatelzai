@@ -12,7 +12,7 @@ import {
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { adminUrl } from "@/lib/admin-url";
-import { adminWorkstreams, cleanAdminPath } from "@/lib/admin-navigation";
+import { adminFocusSpaces, cleanAdminPath } from "@/lib/admin-navigation";
 import {
   DEFAULT_FOCUS,
   canAutoSwitch,
@@ -267,7 +267,7 @@ export function AdminFocusProvider({
           );
           if (
             prior?.key === next.key &&
-            adminWorkstreams.some((item) => item.label === prior.space)
+            adminFocusSpaces.some((item) => item.label === prior.space)
           ) {
             manualRef.current = prior;
             setManual(prior);

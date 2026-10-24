@@ -35,6 +35,9 @@ export const chinese: Record<string, string> = {
   "Website & identity": "网站与品牌",
   Offers: "服务",
   Portfolio: "作品与经历",
+  People: "人员",
+  "Activation, account assignment and AI credits.":
+    "启用状态、账号关联与 AI 额度。",
   "People & access": "成员与权限",
   "Community & references": "社群与资料",
   "One useful outcome for this work block.": "这段时间，专注一个有用的成果。",

@@ -9,16 +9,24 @@ import {
   parseMinute,
   minuteInput,
 } from "../lib/admin-focus";
-import { adminWorkstreams, adminNavigation } from "../lib/admin-navigation";
+import {
+  adminWorkstreams,
+  adminFocusSpaces,
+  adminNavigation,
+} from "../lib/admin-navigation";
 const at = (local: string) => focusAt(new Date(`${local}+08:00`));
-test("five workspaces retain their order and Personal is a separate Home space", () => {
+test("Personal remains schedulable outside the four Home workstreams", () => {
   assert.deepEqual(
-    adminWorkstreams.map((item) => item.label),
+    adminFocusSpaces.map((item) => item.label),
     ["Overview", "Personal", "AI Business", "Network Marketing", "Day Job"],
   );
   assert.equal(rootSpace("/admin/personal"), "Personal");
-  assert.equal(adminNavigation("/personal").workstream, "Personal");
-  assert.equal(adminNavigation("/personal/notes").workstream, "Personal");
+  assert.equal(adminNavigation("/personal").tab, "personal");
+  assert.equal(
+    adminWorkstreams.some((item) => String(item.label) === "Personal"),
+    false,
+  );
+  assert.equal(adminNavigation("/personal/notes").tab, "personal");
   assert.equal(rootSpace("/personal/notes"), null);
 });
 test("weekday transitions use exact Singapore boundaries and Overview outside the blocks", () => {
@@ -131,6 +139,18 @@ test("automatic navigation preserves deep links, edits, dialogs and utility work
   assert.equal(
     canAutoSwitch({ ...safe, path: "/settings", initial: false }),
     false,
+  );
+  assert.equal(
+    canAutoSwitch({ ...safe, path: "/users", initial: false }),
+    false,
+  );
+  assert.equal(
+    canAutoSwitch({ ...safe, path: "/admin/users/example", initial: false }),
+    false,
+  );
+  assert.equal(
+    canAutoSwitch({ ...safe, path: "/personal", initial: false }),
+    true,
   );
   for (const key of ["dirty", "editing", "dialog"] as const)
     assert.equal(canAutoSwitch({ ...safe, [key]: true }), false);

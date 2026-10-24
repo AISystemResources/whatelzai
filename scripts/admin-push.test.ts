@@ -152,7 +152,7 @@ test("SQL denies browser roles, deduplicates completed documents and bounds leas
     await db.exec(
       await readFile(
         new URL(
-          "../supabase/migrations/20261024085356_admin_focus_push.sql",
+          "../supabase/migrations/20261024085717_admin_focus_push.sql",
           import.meta.url,
         ),
         "utf8",

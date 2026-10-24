@@ -357,6 +357,18 @@ test("direct EMDEE reads need one request and only explicit absence becomes miss
       AbortSignal,
       fetch: async (_: unknown, init: { body: string }) => {
         calls.push(JSON.parse(init.body).params.name);
+        if (failure === "rpc-missing" || failure === "rpc-other") {
+          const path = JSON.parse(init.body).params.arguments.path;
+          return Response.json({
+            error: {
+              code: -32603,
+              message:
+                failure === "rpc-missing"
+                  ? `no such doc: ${path}`
+                  : "EMDEE upstream unavailable",
+            },
+          });
+        }
         return Response.json({
           result: {
             isError: !!failure,
@@ -388,6 +400,10 @@ test("direct EMDEE reads need one request and only explicit absence becomes miss
   assert.deepEqual(calls, ["get_doc"]);
   failure = "no_such_doc";
   assert.equal(await api.readEmdee(connection, "fixture/missing.md"), null);
+  failure = "rpc-missing";
+  assert.equal(await api.readEmdee(connection, "fixture/rpc-missing.md"), null);
+  failure = "rpc-other";
+  await assert.rejects(api.readEmdee(connection, "fixture/rpc-error.md"));
   failure = "forbidden";
   await assert.rejects(api.readEmdee(connection, "fixture/private.md"));
 });

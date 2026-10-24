@@ -93,7 +93,7 @@ When proposing a new `supabase/migrations/*.sql`, **apply it immediately** in th
 
 ### 5. Light mode only
 
-`whatelz.ai` is permanently light mode. **Never:**
+Public `whatelz.ai` and member surfaces remain light mode. Edmund explicitly authorized an Admin-only appearance preference (SPR-165); scope it under `.admin-shell` without changing other surfaces. For public/member surfaces, **never:**
 
 - Add `dark:` Tailwind variants to new components.
 - Wire `ThemeProvider` from `next-themes` (the dep is vestigial, see Stack).
@@ -585,3 +585,7 @@ Settings uses a compact per-device push switch, with test and sound help under N
 ## Retired Developer tooling (SPR-164)
 
 Developer tooling is retired: no Inngest/quick links, endpoint inventory or singleton PAT controls. `/admin/developer` redirects to Settings for old bookmarks; remove links from Settings and legacy nav. Never recreate/display `system_config.mcp_token`; current MCP authentication uses hashed, scoped, revocable `auth_tokens`. Cleanup deletes only the unused singleton row, preserving OAuth signing secret and current tokens/endpoints.
+
+## Admin preferences and flat Settings (SPR-165)
+
+Settings uses a flat divided list, with appearance (light/dark), text size, English/Simplified Chinese, push, collapsed timetable, installation and advanced access. My Profile belongs to AI Business, including active navigation, with stable URL. Preferences are versioned owner-keyed per-device localStorage with session fallback; they do not change auth or schedule source semantics. Admin-only CSS scopes dark colours and rem sizing; public/member surfaces remain unchanged. Translate Settings/shared navigation and area-link labels; private Markdown, editable content, product names and canonical schedule identifiers remain original. Do not claim the entire legacy admin CMS is translated.

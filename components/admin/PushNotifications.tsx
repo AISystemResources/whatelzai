@@ -2,6 +2,7 @@
 import Link from "@/components/admin/AdminLink";
 import { useEffect, useState } from "react";
 import { Bell } from "lucide-react";
+import { useAdminPreferences } from "./AdminPreferences";
 import { useAdminFocus } from "./AdminFocus";
 import { adminUrl } from "@/lib/admin-url";
 
@@ -70,6 +71,7 @@ async function worker() {
 }
 export function PushNotifications() {
   const focus = useAdminFocus();
+  const { t } = useAdminPreferences();
   const [state, setState] = useState<State | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -244,10 +246,7 @@ export function PushNotifications() {
               ? "Blocked in device settings"
               : "Not enabled on this device";
   return (
-    <section
-      aria-labelledby="admin-push"
-      className="max-w-2xl rounded-2xl border border-zinc-200 px-5 py-4"
-    >
+    <section aria-labelledby="admin-push" className="py-5">
       <div className="flex items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">
           <Bell
@@ -257,10 +256,10 @@ export function PushNotifications() {
           />
           <div>
             <h2 id="admin-push" className="text-sm font-semibold text-zinc-900">
-              Push notifications
+              {t("Push notifications")}
             </h2>
             <p className="mt-1 text-xs text-zinc-500" role="status">
-              {busy ? "Updating…" : status}
+              {t(busy ? "Updating…" : status)}
             </p>
           </div>
         </div>
@@ -293,30 +292,32 @@ export function PushNotifications() {
       </div>
       {state?.error && (
         <p role="alert" className="mt-3 text-sm text-amber-800">
-          {state.error}
+          {t(state.error)}
         </p>
       )}
       {state?.permission === "denied" && (
         <p className="mt-3 text-xs text-zinc-600">
-          Allow notifications in your phone or browser settings.
+          {t("Allow notifications in your phone or browser settings.")}
         </p>
       )}
       {state?.config && !state.config.configured && (
         <p className="mt-3 text-xs text-amber-800">
-          Push delivery is unavailable.
+          {t("Push delivery is unavailable.")}
         </p>
       )}
       {state?.iosInstall && (
         <p className="mt-3 text-xs text-zinc-600">
-          Open the installed app to enable notifications.
+          {t("Open the installed app to enable notifications.")}
         </p>
       )}
       <details className="mt-2 text-xs text-zinc-500">
         <summary className="flex min-h-11 cursor-pointer items-center">
-          Notification options
+          {t("Notification options")}
         </summary>
         <div className="space-y-3 pb-1 leading-5">
-          <p>Saved routines and scheduled space changes. This device only.</p>
+          <p>
+            {t("Saved routines and scheduled space changes. This device only.")}
+          </p>
           {state?.enabled && (
             <button
               type="button"
@@ -324,27 +325,29 @@ export function PushNotifications() {
               onClick={test}
               className="min-h-11 rounded-xl border border-zinc-200 px-4 text-zinc-900 disabled:opacity-50"
             >
-              Send test notification
+              {t("Send test notification")}
             </button>
           )}
           <p>
-            Sound: long-press a notification on your Vivo, open its notification
-            settings and look for Sound. The available options depend on your
-            phone and browser; custom sounds cannot be set here.
+            {t(
+              "Sound: long-press a notification on your Vivo, open its notification settings and look for Sound. The available options depend on your phone and browser; custom sounds cannot be set here.",
+            )}
           </p>
           {focus?.pushSync === "error" && (
             <p role="alert" className="text-amber-800">
-              Timetable alerts haven’t synced. Reopen Admin online to retry.
+              {t(
+                "Timetable alerts haven’t synced. Reopen Admin online to retry.",
+              )}
             </p>
           )}
           {state?.config?.monitor?.error_code && (
             <p className="text-amber-800">
-              Routine alerts need attention.{" "}
+              {t("Routine alerts need attention.")}{" "}
               <Link
                 className="underline"
                 href={adminUrl("/admin/today/connections")}
               >
-                Check connection →
+                {t("Check connection →")}
               </Link>
             </p>
           )}
@@ -352,7 +355,7 @@ export function PushNotifications() {
       </details>
       {message && (
         <p role="status" className="mt-2 text-xs leading-5 text-zinc-600">
-          {message}
+          {t(message)}
         </p>
       )}
     </section>

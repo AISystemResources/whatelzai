@@ -135,3 +135,83 @@ nav a[data-admin-link]:active {
     animation: none !important;
   }
 }
+
+/* Preferences are scoped to private Admin; public/member themes stay independent. */
+html:has(.admin-shell[data-admin-size="large"]) {
+  font-size: 18px;
+}
+html:has(.admin-shell[data-admin-size="larger"]) {
+  font-size: 20px;
+}
+.admin-shell {
+  color: #18181b;
+  background: #fff;
+}
+.admin-shell[data-admin-theme="dark"] {
+  color-scheme: dark;
+  color: #f4f4f5;
+  background: #151517;
+}
+.admin-shell[data-admin-theme="dark"]
+  :is(.bg-white, [class~="bg-white/95"], [class~="bg-white/90"]) {
+  background-color: #18181b;
+}
+.admin-shell[data-admin-theme="dark"]
+  :is(.bg-zinc-50, .bg-zinc-100, .bg-zinc-200) {
+  background-color: #27272a;
+}
+.admin-shell[data-admin-theme="dark"]
+  :is(.text-zinc-950, .text-zinc-900, .text-zinc-800, .text-zinc-700) {
+  color: #f4f4f5;
+}
+.admin-shell[data-admin-theme="dark"]
+  :is(.text-zinc-600, .text-zinc-500, .text-zinc-400) {
+  color: #b6b6bf;
+}
+.admin-shell[data-admin-theme="dark"]
+  :is(.border-zinc-100, .border-zinc-200, .border-zinc-300) {
+  border-color: #3f3f46;
+}
+.admin-shell[data-admin-theme="dark"]
+  :is(.divide-zinc-100, .divide-zinc-200)
+  > :not(:last-child) {
+  border-color: #3f3f46;
+}
+.admin-shell[data-admin-theme="dark"] :is(.bg-zinc-900, .bg-zinc-950) {
+  background-color: #f4f4f5;
+  color: #18181b;
+}
+.admin-shell[data-admin-theme="dark"] [class*="bg-yellow-"] {
+  color: #18181b;
+}
+.admin-shell[data-admin-theme="dark"]
+  [class*="bg-yellow-"]
+  :is(
+    .text-zinc-950,
+    .text-zinc-900,
+    .text-zinc-800,
+    .text-zinc-700,
+    .text-zinc-600,
+    .text-zinc-500
+  ) {
+  color: #18181b;
+}
+.admin-shell[data-admin-theme="dark"] .prose {
+  --tw-prose-body: #d4d4d8;
+  --tw-prose-headings: #fafafa;
+  --tw-prose-links: #fde047;
+  --tw-prose-bold: #fafafa;
+  --tw-prose-code: #f4f4f5;
+  --tw-prose-counters: #a1a1aa;
+  --tw-prose-bullets: #a1a1aa;
+  --tw-prose-th-borders: #52525b;
+  --tw-prose-td-borders: #3f3f46;
+}
+@media (min-width: 1024px) {
+  .admin-shell[data-admin-theme="dark"] .admin-overview-intro,
+  .admin-shell[data-admin-theme="dark"]
+    .admin-overview-intro
+    :is(.text-zinc-900, .text-zinc-600) {
+    color: #f4f4f5;
+  }
+}

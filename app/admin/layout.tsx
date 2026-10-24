@@ -1,3 +1,4 @@
+import { AdminPreferencesProvider } from "@/components/admin/AdminPreferences";
 import { AdminFocusProvider } from "@/components/admin/AdminFocus";
 import "./admin.css";
 import { isOwnerUser } from "@/lib/admin-policy";
@@ -14,15 +15,17 @@ export default async function AdminLayout({
   if (!user || !isOwnerUser(user)) notFound();
 
   return (
-    <AdminFocusProvider owner={user.id}>
-      <div className="min-h-dvh bg-white">
-        <AdminNavigation />
-        <main id="admin-main" className="min-w-0 overflow-x-hidden bg-white">
-          <div className="admin-content mx-auto max-w-[1440px] px-4 pt-6 pb-[calc(7rem+env(safe-area-inset-bottom))] sm:px-6 sm:pt-8 md:px-10 md:pt-10 lg:pb-12">
-            {children}
-          </div>
-        </main>
-      </div>
-    </AdminFocusProvider>
+    <AdminPreferencesProvider owner={user.id}>
+      <AdminFocusProvider owner={user.id}>
+        <div className="min-h-dvh bg-white">
+          <AdminNavigation />
+          <main id="admin-main" className="min-w-0 overflow-x-hidden bg-white">
+            <div className="admin-content mx-auto max-w-[1440px] px-4 pt-6 pb-[calc(7rem+env(safe-area-inset-bottom))] sm:px-6 sm:pt-8 md:px-10 md:pt-10 lg:pb-12">
+              {children}
+            </div>
+          </main>
+        </div>
+      </AdminFocusProvider>
+    </AdminPreferencesProvider>
   );
 }

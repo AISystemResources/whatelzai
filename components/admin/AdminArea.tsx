@@ -1,3 +1,5 @@
+"use client";
+import { useAdminPreferences } from "./AdminPreferences";
 import Link from "@/components/admin/AdminLink";
 import { adminUrl } from "@/lib/admin-url";
 
@@ -14,13 +16,14 @@ export function AdminArea({
   children?: React.ReactNode;
   intro?: React.ReactNode;
 }) {
+  const { t } = useAdminPreferences();
   return (
     <div className="space-y-8">
       <header className="border-b border-zinc-200 pb-6">
         <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">
-          {title}
+          {t(title)}
         </h1>
-        <p className="mt-3 max-w-2xl text-zinc-600">{description}</p>
+        <p className="mt-3 max-w-2xl text-zinc-600">{t(description)}</p>
       </header>
       {intro}
       {links.length > 0 && (
@@ -34,8 +37,10 @@ export function AdminArea({
               prefetch={false}
               className="rounded-xl border border-zinc-200 p-5 transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900"
             >
-              <h2 className="font-semibold text-zinc-900">{link.label} →</h2>
-              <p className="mt-2 text-sm text-zinc-600">{link.description}</p>
+              <h2 className="font-semibold text-zinc-900">{t(link.label)} →</h2>
+              <p className="mt-2 text-sm text-zinc-600">
+                {t(link.description)}
+              </p>
             </Link>
           ))}
         </div>

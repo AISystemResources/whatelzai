@@ -80,6 +80,9 @@
   font-weight: 400;
 }
 .mandala-goal-figures .mandala-income dd {
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow-wrap: normal;
   font-size: 2rem;
   letter-spacing: -0.04em;
   line-height: 1.05;

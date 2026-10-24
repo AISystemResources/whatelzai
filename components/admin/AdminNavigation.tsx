@@ -1,5 +1,6 @@
 "use client";
 
+import { useAdminPreferences } from "./AdminPreferences";
 import { useAdminFocus } from "./AdminFocus";
 import Link from "@/components/admin/AdminLink";
 import { WhatelzMark } from "@/components/brand/WhatelzMark";
@@ -22,6 +23,7 @@ const tabs = [
 
 export function AdminNavigation() {
   const focus = useAdminFocus();
+  const { t } = useAdminPreferences();
   const pathname = usePathname();
   const current = adminNavigation(pathname);
   const switcher = useRef<HTMLDetailsElement>(null);
@@ -56,7 +58,7 @@ export function AdminNavigation() {
         href="#admin-main"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-xl focus:bg-yellow-300 focus:p-3"
       >
-        Skip to content
+        {t("Skip to content")}
       </a>
       <header className="sticky top-0 z-30 border-b border-zinc-200 bg-white/95 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
         <div className="mx-auto max-w-[1440px] px-4 sm:px-6 md:px-10">
@@ -71,10 +73,10 @@ export function AdminNavigation() {
               </span>
               <span className="max-[380px]:hidden">
                 <span className="block text-sm font-semibold tracking-tight">
-                  Whatelz Admin
+                  {t("Whatelz Admin")}
                 </span>
                 <span className="hidden text-[10px] uppercase sm:block tracking-[0.18em] text-zinc-500">
-                  Your command centre
+                  {t("Your command centre")}
                 </span>
               </span>
             </Link>
@@ -90,7 +92,7 @@ export function AdminNavigation() {
                   className={`flex min-h-10 items-center gap-2 rounded-full px-5 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 ${current.tab === key ? "bg-white text-zinc-950 shadow-sm" : "text-zinc-500 hover:text-zinc-950"}`}
                 >
                   <Icon size={17} aria-hidden="true" />
-                  {label}
+                  {t(label)}
                 </Link>
               ))}
             </nav>
@@ -100,10 +102,10 @@ export function AdminNavigation() {
               className="group relative shrink-0"
             >
               <summary
-                aria-label={`Choose area: ${activeLabel}`}
+                aria-label={`Choose area: ${t(activeLabel)}`}
                 className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-full bg-yellow-300 px-4 text-sm font-medium text-zinc-950 transition hover:bg-yellow-200 focus-visible:outline-2 focus-visible:outline-offset-2 [&::-webkit-details-marker]:hidden"
               >
-                {activeLabel}
+                {t(activeLabel)}
                 <ChevronDown
                   size={16}
                   aria-hidden="true"
@@ -129,20 +131,22 @@ export function AdminNavigation() {
                       }}
                       className={`flex min-h-12 items-center justify-between gap-4 rounded-xl px-3 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] ${active ? "bg-yellow-100" : "hover:bg-zinc-100"}`}
                     >
-                      {item.label}
+                      {t(item.label)}
                       {active && <Check size={16} aria-hidden="true" />}
                     </Link>
                   );
                 })}
                 <div className="mt-1 border-t border-zinc-100 px-3 pt-3 pb-1 text-xs text-zinc-500">
                   <p>
-                    {!focus?.ready
-                      ? "Checking schedule…"
-                      : !focus.settings.enabled
-                        ? "Automatic switching paused"
-                        : focus.manual
-                          ? "Manual choice · until next block"
-                          : "Following your schedule"}
+                    {t(
+                      !focus?.ready
+                        ? "Checking schedule…"
+                        : !focus.settings.enabled
+                          ? "Automatic switching paused"
+                          : focus.manual
+                            ? "Manual choice · until next block"
+                            : "Following your schedule",
+                    )}
                   </p>
                   {focus?.ready &&
                     (!focus.settings.enabled || focus.manual) && (
@@ -154,14 +158,14 @@ export function AdminNavigation() {
                         }}
                         className="mt-2 min-h-11 text-left font-medium text-zinc-950"
                       >
-                        Follow schedule now →
+                        {t("Follow schedule now →")}
                       </button>
                     )}
                   <Link
                     href={adminUrl("/admin/settings#focus-schedule")}
                     className="mt-1 flex min-h-11 items-center text-zinc-600"
                   >
-                    Schedule settings →
+                    {t("Schedule settings →")}
                   </Link>
                 </div>
               </nav>
@@ -187,7 +191,7 @@ export function AdminNavigation() {
                 strokeWidth={active ? 2 : 1.7}
                 aria-hidden="true"
               />
-              {label}
+              {t(label)}
             </Link>
           );
         })}

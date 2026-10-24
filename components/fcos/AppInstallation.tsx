@@ -101,8 +101,10 @@ export function AppInstallationProvider({
 
 export function InstallAppButton({
   accent = "yellow",
+  language = "en",
 }: {
   accent?: "yellow" | "orange";
+  language?: "en" | "zh";
 }) {
   const buttonTone =
     accent === "orange"
@@ -143,7 +145,13 @@ export function InstallAppButton({
         className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 py-3 font-semibold disabled:opacity-50 ${buttonTone}`}
       >
         <Download size={18} aria-hidden="true" />
-        {busy ? "Opening installer…" : `Install ${name}`}
+        {busy
+          ? language === "zh"
+            ? "正在打开安装程序…"
+            : "Opening installer…"
+          : language === "zh"
+            ? `安装 ${name}`
+            : `Install ${name}`}
       </button>
       {message && (
         <p role="status" className="mt-2 text-sm text-zinc-500">
@@ -157,7 +165,9 @@ export function InstallAppButton({
       >
         <div className="flex items-center justify-between gap-4">
           <h2 id={helpId} className="text-xl font-semibold">
-            Add {name} to your phone
+            {language === "zh"
+              ? `将 ${name} 添加到手机`
+              : `Add ${name} to your phone`}
           </h2>
           <button
             type="button"
@@ -169,7 +179,13 @@ export function InstallAppButton({
           </button>
         </div>
         <p className="mt-4 text-sm leading-6 text-zinc-600">
-          {ios ? (
+          {language === "zh" ? (
+            ios ? (
+              "在 Safari 中点击分享 → 添加到主屏幕 → 添加。"
+            ) : (
+              "在 Chrome 中打开 ⋮ → 添加到主屏幕 → 安装。电脑上可使用地址栏中的安装图标。"
+            )
+          ) : ios ? (
             <>
               In Safari, tap <strong>Share → Add to Home Screen</strong>, then{" "}
               <strong>Add</strong>. Keep <strong>Open as Web App</strong>{" "}
@@ -187,7 +203,7 @@ export function InstallAppButton({
           <button
             className={`w-full rounded-xl px-4 py-3 font-semibold ${buttonTone}`}
           >
-            Got it
+            {language === "zh" ? "知道了" : "Got it"}
           </button>
         </form>
       </dialog>

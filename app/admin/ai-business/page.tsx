@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import { SprintFocus } from "@/components/admin/SprintFocus";
 import type { Metadata } from "next";
 import { AdminArea } from "@/components/admin/AdminArea";
 
@@ -80,8 +82,54 @@ export default function AIBusinessPage() {
   return (
     <AdminArea
       title="AI Business"
-      description="Your Whatelz website, offerings and marketing content. Product metrics are available in Overview."
-      links={links}
+      description="One useful outcome for this work block."
+      intro={
+        <Suspense
+          fallback={
+            <p className="text-sm text-zinc-500">Reading your focus…</p>
+          }
+        >
+          <SprintFocus lane="ai-business" />
+        </Suspense>
+      }
+      links={[]}
+      groups={[
+        {
+          label: "Writing & conversations",
+          links: links.filter((link) =>
+            ["Blog", "Newsletter", "Testimonials", "Events"].includes(
+              link.label,
+            ),
+          ),
+        },
+        {
+          label: "Website & identity",
+          links: links.filter((link) =>
+            [
+              "My profile",
+              "Brand & design system",
+              "Website dashboard",
+              "Homepage",
+            ].includes(link.label),
+          ),
+        },
+        {
+          label: "Offers",
+          links: links.filter((link) => link.label === "Services"),
+        },
+        {
+          label: "Portfolio",
+          links: links.filter((link) =>
+            [
+              "Projects",
+              "Career",
+              "Hackathons",
+              "Leadership",
+              "Mentorship",
+            ].includes(link.label),
+          ),
+        },
+      ]}
     />
   );
 }

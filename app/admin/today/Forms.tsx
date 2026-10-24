@@ -98,24 +98,22 @@ export function NewTask({ day, id }: { day: string; id: string }) {
 export function TaskRow({ task, day }: { task: Task; day: string }) {
   const [state, action] = useActionState(changeTask, {});
   return (
-    <form action={action} className="rounded-2xl border border-zinc-200 p-4">
+    <form action={action} className="border-b border-zinc-200 py-5">
       <input type="hidden" name="id" value={task.id} />
       <input type="hidden" name="revision" value={task.revision} />
-      <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-500">
+      <div className="mb-2 flex flex-wrap items-center gap-3 text-xs text-zinc-500">
         <span>{laneLabels[task.lane]}</span>
-        <span className="capitalize">
-          {task.status === "open" ? "Accepted" : task.status}
-        </span>
-        <span>Next check-in · {task.due_on}</span>
-        {task.due_on < day && task.status !== "done" ? (
+        {task.due_on < day && task.status !== "done" && (
           <span className="text-amber-800">
             Carried forward · {task.due_on}
           </span>
-        ) : null}
+        )}
         <span>
-          {task.accepted_on
-            ? `Accepted ${task.accepted_on}`
-            : "Not yet committed"}
+          {task.status === "open"
+            ? "Accepted"
+            : task.status === "proposed"
+              ? "Proposal"
+              : task.status}
         </span>
       </div>
       <p
@@ -127,6 +125,12 @@ export function TaskRow({ task, day }: { task: Task; day: string }) {
         <summary className="cursor-pointer text-xs text-zinc-500">
           Update commitment
         </summary>
+        <p className="mt-3 text-xs text-zinc-500">
+          Next check-in {task.due_on} ·{" "}
+          {task.accepted_on
+            ? `Accepted ${task.accepted_on}`
+            : "Not yet committed"}
+        </p>
         <div className="mt-3 flex flex-wrap items-end gap-2">
           <label className="min-w-32 flex-1 text-xs text-zinc-600">
             Status

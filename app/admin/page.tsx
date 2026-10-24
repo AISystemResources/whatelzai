@@ -1,6 +1,4 @@
-import { briefPreview } from "@/lib/admin-overview/preview";
 import { AdminLoading } from "@/components/admin/AdminLoading";
-import { BriefMarkdown } from "@/components/admin/BriefMarkdown";
 import Link from "@/components/admin/AdminLink";
 import { Suspense } from "react";
 import type { Metadata } from "next";
@@ -29,31 +27,17 @@ export default async function OverviewPage() {
   await dailyOwner();
   return (
     <div className="space-y-8 text-zinc-950">
-      <header className="admin-overview-intro rounded-3xl bg-yellow-300 px-6 py-7 sm:px-8 lg:rounded-none lg:border-b lg:border-zinc-200 lg:bg-transparent lg:px-0 lg:pt-0 lg:pb-6">
-        <p className="text-xs font-medium uppercase tracking-[0.18em]">
-          Your AI business · Whatelzai + EMDEE
+      <header className="admin-page-heading border-b border-zinc-200 pb-6">
+        <h1 className="text-3xl font-semibold tracking-tight">Overview</h1>
+        <p className="mt-2 text-sm text-zinc-500">
+          Today, then everything else.
         </p>
-        <h1 className="mt-3 max-w-2xl text-4xl font-semibold tracking-tight sm:text-5xl lg:text-4xl">
-          Your command centre.
-        </h1>
-        <p className="mt-4 max-w-xl text-sm leading-6">
-          What needs your attention today, and what would move your AI business
-          forward?
-        </p>
-        <div className="mt-5 flex flex-wrap gap-3">
-          <Link
-            href={adminUrl("/admin/today")}
-            className="rounded-xl bg-zinc-950 px-4 py-3 text-sm font-semibold text-white"
-          >
-            Open Today →
-          </Link>
-          <Link
-            href={adminUrl("/admin/ai-business")}
-            className="rounded-xl border border-zinc-950/25 px-4 py-3 text-sm font-semibold"
-          >
-            AI business tools
-          </Link>
-        </div>
+        <Link
+          href={adminUrl("/admin/today")}
+          className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-yellow-300 px-5 text-sm font-medium text-zinc-950"
+        >
+          Open Today →
+        </Link>
       </header>
       <Suspense
         fallback={
@@ -69,51 +53,47 @@ async function DecisionWorkspace() {
   const sources = await loadAdminOverviewSources();
   const now = new Date(sources.loadedAt);
   return (
-    <div className="admin-overview-grid">
-      <p className="admin-overview-timestamp text-xs text-zinc-500">
-        {now.toLocaleString("en-SG", {
-          timeZone: "Asia/Singapore",
-          dateStyle: "full",
-          timeStyle: "short",
-        })}{" "}
-        · Refresh this page to check for changes.
-      </p>
-
-      <Suspense
-        fallback={
-          <AdminSectionLoading
-            label="Checking commitments…"
-            className="admin-overview-focus"
-          />
-        }
-      >
-        <FocusSection sources={sources} />
-      </Suspense>
-      <Suspense
-        fallback={
-          <AdminSectionLoading
-            label="Checking attention items…"
-            className="admin-overview-attention"
-          />
-        }
-      >
+    <div className="admin-calm-overview">
+      <DailySection sources={sources} />
+      <Suspense fallback={<AdminSectionLoading label="Checking attention…" />}>
         <AttentionSection sources={sources} />
       </Suspense>
-      <DailySection sources={sources} />
-      <Suspense
-        fallback={
-          <AdminSectionLoading
-            label="Checking work in progress…"
-            className="admin-overview-growth"
-          />
-        }
-      >
-        <GrowthSection sources={sources} />
-      </Suspense>
-      <ProductsSection sources={sources} />
+      <details className="admin-overview-extra">
+        <summary>AI Business focus</summary>
+        <div className="pt-5">
+          <Suspense fallback={<AdminSectionLoading label="Reading focus…" />}>
+            <FocusSection sources={sources} />
+          </Suspense>
+        </div>
+      </details>
+      <details className="admin-overview-extra">
+        <summary>Work in progress</summary>
+        <div className="pt-5">
+          <Suspense
+            fallback={<AdminSectionLoading label="Reading work in progress…" />}
+          >
+            <GrowthSection sources={sources} />
+          </Suspense>
+        </div>
+      </details>
+      <details className="admin-overview-extra">
+        <summary>Products & health</summary>
+        <div className="pt-5">
+          <ProductsSection sources={sources} />
+        </div>
+      </details>
+      <p className="text-xs text-zinc-500">
+        Read{" "}
+        {now.toLocaleString("en-SG", {
+          timeZone: "Asia/Singapore",
+          dateStyle: "medium",
+          timeStyle: "short",
+        })}
+      </p>
     </div>
   );
 }
+
 async function FocusSection({ sources }: { sources: OverviewSources }) {
   const overview = { day: sources.day, focus: await sources.focus };
   const focus = overview.focus.status === "ready" ? overview.focus.data : null;
@@ -125,7 +105,7 @@ async function FocusSection({ sources }: { sources: OverviewSources }) {
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 id="focus-heading" className="text-2xl font-semibold">
-          Your AI-business focus
+          Accepted commitments
         </h2>
         <Link href={todayHref} className="text-sm underline underline-offset-4">
           Review commitments →
@@ -264,7 +244,7 @@ async function AttentionSection({ sources }: { sources: OverviewSources }) {
           <Link
             key={item.title}
             href={item.href}
-            className="rounded-2xl border border-amber-200 bg-amber-50/50 p-5 transition-colors hover:bg-amber-50"
+            className="border-b border-zinc-200 py-4 transition-colors hover:opacity-75"
           >
             <h3 className="font-semibold">{item.title} →</h3>
             <p className="mt-2 text-sm leading-6 text-zinc-600">
@@ -275,8 +255,7 @@ async function AttentionSection({ sources }: { sources: OverviewSources }) {
       </div>
       {!attention.length && (
         <p className="mt-3 text-sm text-zinc-500">
-          No attention items found in the checked sources. This does not include
-          email, sales conversations or untracked work.
+          Nothing needs a decision in the checked sources.
         </p>
       )}
     </section>
@@ -291,7 +270,7 @@ function DailySection({ sources }: { sources: OverviewSources }) {
     >
       <div className="flex flex-wrap justify-between gap-3">
         <h2 id="daily-heading" className="text-2xl font-semibold">
-          Prepare. Follow through. Reflect.
+          Daily reading
         </h2>
         <Link
           href={adminUrl("/admin/today/weekly")}
@@ -312,16 +291,7 @@ function DailySection({ sources }: { sources: OverviewSources }) {
           <StreamedBrief source={sources.evening} kind="evening" now={now} />
         </Suspense>
       </div>
-      <Suspense
-        fallback={<AdminSectionLoading label="Reading yesterday’s handoff…" />}
-      >
-        <HandoffPreview source={sources.handoff} />
-      </Suspense>
-      <p className="mt-3 text-xs leading-5 text-zinc-500">
-        Daily entries are read from EMDEE. Morning 4:30am · evening 9pm · weekly
-        Monday 3am, Singapore. Entry availability is not proof of unattended
-        schedule execution. No AI API calls run on this page.
-      </p>
+      <p className="mt-3 text-xs text-zinc-500">Saved entries from EMDEE.</p>
     </section>
   );
 }
@@ -342,40 +312,6 @@ async function StreamedBrief({
       source={saved}
       href={adminUrl(`/admin/today#${kind}`)}
     />
-  );
-}
-async function HandoffPreview({
-  source,
-}: {
-  source: OverviewSources["handoff"];
-}) {
-  const overview = { handoff: await source };
-  return (
-    <details className="mt-4 rounded-2xl border p-5">
-      <summary className="cursor-pointer text-sm font-medium">
-        Yesterday’s handoff
-      </summary>
-      <div className="mt-3 max-h-64 overflow-y-auto">
-        {overview.handoff.status !== "ready" ? (
-          "EMDEE could not be checked."
-        ) : overview.handoff.data.exists ? (
-          <BriefMarkdown
-            body={
-              briefPreview(overview.handoff.data.body) ||
-              "The saved entry has no Notes content."
-            }
-          />
-        ) : (
-          "No saved evening entry was found for yesterday."
-        )}
-      </div>
-      <Link
-        href={adminUrl("/admin/today")}
-        className="mt-3 inline-block text-sm underline"
-      >
-        Read the full handoff →
-      </Link>
-    </details>
   );
 }
 async function GrowthSection({ sources }: { sources: OverviewSources }) {
@@ -488,7 +424,6 @@ async function StreamedProduct({
 function BriefPreview({
   title,
   status,
-  source,
   href,
 }: {
   title: string;
@@ -497,31 +432,19 @@ function BriefPreview({
   href: string;
 }) {
   return (
-    <article className="min-w-0 rounded-2xl border p-5">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="font-semibold">{title}</h3>
-        <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs">
-          {status}
-        </span>
+    <Link
+      href={href}
+      className="flex min-h-20 items-center justify-between gap-4 border-b border-zinc-200 py-4"
+    >
+      <div>
+        <h3 className="font-medium">{title}</h3>
+        <p className="mt-1 text-xs text-zinc-500">{status}</p>
       </div>
-      <div className="mt-3 max-h-64 overflow-y-auto">
-        {source.status === "ready" && source.data.exists ? (
-          <BriefMarkdown
-            body={
-              briefPreview(source.data.body) ||
-              "The saved entry has no Notes content."
-            }
-          />
-        ) : (
-          "Open Today to read, prepare or check the entry."
-        )}
-      </div>
-      <Link href={href} className="mt-4 inline-block text-sm underline">
-        Read full entry in Today →
-      </Link>
-    </article>
+      <span aria-hidden="true">→</span>
+    </Link>
   );
 }
+
 function GrowthCard({
   title,
   source,

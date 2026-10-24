@@ -44,15 +44,18 @@ export default async function UsersPage({
   return (
     <div className="space-y-7 text-zinc-950">
       <header className="rounded-3xl bg-yellow-300 p-6 sm:p-8">
-        <p className="text-xs uppercase tracking-widest">
-          Owner · Member administration
-        </p>
-        <h1 className="mt-3 text-3xl font-semibold">People & accounts</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6">
-          A person in the tree becomes activated when their signed-in account is
-          explicitly linked. Names and email matches never assign access
-          automatically.
-        </p>
+        <p className="text-xs uppercase tracking-widest">Member access</p>
+        <h1 className="mt-3 text-3xl font-semibold">Users</h1>
+        <details className="mt-3">
+          <summary className="min-h-11 cursor-pointer py-2 text-sm text-zinc-500">
+            Activation rules
+          </summary>
+          <p className="max-w-2xl text-sm leading-6">
+            A person in the tree becomes activated when their signed-in account
+            is explicitly linked. Names and email matches never assign access
+            automatically.
+          </p>
+        </details>
       </header>
       <nav aria-label="Activation status" className="grid gap-3 sm:grid-cols-3">
         {(Object.keys(statusLabels) as DirectoryStatus[]).map((key) => (
@@ -114,12 +117,9 @@ export default async function UsersPage({
         {status ? statusLabels[status].toLowerCase() : "people and accounts"} ·{" "}
         {directory.team.name} · Page {page} of {pages}
       </p>
-      <div className="grid items-start gap-4 lg:grid-cols-2">
+      <div className="divide-y divide-zinc-200">
         {filtered.slice((page - 1) * 30, page * 30).map((entry) => (
-          <article
-            key={entry.key}
-            className="min-w-0 rounded-2xl border border-zinc-200 p-5"
-          >
+          <article key={entry.key} className="min-w-0 py-5">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <h2 className="text-lg font-semibold">{entry.name}</h2>
               <span

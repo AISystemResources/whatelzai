@@ -229,3 +229,124 @@ html:has(.admin-shell[data-admin-size="larger"]) {
     color: #b6b6bf;
   }
 }
+
+/* Calm reading system: one hierarchy across every private Admin route. */
+.admin-shell #admin-main .admin-content {
+  padding-top: 2rem;
+}
+.admin-shell #admin-main h1 {
+  font-size: clamp(1.7rem, 3vw, 2.25rem);
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+}
+.admin-shell #admin-main :is(h2, h3) {
+  letter-spacing: -0.02em;
+}
+.admin-shell #admin-main header[class*="bg-yellow-"] {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid #e4e4e7;
+  border-radius: 0;
+  padding: 0 0 1.5rem;
+  color: inherit;
+}
+.admin-shell[data-admin-theme="dark"] #admin-main header[class*="bg-yellow-"] {
+  border-color: #3f3f46;
+  color: #f4f4f5;
+}
+.admin-shell
+  #admin-main
+  :is(section, article, details)[class*="border-zinc-200"]:not([role="alert"]) {
+  border-radius: 0;
+  border-left: 0;
+  border-right: 0;
+  padding-left: 0;
+  padding-right: 0;
+  box-shadow: none;
+}
+.admin-shell
+  #admin-main
+  :is(section, article)[class*="border-zinc-200"]:not([role="alert"]) {
+  border-top: 0;
+}
+.admin-shell #admin-main :is(button, summary) {
+  min-height: 2.75rem;
+}
+.admin-shell #admin-main :is(button, a, label)[class*="font-mono"] {
+  font-family: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+}
+.admin-shell
+  #admin-main
+  :is(
+    input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+    select,
+    textarea
+  ) {
+  font-family: inherit;
+  font-size: 1rem;
+  max-width: 100%;
+}
+.admin-shell #admin-main textarea {
+  line-height: 1.7;
+}
+.admin-shell #admin-main .prose {
+  font-size: 1rem;
+  line-height: 1.8;
+  max-width: 72ch;
+}
+.admin-shell #admin-main .prose :is(p, ul, ol) {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+.admin-calm-overview {
+  display: grid;
+  gap: 2rem;
+  min-width: 0;
+}
+.admin-calm-overview .admin-overview-extra {
+  border-top: 1px solid #e4e4e7;
+  padding-top: 0.5rem;
+  min-width: 0;
+}
+.admin-calm-overview .admin-overview-extra > summary {
+  min-height: 3rem;
+  padding: 0.75rem 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+.admin-shell[data-admin-theme="dark"] .admin-overview-extra {
+  border-color: #3f3f46;
+}
+.admin-document {
+  max-width: 76ch;
+}
+.admin-document details > summary {
+  line-height: 1.5;
+}
+.admin-daily-reader {
+  max-width: 76ch;
+}
+.admin-area-links {
+  max-width: 64rem;
+}
+@media (min-width: 1024px) {
+  .admin-calm-overview {
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    column-gap: 3rem;
+  }
+  .admin-calm-overview > :is(details, p) {
+    grid-column: 1/-1;
+  }
+}
+@media (max-width: 639px) {
+  .admin-shell #admin-main .admin-content {
+    padding-top: 1.5rem;
+  }
+  .admin-shell #admin-main header[class*="bg-yellow-"] {
+    padding-bottom: 1.25rem;
+  }
+}

@@ -9,12 +9,17 @@ export function AdminArea({
   links,
   children,
   intro,
+  groups,
 }: {
   title: string;
   description: string;
   links: readonly { href: string; label: string; description: string }[];
   children?: React.ReactNode;
   intro?: React.ReactNode;
+  groups?: readonly {
+    label: string;
+    links: readonly { href: string; label: string; description: string }[];
+  }[];
 }) {
   const { t } = useAdminPreferences();
   return (
@@ -27,7 +32,7 @@ export function AdminArea({
       </header>
       {intro}
       {links.length > 0 && (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="admin-area-links divide-y divide-zinc-200 border-y border-zinc-200">
           {links.map((link) => (
             <Link
               key={link.href}
@@ -35,13 +40,48 @@ export function AdminArea({
                 link.href.startsWith("/admin") ? adminUrl(link.href) : link.href
               }
               prefetch={false}
-              className="rounded-xl border border-zinc-200 p-5 transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900"
+              className="group flex min-h-20 items-center justify-between gap-4 py-4 focus-visible:outline-2 focus-visible:outline-yellow-400"
             >
-              <h2 className="font-semibold text-zinc-900">{t(link.label)} →</h2>
-              <p className="mt-2 text-sm text-zinc-600">
-                {t(link.description)}
-              </p>
+              <div>
+                <h2 className="text-base font-medium">{t(link.label)}</h2>
+                <p className="mt-1 text-sm text-zinc-500">
+                  {t(link.description)}
+                </p>
+              </div>
+              <span aria-hidden="true" className="text-zinc-400">
+                ↗
+              </span>
             </Link>
+          ))}
+        </div>
+      )}
+      {groups && (
+        <div className="admin-tool-groups divide-y divide-zinc-200 border-y border-zinc-200">
+          {groups.map((group) => (
+            <details key={group.label} className="py-3">
+              <summary className="min-h-11 cursor-pointer py-2 text-sm font-medium">
+                {t(group.label)}
+              </summary>
+              <div className="pb-3 pl-4">
+                {group.links.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={
+                      link.href.startsWith("/admin")
+                        ? adminUrl(link.href)
+                        : link.href
+                    }
+                    prefetch={false}
+                    className="block min-h-11 py-3 text-sm"
+                  >
+                    <span className="font-medium">{t(link.label)} →</span>
+                    <p className="mt-1 text-xs leading-5 text-zinc-500">
+                      {t(link.description)}
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            </details>
           ))}
         </div>
       )}

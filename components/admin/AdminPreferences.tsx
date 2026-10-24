@@ -168,3 +168,8 @@ export function PreferenceRows() {
     </section>
   );
 }
+
+export function AdminText({ text }: { text: string }) {
+  const { t } = useAdminPreferences();
+  return <>{t(text)}</>;
+}

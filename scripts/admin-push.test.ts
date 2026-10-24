@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { readFile } from "node:fs/promises";
 import vm from "node:vm";
+import { focusPushCandidate } from "../lib/admin-push/focus";
+import { DEFAULT_FOCUS } from "../lib/admin-focus";
 import { validPushCronBearer } from "../lib/admin-push/cron-auth";
 import { PGlite } from "@electric-sql/pglite";
 import {
@@ -110,6 +112,21 @@ test("worker shows generic notifications and confines clicks to Admin destinatio
   assert.equal(shown.title, "Your morning brief is ready");
   assert(!shown.body.includes("PRIVATE"));
   assert.equal(shown.data.url, "https://admin.whatelz.ai/today");
+  handlers.push({
+    data: {
+      json: () => ({
+        title: "Time for Personal",
+        url: "/personal",
+        tag: "focus-test",
+        body: "PRIVATE CONTENT",
+      }),
+    },
+    waitUntil: (p: Promise<unknown>) => (wait = p),
+  });
+  await wait;
+  assert.equal(shown.title, "Time for Personal");
+  assert.equal(shown.data.url, "https://admin.whatelz.ai/personal");
+  assert.equal(shown.body, "Open your scheduled space.");
   handlers.notificationclick({
     notification: { close() {}, data: { url: "/api/admin/tokens" } },
     waitUntil: (p: Promise<unknown>) => (wait = p),
@@ -127,6 +144,15 @@ test("SQL denies browser roles, deduplicates completed documents and bounds leas
       await readFile(
         new URL(
           "../supabase/migrations/20261024072128_admin_push_subscriptions.sql",
+          import.meta.url,
+        ),
+        "utf8",
+      ),
+    );
+    await db.exec(
+      await readFile(
+        new URL(
+          "../supabase/migrations/20261024085717_admin_focus_push.sql",
           import.meta.url,
         ),
         "utf8",
@@ -222,4 +248,49 @@ test("push payload excludes source paths and arbitrary private fields", () => {
   ]);
   assert(!JSON.stringify(payload).includes(notice.path));
   assert(!JSON.stringify(payload).includes(notice.privateBody));
+});
+
+test("focus alerts follow Singapore transitions, including Overview, without stale catch-up", () => {
+  const since = "2026-10-20T00:00:00Z";
+  const at = (time: string) => focusPushCandidate(new Date(time), null, since);
+  assert.equal(at("2026-10-23T00:00:00Z")?.title, "Time for Personal");
+  assert.equal(at("2026-10-23T01:00:00Z")?.url, "/day-job");
+  assert.equal(at("2026-10-23T10:00:00Z")?.url, "/personal");
+  assert.equal(at("2026-10-23T11:00:00Z")?.title, "Time for Network Marketing");
+  assert.equal(at("2026-10-23T14:00:00Z")?.url, "/");
+  assert.equal(at("2026-10-24T01:00:00Z")?.url, "/ai-business");
+  assert.equal(at("2026-10-24T10:00:00Z")?.title, "Time for Overview");
+  assert.equal(at("2026-10-23T16:00:00Z"), null); // midnight is still Overview
+  assert.equal(at("2026-10-23T00:04:59Z")?.title, "Time for Personal");
+  assert.equal(at("2026-10-23T00:05:00Z"), null);
+  assert.equal(at("2026-10-23T00:59:59Z"), null);
+});
+test("focus alerts respect per-device pause, edits, opt-in time and malformed schedules", () => {
+  const now = new Date("2026-10-23T00:01:00Z");
+  assert.equal(
+    focusPushCandidate(
+      now,
+      { ...DEFAULT_FOCUS, enabled: false },
+      "2026-10-20Z",
+    ),
+    null,
+  );
+  assert.equal(focusPushCandidate(now, null, "2026-10-23T00:00:01Z"), null);
+  assert.equal(focusPushCandidate(now, null, "bad"), null);
+  assert.equal(focusPushCandidate(now, { enabled: true }, "2026-10-20Z"), null);
+  const custom = {
+    ...DEFAULT_FOCUS,
+    blocks: [
+      {
+        days: "weekdays" as const,
+        start: 480,
+        end: 540,
+        space: "AI Business" as const,
+      },
+    ],
+  };
+  assert.equal(
+    focusPushCandidate(now, custom, "2026-10-20T00:00:00Z")?.url,
+    "/ai-business",
+  );
 });

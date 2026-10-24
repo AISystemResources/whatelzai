@@ -577,3 +577,7 @@ The selector has Overview, Personal, AI Business, Network Marketing and Day Job.
 ## Calm Admin Settings (SPR-162)
 
 Brand & design system belongs to AI Business, including active navigation state; its existing URL stays stable. Settings focuses on preferences, notifications, daily rhythm, installation and account controls. Technical access links are tucked into closed-by-default Advanced; inline MCP connection instructions are removed. Keep owner-facing copy short and avoid onboarding explanations in this personal workspace.
+
+## Scheduled focus notifications (SPR-163)
+
+Settings uses a compact per-device push switch, with test and sound help under Notification options. The existing enabled device remains enabled. One-minute server cron dispatches actual Singapore timetable transitions while the PWA is closed; EMDEE routine checks stay every five minutes and independent failures do not block focus alerts. Timetables mirror to private push subscription rows through owner-only same-origin validation; browser table grants remain denied. No-op sync preserves activation time. Durable per-device/block claims, five-minute eligibility window and 60-second TTL avoid duplicates and stale catch-up; unchanged spaces at midnight do not alert. Auto switching pause suppresses focus alerts; manual block overrides do not suppress reminders. Phone/browser manages sound; the web app cannot choose a custom ringtone. Reopen PWA after release for worker and timetable sync. No paid inference or private offline caching. See docs/admin-push.md.

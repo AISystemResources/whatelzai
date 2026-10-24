@@ -1,3 +1,4 @@
+import { validFocusSettings } from "@/lib/admin-focus";
 import { ensureUserRow } from "@/lib/users";
 import { isOwnerUser } from "@/lib/admin-policy";
 import { supabaseAdmin } from "@/lib/supabase-server";
@@ -11,6 +12,7 @@ import {
   pushDevice,
   savePushDevice,
   sendTest,
+  savePushFocus,
 } from "@/lib/admin-push/server";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -64,7 +66,12 @@ export async function POST(request: Request) {
     return reply({ error: "Request too large." }, 413);
   const raw = await request.text();
   if (raw.length > 8192) return reply({ error: "Request too large." }, 413);
-  let input: { action?: string; subscription?: unknown; endpoint?: string };
+  let input: {
+    action?: string;
+    subscription?: unknown;
+    endpoint?: string;
+    focus?: unknown;
+  };
   try {
     input = JSON.parse(raw);
   } catch {
@@ -72,7 +79,9 @@ export async function POST(request: Request) {
   }
   if (
     !input ||
-    !["status", "subscribe", "unsubscribe", "test"].includes(input.action || "")
+    !["status", "subscribe", "unsubscribe", "test", "focus"].includes(
+      input.action || "",
+    )
   )
     return reply({ error: "Invalid action." }, 400);
   try {
@@ -82,7 +91,13 @@ export async function POST(request: Request) {
       const parsed = pushSubscriptionSchema.safeParse(input.subscription);
       if (!parsed.success)
         return reply({ error: "Invalid push subscription." }, 400);
-      await savePushDevice(id, parsed.data);
+      if (input.focus !== undefined && !validFocusSettings(input.focus))
+        return reply({ error: "Invalid timetable." }, 400);
+      await savePushDevice(
+        id,
+        parsed.data,
+        validFocusSettings(input.focus) ? input.focus : undefined,
+      );
       return reply({ enabled: true });
     }
     if (
@@ -90,6 +105,14 @@ export async function POST(request: Request) {
       !trustedPushEndpoint(input.endpoint)
     )
       return reply({ error: "Invalid push endpoint." }, 400);
+    if (input.action === "focus") {
+      if (!validFocusSettings(input.focus))
+        return reply({ error: "Invalid timetable." }, 400);
+      const device = await pushDevice(id, input.endpoint);
+      if (!device?.enabled) return reply({ synced: false });
+      await savePushFocus(id, input.endpoint, input.focus);
+      return reply({ synced: true });
+    }
     if (input.action === "status") {
       const device = await pushDevice(id, input.endpoint);
       return reply({

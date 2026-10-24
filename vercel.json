@@ -12,7 +12,7 @@
     },
     {
       "path": "/api/cron/admin-push",
-      "schedule": "*/5 * * * *"
+      "schedule": "* * * * *"
     }
   ]
 }

@@ -18,6 +18,28 @@ export function validPreferences(value: unknown): value is AdminPreferences {
   );
 }
 export const chinese: Record<string, string> = {
+  "Current focus": "当前专注",
+  "Also accepted": "其他已接受事项",
+  "No accepted work ready for this block.":
+    "当前时段暂无已接受且可执行的事项。",
+  "Your saved focus could not be loaded.": "无法读取已保存的专注事项。",
+  "Review in Today →": "在今天中查看 →",
+  "From your saved entry · proposals remain proposals":
+    "来自已保存记录 · 建议不等于承诺",
+  "Entry notes": "记录说明",
+  "Read complete entry in original order": "按原顺序阅读完整记录",
+
+  "Daily reading": "每日阅读",
+  "Morning brief": "晨间简报",
+  "Writing & conversations": "写作与交流",
+  "Website & identity": "网站与品牌",
+  Offers: "服务",
+  Portfolio: "作品与经历",
+  "People & access": "成员与权限",
+  "Community & references": "社群与资料",
+  "One useful outcome for this work block.": "这段时间，专注一个有用的成果。",
+  "AsiaVerify. One work block at a time.": "AsiaVerify。专注当下的工作时段。",
+  "People, conversations and the next follow-up.": "关注人、交流与下一次跟进。",
   "Skip to content": "跳到正文",
   "Scheduled now": "当前时段",
   "Time block": "时段",

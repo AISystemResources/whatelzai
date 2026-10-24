@@ -1,4 +1,4 @@
-import { BriefMarkdown } from "@/components/admin/BriefMarkdown";
+import { BriefDocument } from "@/components/admin/BriefDocument";
 import Link from "@/components/admin/AdminLink";
 import { dailyOwner } from "@/lib/daily/server";
 import { weeklyStatus } from "@/lib/daily/weekly";
@@ -47,29 +47,33 @@ export default async function WeeklyPage() {
         <p className="text-xs uppercase tracking-widest">
           Your weekly practice
         </p>
-        <h1 className="mt-3 text-3xl font-semibold">
-          Keep the lesson. Keep moving.
-        </h1>
+        <h1 className="mt-3 text-3xl font-semibold">Weekly reflection</h1>
         <p className="mt-3 text-sm">
           {week.id} · {week.start} to {week.end}
         </p>
       </header>
-      <p className="text-sm leading-6">
-        {apiEnabled ? (
-          <>
-            Every Monday at 8am Singapore time, the previous Monday–Sunday
-            entries are condensed into one weekly reflection under Personal →
-            Daily → Weeks. Daily originals stay in Morning and Evening.
-          </>
-        ) : (
-          <>
-            ChatGPT prepares your weekly reflection every Monday at 3am
-            Singapore time, covering the previous Monday–Sunday. Daily originals
-            stay in Morning and Evening. Open or refresh this page after a run
-            to read the saved EMDEE summary. API generation is off.
-          </>
-        )}
-      </p>
+      <details className="border-b border-zinc-200 py-3">
+        <summary className="min-h-11 cursor-pointer py-2 text-sm">
+          Schedule & source
+        </summary>{" "}
+        <p className="text-sm leading-6">
+          {apiEnabled ? (
+            <>
+              Every Monday at 8am Singapore time, the previous Monday–Sunday
+              entries are condensed into one weekly reflection under Personal →
+              Daily → Weeks. Daily originals stay in Morning and Evening.
+            </>
+          ) : (
+            <>
+              ChatGPT prepares your weekly reflection every Monday at 3am
+              Singapore time, covering the previous Monday–Sunday. Daily
+              originals stay in Morning and Evening. Open or refresh this page
+              after a run to read the saved EMDEE summary. API generation is
+              off.
+            </>
+          )}
+        </p>
+      </details>
       <p role="status" className="text-sm">
         Last week:{" "}
         {saved
@@ -118,7 +122,7 @@ export default async function WeeklyPage() {
       ) : null}
       {body ? (
         <article className="min-w-0 rounded-2xl border border-zinc-200 p-6">
-          <BriefMarkdown body={body} />
+          <BriefDocument body={body} />
         </article>
       ) : null}
       <p className="text-xs text-zinc-500">

@@ -93,7 +93,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Site health stats */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+      <div className="admin-stat-strip grid grid-cols-2 gap-5 border-y border-zinc-200 py-5 sm:grid-cols-5">
         {stats.map(({ label, value, href }) => {
           const inner = (
             <>
@@ -109,12 +109,12 @@ export default async function DashboardPage() {
             <a
               key={label}
               href={adminUrl(href)}
-              className="border border-zinc-200 rounded p-4 hover:border-zinc-400 transition-colors"
+              className="min-w-0 py-2 hover:underline"
             >
               {inner}
             </a>
           ) : (
-            <div key={label} className="border border-zinc-200 rounded p-4">
+            <div key={label} className="min-w-0 py-2">
               {inner}
             </div>
           );

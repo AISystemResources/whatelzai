@@ -23,9 +23,7 @@ export default async function RoutineLibrary() {
         <p className="text-xs uppercase tracking-widest">
           Your reusable routines
         </p>
-        <h1 className="mt-3 text-3xl font-semibold">
-          A practice you can build on.
-        </h1>
+        <h1 className="mt-3 text-3xl font-semibold">Routine library</h1>
         <p className="mt-3 text-sm leading-6">
           Read the instructions behind your morning, evening and weekly
           practice. Download each skill to reuse it.
@@ -36,12 +34,12 @@ export default async function RoutineLibrary() {
         EMDEE vault. Your existing schedules remain separate; downloading or
         installing a skill does not change them.
       </p>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="divide-y divide-zinc-200 border-y border-zinc-200">
         {routines.map((routine, index) => (
           <Link
             key={routine.slug}
             href={adminUrl(`/admin/today/routines/${routine.slug}`)}
-            className="rounded-2xl border border-zinc-200 p-5 transition hover:border-zinc-400"
+            className="block py-5"
           >
             <p className="text-xs text-zinc-500">{routine.schedule}</p>
             <h2 className="mt-3 text-xl font-semibold">{routine.title}</h2>

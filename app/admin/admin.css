@@ -215,3 +215,7 @@ html:has(.admin-shell[data-admin-size="larger"]) {
     color: #f4f4f5;
   }
 }
+
+.admin-shell[data-admin-theme="dark"] [role="switch"] > span > span {
+  background-color: #f4f4f5;
+}

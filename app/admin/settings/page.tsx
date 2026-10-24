@@ -1,3 +1,4 @@
+import { FocusSettingsCard } from "@/components/admin/FocusSettings";
 import type { Metadata } from "next";
 import { PushNotifications } from "@/components/admin/PushNotifications";
 import { AdminArea } from "@/components/admin/AdminArea";
@@ -36,6 +37,7 @@ export default function SettingsPage() {
         },
       ]}
     >
+      <FocusSettingsCard />
       <section
         aria-labelledby="admin-install"
         className="max-w-2xl rounded-2xl border border-zinc-200 p-6"
@@ -44,9 +46,10 @@ export default function SettingsPage() {
           Your command centre, on your phone
         </h2>
         <p className="mt-2 mb-5 text-sm leading-6 text-zinc-600">
-          Add Whatelz Admin to your home screen. It opens on Today, ready for
-          your morning brief and evening closeout. Your owner sign-in is still
-          required, and reading needs an internet connection.
+          Add Whatelz Admin to your home screen. It follows your daily rhythm
+          when opened, with your morning brief and evening closeout in Personal.
+          Your owner sign-in is still required, and reading needs an internet
+          connection.
         </p>
         <InstallAppButton />
       </section>

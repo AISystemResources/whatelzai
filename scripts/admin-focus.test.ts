@@ -2,33 +2,43 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   DEFAULT_FOCUS,
+  normalizeFocusSettings,
   focusAt,
+  focusPath,
   validFocusSettings,
   canAutoSwitch,
   rootSpace,
   parseMinute,
   minuteInput,
 } from "../lib/admin-focus";
-import { adminWorkstreams, adminNavigation } from "../lib/admin-navigation";
+import {
+  adminWorkstreams,
+  adminFocusSpaces,
+  adminNavigation,
+} from "../lib/admin-navigation";
 const at = (local: string) => focusAt(new Date(`${local}+08:00`));
-test("five workspaces retain their order and Personal is a separate Home space", () => {
+test("Personal remains schedulable outside the four Home workstreams", () => {
   assert.deepEqual(
-    adminWorkstreams.map((item) => item.label),
+    adminFocusSpaces.map((item) => item.label),
     ["Overview", "Personal", "AI Business", "Network Marketing", "Day Job"],
   );
   assert.equal(rootSpace("/admin/personal"), "Personal");
-  assert.equal(adminNavigation("/personal").workstream, "Personal");
-  assert.equal(adminNavigation("/personal/notes").workstream, "Personal");
+  assert.equal(adminNavigation("/personal").tab, "personal");
+  assert.equal(
+    adminWorkstreams.some((item) => String(item.label) === "Personal"),
+    false,
+  );
+  assert.equal(adminNavigation("/personal/notes").tab, "personal");
   assert.equal(rootSpace("/personal/notes"), null);
 });
 test("weekday transitions use exact Singapore boundaries and Overview outside the blocks", () => {
   for (const [time, space] of [
     ["07:59", "Overview"],
-    ["08:00", "Personal"],
-    ["08:59", "Personal"],
+    ["08:00", "Overview"],
+    ["08:59", "Overview"],
     ["09:00", "Day Job"],
     ["17:59", "Day Job"],
-    ["18:00", "Personal"],
+    ["18:00", "Overview"],
     ["19:00", "Network Marketing"],
     ["21:59", "Network Marketing"],
     ["22:00", "Overview"],
@@ -132,6 +142,18 @@ test("automatic navigation preserves deep links, edits, dialogs and utility work
     canAutoSwitch({ ...safe, path: "/settings", initial: false }),
     false,
   );
+  assert.equal(
+    canAutoSwitch({ ...safe, path: "/users", initial: false }),
+    false,
+  );
+  assert.equal(
+    canAutoSwitch({ ...safe, path: "/admin/users/example", initial: false }),
+    false,
+  );
+  assert.equal(
+    canAutoSwitch({ ...safe, path: "/personal", initial: false }),
+    true,
+  );
   for (const key of ["dirty", "editing", "dialog"] as const)
     assert.equal(canAutoSwitch({ ...safe, [key]: true }), false);
   assert.equal(canAutoSwitch({ ...safe, visible: false }), false);
@@ -142,4 +164,26 @@ test("time editing handles end-of-day midnight and malformed inputs", () => {
   assert.equal(minuteInput(1440), "00:00");
   assert.ok(Number.isNaN(parseMinute("24:30")));
   assert.equal(minuteInput(NaN), "");
+});
+
+test("legacy Personal timetable blocks become Overview without losing schedule settings", () => {
+  const legacy = {
+    ...DEFAULT_FOCUS,
+    blocks: [
+      {
+        days: "weekdays" as const,
+        start: 480,
+        end: 540,
+        space: "Personal" as const,
+      },
+    ],
+  };
+  assert.equal(validFocusSettings(legacy), true);
+  assert.equal(normalizeFocusSettings(legacy).blocks[0].space, "Overview");
+  assert.equal(legacy.blocks[0].space, "Personal");
+  assert.equal(
+    focusAt(new Date("2026-10-26T08:30:00+08:00"), legacy).path,
+    "/admin",
+  );
+  assert.equal(focusPath("Personal"), "/admin/personal");
 });

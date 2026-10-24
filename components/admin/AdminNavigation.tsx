@@ -6,12 +6,17 @@ import Link from "@/components/admin/AdminLink";
 import { WhatelzMark } from "@/components/brand/WhatelzMark";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
-import { Check, ChevronDown, House, Settings2, UsersRound } from "lucide-react";
+import { Check, ChevronDown, House, Settings2, UserRound } from "lucide-react";
 import { adminUrl } from "@/lib/admin-url";
 import { adminNavigation, adminWorkstreams } from "@/lib/admin-navigation";
 
 const tabs = [
-  { key: "users", label: "Users", path: "/admin/users", icon: UsersRound },
+  {
+    key: "personal",
+    label: "Personal",
+    path: "/admin/personal",
+    icon: UserRound,
+  },
   { key: "home", label: "Home", path: "/admin", icon: House },
   {
     key: "settings",
@@ -28,7 +33,8 @@ export function AdminNavigation() {
   const current = adminNavigation(pathname);
   const switcher = useRef<HTMLDetailsElement>(null);
   const activeLabel =
-    current.workstream ?? (current.tab === "users" ? "Users" : "Settings");
+    current.workstream ??
+    (current.tab === "personal" ? "Personal" : "Settings");
   useEffect(() => {
     const closeOutside = (event: PointerEvent) => {
       if (
@@ -96,80 +102,86 @@ export function AdminNavigation() {
                 </Link>
               ))}
             </nav>
-            <details
-              key={pathname}
-              ref={switcher}
-              className="group relative shrink-0"
-            >
-              <summary
-                aria-label={`Choose area: ${t(activeLabel)}`}
-                className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-full bg-yellow-300 px-4 text-sm font-medium text-zinc-950 transition hover:bg-yellow-200 focus-visible:outline-2 focus-visible:outline-offset-2 [&::-webkit-details-marker]:hidden"
+            {current.tab === "home" ? (
+              <details
+                key={pathname}
+                ref={switcher}
+                className="group relative shrink-0"
               >
-                {t(activeLabel)}
-                <ChevronDown
-                  size={16}
-                  aria-hidden="true"
-                  className="shrink-0 transition-transform group-open:rotate-180"
-                />
-              </summary>
-              <nav
-                aria-label="Admin workstreams"
-                className="absolute right-0 top-full z-50 mt-2 w-60 max-w-[calc(100vw-2rem)] rounded-2xl border border-zinc-200 bg-white p-2 text-zinc-950 shadow-xl shadow-zinc-950/10"
-              >
-                {adminWorkstreams.map((item) => {
-                  const active = current.workstream === item.label;
-                  return (
-                    <Link
-                      key={item.path}
-                      href={adminUrl(item.path)}
-                      aria-current={active ? "location" : undefined}
-                      onClick={() => {
-                        if (switcher.current) {
-                          switcher.current.open = false;
-                          switcher.current.querySelector("summary")?.focus();
-                        }
-                      }}
-                      className={`flex min-h-12 items-center justify-between gap-4 rounded-xl px-3 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] ${active ? "bg-yellow-100" : "hover:bg-zinc-100"}`}
-                    >
-                      {t(item.label)}
-                      {active && <Check size={16} aria-hidden="true" />}
-                    </Link>
-                  );
-                })}
-                <div className="mt-1 border-t border-zinc-100 px-3 pt-3 pb-1 text-xs text-zinc-500">
-                  <p>
-                    {t(
-                      !focus?.ready
-                        ? "Checking schedule…"
-                        : !focus.settings.enabled
-                          ? "Automatic switching paused"
-                          : focus.manual
-                            ? "Manual choice · until next block"
-                            : "Following your schedule",
-                    )}
-                  </p>
-                  {focus?.ready &&
-                    (!focus.settings.enabled || focus.manual) && (
-                      <button
-                        type="button"
+                <summary
+                  aria-label={`Choose area: ${t(activeLabel)}`}
+                  className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-full bg-yellow-300 px-4 text-sm font-medium text-zinc-950 transition hover:bg-yellow-200 focus-visible:outline-2 focus-visible:outline-offset-2 [&::-webkit-details-marker]:hidden"
+                >
+                  {t(activeLabel)}
+                  <ChevronDown
+                    size={16}
+                    aria-hidden="true"
+                    className="shrink-0 transition-transform group-open:rotate-180"
+                  />
+                </summary>
+                <nav
+                  aria-label="Admin workstreams"
+                  className="absolute right-0 top-full z-50 mt-2 w-60 max-w-[calc(100vw-2rem)] rounded-2xl border border-zinc-200 bg-white p-2 text-zinc-950 shadow-xl shadow-zinc-950/10"
+                >
+                  {adminWorkstreams.map((item) => {
+                    const active = current.workstream === item.label;
+                    return (
+                      <Link
+                        key={item.path}
+                        href={adminUrl(item.path)}
+                        aria-current={active ? "location" : undefined}
                         onClick={() => {
-                          if (switcher.current) switcher.current.open = false;
-                          focus.follow();
+                          if (switcher.current) {
+                            switcher.current.open = false;
+                            switcher.current.querySelector("summary")?.focus();
+                          }
                         }}
-                        className="mt-2 min-h-11 text-left font-medium text-zinc-950"
+                        className={`flex min-h-12 items-center justify-between gap-4 rounded-xl px-3 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] ${active ? "bg-yellow-100" : "hover:bg-zinc-100"}`}
                       >
-                        {t("Follow schedule now →")}
-                      </button>
-                    )}
-                  <Link
-                    href={adminUrl("/admin/settings#focus-schedule")}
-                    className="mt-1 flex min-h-11 items-center text-zinc-600"
-                  >
-                    {t("Schedule settings →")}
-                  </Link>
-                </div>
-              </nav>
-            </details>
+                        {t(item.label)}
+                        {active && <Check size={16} aria-hidden="true" />}
+                      </Link>
+                    );
+                  })}
+                  <div className="mt-1 border-t border-zinc-100 px-3 pt-3 pb-1 text-xs text-zinc-500">
+                    <p>
+                      {t(
+                        !focus?.ready
+                          ? "Checking schedule…"
+                          : !focus.settings.enabled
+                            ? "Automatic switching paused"
+                            : focus.manual
+                              ? "Manual choice · until next block"
+                              : "Following your schedule",
+                      )}
+                    </p>
+                    {focus?.ready &&
+                      (!focus.settings.enabled || focus.manual) && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (switcher.current) switcher.current.open = false;
+                            focus.follow();
+                          }}
+                          className="mt-2 min-h-11 text-left font-medium text-zinc-950"
+                        >
+                          {t("Follow schedule now →")}
+                        </button>
+                      )}
+                    <Link
+                      href={adminUrl("/admin/settings#focus-schedule")}
+                      className="mt-1 flex min-h-11 items-center text-zinc-600"
+                    >
+                      {t("Schedule settings →")}
+                    </Link>
+                  </div>
+                </nav>
+              </details>
+            ) : (
+              <span className="inline-flex min-h-11 items-center rounded-full bg-yellow-300 px-4 text-sm font-medium text-zinc-950">
+                {t(activeLabel)}
+              </span>
+            )}
           </div>
         </div>
       </header>

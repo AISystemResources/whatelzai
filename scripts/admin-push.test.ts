@@ -253,15 +253,15 @@ test("push payload excludes source paths and arbitrary private fields", () => {
 test("focus alerts follow Singapore transitions, including Overview, without stale catch-up", () => {
   const since = "2026-10-20T00:00:00Z";
   const at = (time: string) => focusPushCandidate(new Date(time), null, since);
-  assert.equal(at("2026-10-23T00:00:00Z")?.title, "Time for Personal");
+  assert.equal(at("2026-10-23T00:00:00Z"), null); // Overview remains Overview
   assert.equal(at("2026-10-23T01:00:00Z")?.url, "/day-job");
-  assert.equal(at("2026-10-23T10:00:00Z")?.url, "/personal");
+  assert.equal(at("2026-10-23T10:00:00Z")?.url, "/");
   assert.equal(at("2026-10-23T11:00:00Z")?.title, "Time for Network Marketing");
   assert.equal(at("2026-10-23T14:00:00Z")?.url, "/");
   assert.equal(at("2026-10-24T01:00:00Z")?.url, "/ai-business");
   assert.equal(at("2026-10-24T10:00:00Z")?.title, "Time for Overview");
   assert.equal(at("2026-10-23T16:00:00Z"), null); // midnight is still Overview
-  assert.equal(at("2026-10-23T00:04:59Z")?.title, "Time for Personal");
+  assert.equal(at("2026-10-23T10:04:59Z")?.title, "Time for Overview");
   assert.equal(at("2026-10-23T00:05:00Z"), null);
   assert.equal(at("2026-10-23T00:59:59Z"), null);
 });

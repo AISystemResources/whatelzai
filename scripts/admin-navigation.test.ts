@@ -19,9 +19,9 @@ test("clean host paths and preview /admin paths select the same navigation", () 
   }
   assert.equal(cleanAdminPath("/administrator"), "/administrator");
 });
-test("Users and Settings own their deep links without selecting a workstream", () => {
-  assert.deepEqual(adminNavigation("/users"), {
-    tab: "users",
+test("Personal and Settings own their deep links without selecting a workstream", () => {
+  assert.deepEqual(adminNavigation("/personal/notes"), {
+    tab: "personal",
     workstream: null,
   });
   for (const path of ["/settings", "/tokens", "/developer"])
@@ -32,7 +32,13 @@ test("Users and Settings own their deep links without selecting a workstream", (
   assert.equal(adminNavigation("/users-guide").tab, "home");
 });
 test("existing tools stay under their parent venture and Today stays reachable under Overview", () => {
-  for (const path of ["/team/person", "/calendar-access", "/network-marketing"])
+  for (const path of [
+    "/team/person",
+    "/calendar-access",
+    "/network-marketing",
+    "/users",
+    "/users/example",
+  ])
     assert.deepEqual(adminNavigation(path), {
       tab: "home",
       workstream: "Network Marketing",

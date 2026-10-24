@@ -210,7 +210,7 @@ export function FocusSettingsCard() {
                     days: "weekends",
                     start: 1080,
                     end: 1140,
-                    space: "Personal",
+                    space: "Overview",
                   },
                 ],
               })

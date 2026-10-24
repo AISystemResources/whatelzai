@@ -1,9 +1,15 @@
 export const adminWorkstreams = [
   { label: "Overview", path: "/admin" },
-  { label: "Personal", path: "/admin/personal" },
   { label: "AI Business", path: "/admin/ai-business" },
   { label: "Network Marketing", path: "/admin/network-marketing" },
   { label: "Day Job", path: "/admin/day-job" },
+] as const;
+
+// Timetables retain Personal even though it is no longer a Home workstream.
+export const adminFocusSpaces = [
+  adminWorkstreams[0],
+  { label: "Personal", path: "/admin/personal" },
+  ...adminWorkstreams.slice(1),
 ] as const;
 
 export function cleanAdminPath(pathname: string) {
@@ -14,22 +20,23 @@ const within = (path: string, root: string) =>
 
 export function adminNavigation(pathname: string) {
   const path = cleanAdminPath(pathname);
-  if (within(path, "/users"))
-    return { tab: "users" as const, workstream: null };
+  if (within(path, "/personal"))
+    return { tab: "personal" as const, workstream: null };
   if (["/settings", "/tokens", "/developer"].some((root) => within(path, root)))
     return { tab: "settings" as const, workstream: null };
-  const workstream = ["/network-marketing", "/team", "/calendar-access"].some(
-    (root) => within(path, root),
-  )
+  const workstream = [
+    "/network-marketing",
+    "/team",
+    "/calendar-access",
+    "/users",
+  ].some((root) => within(path, root))
     ? "Network Marketing"
-    : within(path, "/personal")
-      ? "Personal"
-      : within(path, "/day-job")
-        ? "Day Job"
-        : path === "/" ||
-            within(path, "/today") ||
-            within(path, "/command-center")
-          ? "Overview"
-          : "AI Business";
+    : within(path, "/day-job")
+      ? "Day Job"
+      : path === "/" ||
+          within(path, "/today") ||
+          within(path, "/command-center")
+        ? "Overview"
+        : "AI Business";
   return { tab: "home" as const, workstream };
 }

@@ -5,6 +5,11 @@ import { SprintFocus } from "@/components/admin/SprintFocus";
 export const metadata: Metadata = { title: "Network Marketing — Admin" };
 const links = [
   {
+    href: "/admin/users",
+    label: "People",
+    description: "Activation, account assignment and AI credits.",
+  },
+  {
     href: "https://app.whatelz.ai/leads",
     label: "Leads",
     description: "Open your private prospect profiles and next follow-ups.",
@@ -60,7 +65,7 @@ export default function NetworkMarketingPage() {
         </Suspense>
       }
       links={links.filter((link) =>
-        ["Leads", "Member workspace"].includes(link.label),
+        ["People", "Leads", "Member workspace"].includes(link.label),
       )}
       groups={[
         {

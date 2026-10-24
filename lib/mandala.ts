@@ -11,7 +11,17 @@ export function mandalaAreas(body: string) {
       ...section,
       cells: [
         ...section.body.matchAll(/^([1-8])\. \*\*(.+?)\*\* — (.+)$/gm),
-      ].map((match) => ({ number: Number(match[1]), title: match[2] })),
+      ].map((match, index, matches) => ({
+        number: Number(match[1]),
+        title: match[2],
+        detail: (
+          match[3] +
+          section.body.slice(
+            match.index! + match[0].length,
+            matches[index + 1]?.index ?? section.body.length,
+          )
+        ).trim(),
+      })),
     }));
   if (
     areas.length !== 8 ||
@@ -24,4 +34,22 @@ export function mandalaAreas(body: string) {
   )
     return null;
   return areas;
+}
+
+/** Extract only explicitly written goal figures; unmatched formats keep the source fallback. */
+export function mandalaGoal(body: string) {
+  const centre = readingSections(body).find((section) =>
+    section.title.startsWith("Centre —"),
+  );
+  const paragraph = centre?.body.split(/\n\s*\n/)[0] ?? "";
+  const match = paragraph.match(
+    /^By age (\d+): SG\$([\d,]+) monthly[\s\S]*?against SG\$([\d,]+) monthly living expenses, demonstrated for ([^.]+)\./,
+  );
+  return {
+    centre,
+    sentence: paragraph.split(/(?<=\.)\s/)[0],
+    figures: match
+      ? { age: match[1], income: match[2], expenses: match[3], proof: match[4] }
+      : null,
+  };
 }

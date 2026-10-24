@@ -603,3 +603,7 @@ SPR-167 steering: Personal is manual-only. Former Personal timetable blocks reso
 ## Personal Mandala (SPR-168)
 
 Personal links to an owner-only /personal/mandala reader. It calls dailyOwner before loading the existing EMDEE connection and reads one fixed canonical Dream/Mandala path with no-store. No new credentials, client-side vault calls, private source snapshots in the repository or task generation. Source H3 sections and complete original document remain available; optional 9×9 grid is shown only if all eight ordered areas have eight ordered cells. Display draft provenance and open decisions; approved plan is not execution evidence. No quarters/seasons assigned. See docs/personal-mandala.md.
+
+## Mandala reading layout (SPR-169)
+
+Mandala is a dedicated reader, not an EMDEE heading accordion. Keep the shared Admin shell; present source-derived goal figures, one selected life area with eight visible actions, separate Money & time, full grid and full original-record views. Desktop index/reading columns become a labelled area selector and single-column reading on mobile. Retain approval provenance, all supporting detail, original source, parser fallback and owner-first fixed-path no-store reads. Goals remain targets, not achieved income. No source or task mutations. Taste app-screen direction editorial-greeting seed 105231933, keeping existing brand/type and shell. See docs/personal-mandala.md.

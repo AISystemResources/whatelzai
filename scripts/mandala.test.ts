@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
-import { MANDALA_PATH, mandalaAreas } from "../lib/mandala";
+import { MANDALA_PATH, mandalaAreas, mandalaGoal } from "../lib/mandala";
 
 const body = Array.from(
   { length: 8 },
@@ -16,6 +16,14 @@ test("grid requires all eight ordered areas and eight ordered actions, preservin
   assert.equal(areas.flatMap((area) => area.cells).length, 64);
   assert(areas[0].body.includes("Approval provenance: editable."));
   assert(areas[0].body.includes("Detail retained."));
+  assert.equal(areas[0].cells[0].detail, "Detail retained.");
+  const multiline = mandalaAreas(
+    body.replace(
+      "Detail retained.\n2.",
+      "Detail retained.\n\nAdditional source context.\n2.",
+    ),
+  )!;
+  assert(multiline[0].cells[0].detail.includes("Additional source context."));
   assert.equal(mandalaAreas(body.replace("### 8. Area 8", "### Other")), null);
   assert.equal(
     mandalaAreas(body.replace("8. **Action 8**", "9. **Action 8**")),
@@ -25,6 +33,23 @@ test("grid requires all eight ordered areas and eight ordered actions, preservin
     mandalaAreas(body.replace("### 2. Area 2", "### 1. Duplicate")),
     null,
   );
+});
+
+test("headline figures are extracted from explicit source wording without inventing changed goals", () => {
+  const source =
+    "### Centre — My direction\n\nBy age 31: SG$7,250 monthly sustainable passive income, against SG$3,625 monthly living expenses, demonstrated for eight consecutive months. More context remains here.";
+  assert.deepEqual(mandalaGoal(source).figures, {
+    age: "31",
+    income: "7,250",
+    expenses: "3,625",
+    proof: "eight consecutive months",
+  });
+  assert.equal(
+    mandalaGoal("### Centre — New direction\n\nA goal that has changed.")
+      .figures,
+    null,
+  );
+  assert.equal(mandalaGoal("No centre section").figures, null);
 });
 
 test("private loader authorizes before credentials and reads only the fixed canonical document", async () => {

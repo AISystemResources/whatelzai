@@ -47,6 +47,15 @@ export async function emdeeCall<T>(
           .slice(5)
       : raw,
   );
+  // EMDEE also reports exact missing paths as JSON-RPC internal errors.
+  // Match the documented response for this exact read, never arbitrary errors.
+  if (
+    name === "get_doc" &&
+    typeof args.path === "string" &&
+    rpc.error?.code === -32603 &&
+    rpc.error?.message === `no such doc: ${args.path}`
+  )
+    throw new MissingDocument();
   if (rpc.error)
     throw new Error(
       "EMDEE could not complete this request. Your text has been kept in the editor.",

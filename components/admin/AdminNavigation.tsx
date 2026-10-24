@@ -4,13 +4,9 @@ import Link from "next/link";
 import { WhatelzMark } from "@/components/brand/WhatelzMark";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
-import { House, Settings2, Sunrise, UsersRound } from "lucide-react";
+import { Check, ChevronDown, House, Settings2, UsersRound } from "lucide-react";
 import { adminUrl } from "@/lib/admin-url";
-import {
-  adminNavigation,
-  adminWorkstreams,
-  cleanAdminPath,
-} from "@/lib/admin-navigation";
+import { adminNavigation, adminWorkstreams } from "@/lib/admin-navigation";
 
 const tabs = [
   { key: "users", label: "Users", path: "/admin/users", icon: UsersRound },
@@ -26,12 +22,31 @@ const tabs = [
 export function AdminNavigation() {
   const pathname = usePathname();
   const current = adminNavigation(pathname);
-  const switcher = useRef<HTMLElement>(null);
+  const switcher = useRef<HTMLDetailsElement>(null);
+  const activeLabel =
+    current.workstream ?? (current.tab === "users" ? "Users" : "Settings");
   useEffect(() => {
-    switcher.current
-      ?.querySelector<HTMLElement>("[aria-current]")
-      ?.scrollIntoView({ block: "nearest", inline: "center" });
-  }, [current.workstream]);
+    const closeOutside = (event: PointerEvent) => {
+      if (
+        event.target instanceof Node &&
+        !switcher.current?.contains(event.target)
+      ) {
+        if (switcher.current) switcher.current.open = false;
+      }
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && switcher.current?.open) {
+        switcher.current.open = false;
+        switcher.current.querySelector("summary")?.focus();
+      }
+    };
+    document.addEventListener("pointerdown", closeOutside);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOutside);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, []);
 
   return (
     <>
@@ -43,7 +58,7 @@ export function AdminNavigation() {
       </a>
       <header className="sticky top-0 z-30 border-b border-zinc-200 bg-white/95 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 md:px-10">
-          <div className="flex min-h-16 items-center justify-between gap-4">
+          <div className="flex min-h-16 items-center justify-between gap-3">
             <Link
               href={adminUrl("/admin")}
               aria-label="Whatelz Admin overview"
@@ -52,47 +67,58 @@ export function AdminNavigation() {
               <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#FACC15] text-[#18181B]">
                 <WhatelzMark className="w-8" />
               </span>
-              <span>
+              <span className="max-[380px]:hidden">
                 <span className="block text-sm font-semibold tracking-tight">
                   Whatelz Admin
                 </span>
-                <span className="block text-[10px] uppercase tracking-[0.18em] text-zinc-500">
+                <span className="hidden text-[10px] uppercase sm:block tracking-[0.18em] text-zinc-500">
                   Your command centre
                 </span>
               </span>
             </Link>
-            <Link
-              href={adminUrl("/admin/today")}
-              aria-current={
-                cleanAdminPath(pathname).startsWith("/today")
-                  ? "page"
-                  : undefined
-              }
-              className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full bg-zinc-100 px-4 text-sm font-medium transition hover:bg-yellow-100 focus-visible:outline-2 focus-visible:outline-offset-2"
+            <details
+              key={pathname}
+              ref={switcher}
+              className="group relative shrink-0"
             >
-              <Sunrise size={17} aria-hidden="true" />
-              Today
-            </Link>
+              <summary
+                aria-label={`Choose area: ${activeLabel}`}
+                className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-full bg-yellow-300 px-4 text-sm font-medium text-zinc-950 transition hover:bg-yellow-200 focus-visible:outline-2 focus-visible:outline-offset-2 [&::-webkit-details-marker]:hidden"
+              >
+                {activeLabel}
+                <ChevronDown
+                  size={16}
+                  aria-hidden="true"
+                  className="shrink-0 transition-transform group-open:rotate-180"
+                />
+              </summary>
+              <nav
+                aria-label="Admin workstreams"
+                className="absolute right-0 top-full z-50 mt-2 w-60 max-w-[calc(100vw-2rem)] rounded-2xl border border-zinc-200 bg-white p-2 text-zinc-950 shadow-xl shadow-zinc-950/10"
+              >
+                {adminWorkstreams.map((item) => {
+                  const active = current.workstream === item.label;
+                  return (
+                    <Link
+                      key={item.path}
+                      href={adminUrl(item.path)}
+                      aria-current={active ? "location" : undefined}
+                      onClick={() => {
+                        if (switcher.current) {
+                          switcher.current.open = false;
+                          switcher.current.querySelector("summary")?.focus();
+                        }
+                      }}
+                      className={`flex min-h-12 items-center justify-between gap-4 rounded-xl px-3 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] ${active ? "bg-yellow-100" : "hover:bg-zinc-100"}`}
+                    >
+                      {item.label}
+                      {active && <Check size={16} aria-hidden="true" />}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </details>
           </div>
-          <nav
-            ref={switcher}
-            aria-label="Admin workstreams"
-            className="-mx-4 flex snap-x gap-1 overflow-x-auto overscroll-x-contain px-4 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:px-0"
-          >
-            {adminWorkstreams.map((item) => {
-              const active = current.workstream === item.label;
-              return (
-                <Link
-                  key={item.path}
-                  href={adminUrl(item.path)}
-                  aria-current={active ? "location" : undefined}
-                  className={`inline-flex min-h-11 shrink-0 snap-center items-center rounded-full px-4 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 ${active ? "bg-yellow-300 text-zinc-950" : "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-950"}`}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
         </div>
       </header>
       <nav

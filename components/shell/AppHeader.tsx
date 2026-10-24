@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { WhatelzMark } from "@/components/brand/WhatelzMark";
 import { usePathname } from "next/navigation";
 import { useRef } from "react";
 import { ThemeToggle } from "./ThemeToggle";
@@ -28,9 +29,13 @@ export function AppHeader() {
         Skip to content
       </a>
       <div className="header-inner">
-        <Link href="/" className="wordmark" aria-label="whatelz.ai home">
-          whatelz<span>↗</span>
-          <small>.ai</small>
+        <Link
+          href="/"
+          className="wordmark whatelz-brand-lockup"
+          aria-label="whatelz.ai home"
+        >
+          <WhatelzMark className="whatelz-brand-symbol" />
+          whatelz.ai
         </Link>
         <nav className="primary-nav" aria-label="Main navigation">
           <Link

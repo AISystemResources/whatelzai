@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { WhatelzMark } from "@/components/brand/WhatelzMark";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { House, Settings2, Sunrise, UsersRound } from "lucide-react";
@@ -48,27 +49,9 @@ export function AdminNavigation() {
               aria-label="Whatelz Admin overview"
               className="flex min-h-11 items-center gap-3 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4"
             >
-              {/* Same W mark as the installed Admin app. */}
-              <svg
-                viewBox="0 0 512 512"
-                aria-hidden="true"
-                className="h-9 w-9 rounded-xl bg-[#ffe458]"
-              >
-                <path
-                  d="m140 155 45 152 71-112 71 112 45-152"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="30"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M161 357h44m29 0h44m29 0h44"
-                  stroke="currentColor"
-                  strokeWidth="14"
-                  strokeLinecap="round"
-                />
-              </svg>
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#FACC15] text-[#18181B]">
+                <WhatelzMark className="w-8" />
+              </span>
               <span>
                 <span className="block text-sm font-semibold tracking-tight">
                   Whatelz Admin

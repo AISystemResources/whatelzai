@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { WhatelzMark } from "@/components/brand/WhatelzMark";
 import { usePathname } from "next/navigation";
 export function SiteFooter({ ownerName }: { ownerName: string }) {
   const pathname = usePathname();
@@ -57,8 +58,13 @@ export function SiteFooter({ ownerName }: { ownerName: string }) {
             <Link href="/channels">All channels →</Link>
           </nav>
         </div>
-        <Link href="/" className="footer-wordmark" aria-label="whatelz.ai home">
-          whatelz<span>↗</span>
+        <Link
+          href="/"
+          className="footer-wordmark whatelz-brand-lockup"
+          aria-label="whatelz.ai home"
+        >
+          <WhatelzMark className="whatelz-brand-symbol" />
+          whatelz.ai
         </Link>
         <div className="footer-bottom">
           <span>

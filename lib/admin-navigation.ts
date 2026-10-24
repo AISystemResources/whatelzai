@@ -16,8 +16,8 @@ export function adminNavigation(pathname: string) {
   if (within(path, "/users"))
     return { tab: "users" as const, workstream: null };
   if (
-    ["/settings", "/profile", "/tokens", "/developer"].some((root) =>
-      within(path, root),
+    ["/settings", "/profile", "/tokens", "/developer", "/design-system"].some(
+      (root) => within(path, root),
     )
   )
     return { tab: "settings" as const, workstream: null };

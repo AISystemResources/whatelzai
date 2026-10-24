@@ -343,3 +343,36 @@
   color: var(--ink);
   background-color: var(--surface);
 }
+
+/* Whatelz identity v1 — shared vector, inherited light/dark ink. */
+.wordmark.whatelz-brand-lockup {
+  align-items: center;
+  gap: 9px;
+  letter-spacing: -0.06em;
+  white-space: nowrap;
+}
+.whatelz-brand-symbol {
+  display: block;
+  flex-shrink: 0;
+  width: 1.35em;
+  height: auto;
+  color: var(--brand-yellow);
+}
+.footer-wordmark.whatelz-brand-lockup {
+  display: flex;
+  align-items: center;
+  gap: 0.12em;
+  font-size: clamp(36px, 13vw, 170px);
+}
+@media (max-width: 600px) {
+  .wordmark.whatelz-brand-lockup {
+    gap: 6px;
+    font-size: 21px;
+  }
+}
+@media (max-width: 380px) {
+  .wordmark.whatelz-brand-lockup {
+    gap: 5px;
+    font-size: 18px;
+  }
+}

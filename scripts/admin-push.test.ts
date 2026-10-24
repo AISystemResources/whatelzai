@@ -6,6 +6,7 @@ import { validPushCronBearer } from "../lib/admin-push/cron-auth";
 import { PGlite } from "@electric-sql/pglite";
 import {
   routineCandidates,
+  notificationPayload,
   savedRoutineReady,
   trustedPushEndpoint,
   pushSubscriptionSchema,
@@ -205,4 +206,20 @@ test("browser subscription JSON accepts its standard nullable expiration field",
     },
   });
   assert(parsed.success);
+});
+
+test("push payload excludes source paths and arbitrary private fields", () => {
+  const notice = {
+    ...routineCandidates()[0],
+    privateBody: "private reflection",
+  };
+  const payload = notificationPayload(notice);
+  assert.deepEqual(Object.keys(payload).sort(), [
+    "body",
+    "tag",
+    "title",
+    "url",
+  ]);
+  assert(!JSON.stringify(payload).includes(notice.path));
+  assert(!JSON.stringify(payload).includes(notice.privateBody));
 });

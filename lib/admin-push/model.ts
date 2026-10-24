@@ -81,3 +81,16 @@ export function savedRoutineReady(
     edited <= Date.now() + 300000
   );
 }
+
+export function notificationPayload(notice: {
+  title: string;
+  url: string;
+  tag: string;
+}) {
+  return {
+    title: notice.title,
+    url: notice.url,
+    tag: notice.tag,
+    body: "Open Whatelz Admin to read it.",
+  };
+}

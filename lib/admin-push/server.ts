@@ -11,6 +11,7 @@ import {
   pushSubscriptionSchema,
   routineCandidates,
   savedRoutineReady,
+  notificationPayload,
   type SavedSubscription,
 } from "./model";
 
@@ -103,7 +104,7 @@ export async function sendPush(
   try {
     await webpush.sendNotification(
       subscription,
-      JSON.stringify({ ...notice, body: "Open Whatelz Admin to read it." }),
+      JSON.stringify(notificationPayload(notice)),
       {
         vapidDetails: {
           subject: "https://whatelz.ai",

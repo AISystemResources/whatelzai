@@ -5,6 +5,11 @@ export const metadata: Metadata = { title: "AI Business — Admin" };
 
 const links = [
   {
+    href: "/admin/design-system",
+    label: "Brand & design system",
+    description: "Logo, colours and brand assets.",
+  },
+  {
     href: "/admin/site-dashboard",
     label: "Website dashboard",
     description: "Manage website sections and review content activity.",

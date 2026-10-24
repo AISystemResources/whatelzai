@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PushNotifications } from "@/components/admin/PushNotifications";
 import { AdminArea } from "@/components/admin/AdminArea";
 import { MCPConnectHint } from "@/components/admin/MCPConnectHint";
 import { InstallAppButton } from "@/components/fcos/AppInstallation";
@@ -10,6 +11,7 @@ export default function SettingsPage() {
   return (
     <AdminArea
       title="Settings"
+      intro={<PushNotifications />}
       description="Your profile and connections to the tools you use."
       links={[
         {

@@ -6,11 +6,13 @@ export function AdminArea({
   description,
   links,
   children,
+  intro,
 }: {
   title: string;
   description: string;
   links: readonly { href: string; label: string; description: string }[];
   children?: React.ReactNode;
+  intro?: React.ReactNode;
 }) {
   return (
     <div className="space-y-8">
@@ -20,6 +22,7 @@ export function AdminArea({
         </h1>
         <p className="mt-3 max-w-2xl text-zinc-600">{description}</p>
       </header>
+      {intro}
       {links.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2">
           {links.map((link) => (

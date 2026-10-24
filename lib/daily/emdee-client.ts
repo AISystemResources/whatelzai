@@ -2,6 +2,8 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import type { EmdeeConnection } from "./connections";
 export type Envelope = {
+  authored_at?: string;
+  last_edited_at?: string;
   content?: string;
   doc_content_hash: string;
   sections: { heading: string; content_hash: string }[];

@@ -57,7 +57,7 @@ export function AdminNavigation() {
         Skip to content
       </a>
       <header className="sticky top-0 z-30 border-b border-zinc-200 bg-white/95 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 md:px-10">
+        <div className="mx-auto max-w-[1440px] px-4 sm:px-6 md:px-10">
           <div className="flex min-h-16 items-center justify-between gap-3">
             <Link
               href={adminUrl("/admin")}
@@ -76,6 +76,22 @@ export function AdminNavigation() {
                 </span>
               </span>
             </Link>
+            <nav
+              aria-label="Desktop admin tabs"
+              className="hidden items-center gap-1 rounded-full bg-zinc-100 p-1 lg:flex"
+            >
+              {tabs.map(({ key, label, path, icon: Icon }) => (
+                <Link
+                  key={key}
+                  href={adminUrl(path)}
+                  aria-current={current.tab === key ? "location" : undefined}
+                  className={`flex min-h-10 items-center gap-2 rounded-full px-5 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 ${current.tab === key ? "bg-white text-zinc-950 shadow-sm" : "text-zinc-500 hover:text-zinc-950"}`}
+                >
+                  <Icon size={17} aria-hidden="true" />
+                  {label}
+                </Link>
+              ))}
+            </nav>
             <details
               key={pathname}
               ref={switcher}
@@ -123,7 +139,7 @@ export function AdminNavigation() {
       </header>
       <nav
         aria-label="Admin tabs"
-        className="fixed inset-x-0 bottom-0 z-40 mx-auto grid w-full max-w-lg grid-cols-3 gap-3 border-t border-zinc-200 bg-white/95 px-5 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur-xl sm:rounded-t-3xl sm:border-x"
+        className="fixed inset-x-0 bottom-0 z-40 mx-auto grid w-full max-w-lg grid-cols-3 gap-3 border-t border-zinc-200 bg-white/95 px-5 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur-xl sm:rounded-t-3xl sm:border-x lg:hidden"
       >
         {tabs.map(({ key, label, path, icon: Icon }) => {
           const active = current.tab === key;

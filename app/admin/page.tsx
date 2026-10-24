@@ -11,7 +11,7 @@ import {
   type Source,
 } from "@/lib/admin-overview/model";
 import type { Brief } from "@/lib/daily/model";
-import { ProductWidget } from "./command-center/_components/ProductWidget";
+import { ProductSummary } from "@/components/admin/ProductSummary";
 export const metadata: Metadata = {
   title: "Overview — Admin",
   robots: { index: false, follow: false },
@@ -22,12 +22,12 @@ export default async function OverviewPage() {
   await dailyOwner();
   return (
     <div className="space-y-8 text-zinc-950">
-      <header className="rounded-3xl bg-yellow-300 px-6 py-7 sm:px-8">
+      <header className="admin-overview-intro rounded-3xl bg-yellow-300 px-6 py-7 sm:px-8 lg:rounded-none lg:border-b lg:border-zinc-200 lg:bg-transparent lg:px-0 lg:pt-0 lg:pb-6">
         <p className="text-xs font-medium uppercase tracking-[0.18em]">
           Your AI business · Whatelzai + EMDEE
         </p>
-        <h1 className="mt-3 max-w-2xl text-4xl font-semibold tracking-tight sm:text-5xl">
-          Make room for what moves you forward.
+        <h1 className="mt-3 max-w-2xl text-4xl font-semibold tracking-tight sm:text-5xl lg:text-4xl">
+          Your command centre.
         </h1>
         <p className="mt-4 max-w-xl text-sm leading-6">
           What needs your attention today, and what would move your AI business
@@ -129,8 +129,8 @@ async function DecisionWorkspace() {
       });
   }
   return (
-    <>
-      <p className="text-xs text-zinc-500">
+    <div className="admin-overview-grid">
+      <p className="admin-overview-timestamp text-xs text-zinc-500">
         {now.toLocaleString("en-SG", {
           timeZone: "Asia/Singapore",
           dateStyle: "full",
@@ -140,7 +140,7 @@ async function DecisionWorkspace() {
       </p>
       <section
         aria-labelledby="focus-heading"
-        className="rounded-2xl border border-zinc-200 p-5 sm:p-6"
+        className="admin-overview-focus rounded-2xl border border-zinc-200 p-5 sm:p-6"
       >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 id="focus-heading" className="text-2xl font-semibold">
@@ -206,11 +206,14 @@ async function DecisionWorkspace() {
           </details>
         )}
       </section>
-      <section aria-labelledby="attention-heading">
+      <section
+        aria-labelledby="attention-heading"
+        className="admin-overview-attention min-w-0"
+      >
         <h2 id="attention-heading" className="text-2xl font-semibold">
           Needs your attention
         </h2>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div className="mt-4 grid gap-3">
           {attention.map((item) => (
             <Link
               key={item.title}
@@ -231,7 +234,10 @@ async function DecisionWorkspace() {
           </p>
         )}
       </section>
-      <section aria-labelledby="daily-heading">
+      <section
+        aria-labelledby="daily-heading"
+        className="admin-overview-daily min-w-0"
+      >
         <div className="flex flex-wrap justify-between gap-3">
           <h2 id="daily-heading" className="text-2xl font-semibold">
             Prepare. Follow through. Reflect.
@@ -243,7 +249,7 @@ async function DecisionWorkspace() {
             Weekly reflection →
           </Link>
         </div>
-        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        <div className="mt-4 grid gap-4 xl:grid-cols-2">
           <BriefPreview
             title="Morning preparation"
             status={morningStatus}
@@ -261,7 +267,7 @@ async function DecisionWorkspace() {
           <summary className="cursor-pointer text-sm font-medium">
             Yesterday’s handoff
           </summary>
-          <div className="mt-3 max-h-80 overflow-y-auto">
+          <div className="mt-3 max-h-64 overflow-y-auto">
             {overview.handoff.status !== "ready" ? (
               "EMDEE could not be checked."
             ) : overview.handoff.data.exists ? (
@@ -288,7 +294,10 @@ async function DecisionWorkspace() {
           unattended schedule execution. No AI API calls run on this page.
         </p>
       </section>
-      <section aria-labelledby="growth-heading">
+      <section
+        aria-labelledby="growth-heading"
+        className="admin-overview-growth min-w-0"
+      >
         <h2 id="growth-heading" className="text-2xl font-semibold">
           Build trust. Start conversations.
         </h2>
@@ -338,21 +347,24 @@ async function DecisionWorkspace() {
           yet. Member leads belong to the separate app workspace.
         </p>
       </section>
-      <section aria-labelledby="products-heading">
+      <section
+        aria-labelledby="products-heading"
+        className="admin-overview-products min-w-0"
+      >
         <h2 id="products-heading" className="text-2xl font-semibold">
           Your products
         </h2>
         <p className="mt-2 text-sm text-zinc-600">
           Check activity and connection health. Unmeasured values stay unknown.
         </p>
-        <div className="mt-4 grid gap-6 lg:grid-cols-2">
-          <ProductWidget
+        <div className="mt-4 grid gap-4">
+          <ProductSummary
             product="whatelz"
             label="whatelz.ai"
             state={overview.products.whatelz}
             adminHref={adminUrl("/admin/site-dashboard")}
           />
-          <ProductWidget
+          <ProductSummary
             product="emdee"
             label="EMDEE"
             state={overview.products.emdee}
@@ -360,7 +372,7 @@ async function DecisionWorkspace() {
           />
         </div>
       </section>
-    </>
+    </div>
   );
 }
 function BriefPreview({
@@ -382,7 +394,7 @@ function BriefPreview({
           {status}
         </span>
       </div>
-      <div className="mt-3 max-h-80 overflow-y-auto">
+      <div className="mt-3 max-h-64 overflow-y-auto">
         {source.status === "ready" && source.data.exists ? (
           <BriefMarkdown
             body={source.data.body || "The saved entry has no Notes content."}

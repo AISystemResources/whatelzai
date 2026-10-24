@@ -42,13 +42,13 @@ export default async function TodayPage() {
   const upcoming = tasks.active.filter((t) => t.due_on > day);
   return (
     <div className="space-y-8 text-zinc-950">
-      <header className="rounded-3xl bg-yellow-300 px-6 py-7 sm:px-8">
+      <header className="rounded-3xl bg-yellow-300 px-6 py-7 sm:px-8 lg:rounded-none lg:border-b lg:border-zinc-200 lg:bg-transparent lg:px-0 lg:pt-0 lg:pb-6">
         <p className="text-xs font-medium uppercase tracking-[0.18em]">
           Your daily practice · Singapore
         </p>
         <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
+            <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl lg:text-4xl">
               Make today count.
             </h1>
             <p className="mt-3 max-w-xl text-sm leading-6">
@@ -126,7 +126,7 @@ export default async function TodayPage() {
           </p>
         )}
       </details>
-      <div className="grid items-start gap-6 xl:grid-cols-2">
+      <div className="grid items-start gap-6 lg:grid-cols-2">
         {(["morning", "evening"] as const).map((kind) => {
           const brief = kind === "morning" ? morning : evening;
           return (

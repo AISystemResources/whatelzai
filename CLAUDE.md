@@ -581,3 +581,7 @@ Brand & design system belongs to AI Business, including active navigation state;
 ## Scheduled focus notifications (SPR-163)
 
 Settings uses a compact per-device push switch, with test and sound help under Notification options. The existing enabled device remains enabled. One-minute server cron dispatches actual Singapore timetable transitions while the PWA is closed; EMDEE routine checks stay every five minutes and independent failures do not block focus alerts. Timetables mirror to private push subscription rows through owner-only same-origin validation; browser table grants remain denied. No-op sync preserves activation time. Durable per-device/block claims, five-minute eligibility window and 60-second TTL avoid duplicates and stale catch-up; unchanged spaces at midnight do not alert. Auto switching pause suppresses focus alerts; manual block overrides do not suppress reminders. Phone/browser manages sound; the web app cannot choose a custom ringtone. Reopen PWA after release for worker and timetable sync. No paid inference or private offline caching. See docs/admin-push.md.
+
+## Retired Developer tooling (SPR-164)
+
+Developer tooling is retired: no Inngest/quick links, endpoint inventory or singleton PAT controls. `/admin/developer` redirects to Settings for old bookmarks; remove links from Settings and legacy nav. Never recreate/display `system_config.mcp_token`; current MCP authentication uses hashed, scoped, revocable `auth_tokens`. Cleanup deletes only the unused singleton row, preserving OAuth signing secret and current tokens/endpoints.

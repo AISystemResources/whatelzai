@@ -541,3 +541,7 @@ Profile Usage shows whole-number percentages and minute countdowns, plus Availab
 ## Reset credit expiry (SPR-154)
 
 Reset credits have stored non-null expires_at, defaulting to seven days from grant. Existing credits are backfilled from original granted_at, without grants, balance changes or extension on sign-in. Available filters expired unused credits; History retains expired/used records and expiry is shown in Singapore time. The locked redemption function rejects unused credits at/after database clock expiry, while used replay still returns its recorded cycle. Apply 20261022100901 before publication. Mirrored in EMDEE INSTRUCTIONS.
+
+## Whatelz brand identity (SPR-155)
+
+The approved rounded W/smile mark is canonical in public/brand/identity.json, with #FACC15 yellow, #18181B ink and #FFFCF5 paper. WhatelzMark reads the shared vector; generate-brand-assets.mjs exports SVG/outlined lockup/PNG/ICO and Admin PWA artwork. Public header/footer, browser favicon and Admin header use this identity. Admin Settings links the owner-only design-system library. Versioned Admin icon URLs refresh caches without changing manifest identity/scope/launch. Existing iOS installs may require re-adding for new home-screen art. fcOS retains its own identity. See docs/brand-identity.md.

@@ -13,6 +13,11 @@ export default function SettingsPage() {
       description="Your profile and connections to the tools you use."
       links={[
         {
+          href: "/admin/design-system",
+          label: "Brand & design system",
+          description: "Your Whatelz logo, colours and downloadable assets.",
+        },
+        {
           href: "/admin/profile",
           label: "My profile",
           description: "Manage your profile and related website content.",

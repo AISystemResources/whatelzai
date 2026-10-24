@@ -63,8 +63,15 @@ export async function generateMetadata(): Promise<Metadata> {
               statusBarStyle: "default" as const,
             },
             icons: {
-              icon: "/admin-pwa/icon-192.png",
-              apple: "/admin-pwa/icon-180.png",
+              icon: [
+                { url: "/brand/icon.svg", type: "image/svg+xml" },
+                {
+                  url: "/admin-pwa/icon-192-v2.png",
+                  sizes: "192x192",
+                  type: "image/png",
+                },
+              ],
+              apple: "/admin-pwa/icon-180-v2.png",
             },
           }),
       robots: { index: false, follow: false },
@@ -103,6 +110,13 @@ export async function generateMetadata(): Promise<Metadata> {
       "EMDEE knowledge graph",
     ],
     applicationName: SITE_NAME,
+    icons: {
+      icon: [
+        { url: "/brand/icon.svg", type: "image/svg+xml" },
+        { url: "/brand/icon-32.png", sizes: "32x32", type: "image/png" },
+      ],
+      apple: "/brand/icon-180.png",
+    },
     authors: [{ name: s.owner_name, url: SITE_URL }],
     creator: s.owner_name,
     openGraph: {

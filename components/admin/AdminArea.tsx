@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { useAdminPreferences } from "./AdminPreferences";
 import Link from "@/components/admin/AdminLink";
 import { adminUrl } from "@/lib/admin-url";
@@ -22,67 +23,64 @@ export function AdminArea({
   }[];
 }) {
   const { t } = useAdminPreferences();
-  return (
-    <div className="space-y-8">
-      <header className="border-b border-zinc-200 pb-6">
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">
-          {t(title)}
-        </h1>
-        <p className="mt-3 max-w-2xl text-zinc-600">{t(description)}</p>
-      </header>
-      {intro}
-      {links.length > 0 && (
-        <div className="admin-area-links divide-y divide-zinc-200 border-y border-zinc-200">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={
-                link.href.startsWith("/admin") ? adminUrl(link.href) : link.href
-              }
-              prefetch={false}
-              className="group flex min-h-20 items-center justify-between gap-4 py-4 focus-visible:outline-2 focus-visible:outline-yellow-400"
-            >
-              <div>
-                <h2 className="text-base font-medium">{t(link.label)}</h2>
-                <p className="mt-1 text-sm text-zinc-500">
-                  {t(link.description)}
-                </p>
-              </div>
-              <span aria-hidden="true" className="text-zinc-400">
-                ↗
-              </span>
-            </Link>
-          ))}
+  const [selected, setSelected] = useState(0);
+  const active = groups?.[selected] ?? groups?.[0];
+  function renderLink(link: {
+    href: string;
+    label: string;
+    description: string;
+  }) {
+    return (
+      <Link
+        key={link.href}
+        href={link.href.startsWith("/admin") ? adminUrl(link.href) : link.href}
+        prefetch={false}
+        className="admin-workspace-link"
+      >
+        <div>
+          <span className="font-medium">{t(link.label)}</span>
+          <p>{t(link.description)}</p>
         </div>
+        <span aria-hidden="true">→</span>
+      </Link>
+    );
+  }
+  return (
+    <div className="admin-workspace">
+      <header className="admin-workspace-heading">
+        <h1>{t(title)}</h1>
+        <p>{t(description)}</p>
+      </header>
+      {intro && <div className="admin-workspace-focus">{intro}</div>}
+      {links.length > 0 && (
+        <div className="admin-workspace-shortcuts">{links.map(renderLink)}</div>
       )}
-      {groups && (
-        <div className="admin-tool-groups divide-y divide-zinc-200 border-y border-zinc-200">
-          {groups.map((group) => (
-            <details key={group.label} className="py-3">
-              <summary className="min-h-11 cursor-pointer py-2 text-sm font-medium">
+      {active && groups && (
+        <div className="admin-workspace-directory">
+          <nav
+            aria-label={t("Workspace tools")}
+            className="admin-workspace-index"
+          >
+            {groups.map((group, index) => (
+              <button
+                type="button"
+                key={group.label}
+                aria-pressed={selected === index}
+                aria-controls="workspace-tools"
+                onClick={() => setSelected(index)}
+              >
                 {t(group.label)}
-              </summary>
-              <div className="pb-3 pl-4">
-                {group.links.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={
-                      link.href.startsWith("/admin")
-                        ? adminUrl(link.href)
-                        : link.href
-                    }
-                    prefetch={false}
-                    className="block min-h-11 py-3 text-sm"
-                  >
-                    <span className="font-medium">{t(link.label)} →</span>
-                    <p className="mt-1 text-xs leading-5 text-zinc-500">
-                      {t(link.description)}
-                    </p>
-                  </Link>
-                ))}
-              </div>
-            </details>
-          ))}
+              </button>
+            ))}
+          </nav>
+          <section
+            id="workspace-tools"
+            aria-label={t(active.label)}
+            className="admin-workspace-tools"
+          >
+            <h2>{t(active.label)}</h2>
+            <div key={active.label}>{active.links.map(renderLink)}</div>
+          </section>
         </div>
       )}
       {children}

@@ -18,6 +18,10 @@ export function validPreferences(value: unknown): value is AdminPreferences {
   );
 }
 export const chinese: Record<string, string> = {
+  "Workspace tools": "工作区工具",
+  "Reading preferences": "阅读偏好",
+  "Notifications & rhythm": "通知与节奏",
+  "App & account": "应用与账号",
   "Current focus": "当前专注",
   "Also accepted": "其他已接受事项",
   "No accepted work ready for this block.":

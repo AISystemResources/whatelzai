@@ -607,3 +607,7 @@ Personal links to an owner-only /personal/mandala reader. It calls dailyOwner be
 ## Mandala reading layout (SPR-169)
 
 Mandala is a dedicated reader, not an EMDEE heading accordion. Keep the shared Admin shell; present source-derived goal figures, one selected life area with eight visible actions, separate Money & time, full grid and full original-record views. Desktop index/reading columns become a labelled area selector and single-column reading on mobile. Retain approval provenance, all supporting detail, original source, parser fallback and owner-first fixed-path no-store reads. Goals remain targets, not achieved income. No source or task mutations. Taste app-screen direction editorial-greeting seed 105231933, keeping existing brand/type and shell. See docs/personal-mandala.md.
+
+## Admin workspace reading layouts (SPR-170)
+
+Overview exposes its independently streamed reading, attention, AI focus, growth and product sections directly. Shared AdminArea leads with current focus and presents grouped tools through a labelled category index with immediate local selection; all destinations remain. Settings uses reading, notifications/rhythm and app/account sections in desktop label/control columns, stacked on phones. Preserve source semantics, owner authorization, navigation, timetable and notification controls. Taste editorial-greeting seed 667337762 keeps existing identity/type and user-defined shell. See docs/admin-workspace-design.md.

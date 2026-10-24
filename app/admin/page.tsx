@@ -26,8 +26,8 @@ export const revalidate = 0;
 export default async function OverviewPage() {
   await dailyOwner();
   return (
-    <div className="space-y-8 text-zinc-950">
-      <header className="admin-page-heading border-b border-zinc-200 pb-6">
+    <div className="admin-workspace admin-overview-page text-zinc-950">
+      <header className="admin-workspace-heading admin-overview-heading">
         <h1 className="text-3xl font-semibold tracking-tight">Overview</h1>
         <p className="mt-2 text-sm text-zinc-500">
           Today, then everything else.
@@ -58,30 +58,15 @@ async function DecisionWorkspace() {
       <Suspense fallback={<AdminSectionLoading label="Checking attention…" />}>
         <AttentionSection sources={sources} />
       </Suspense>
-      <details className="admin-overview-extra">
-        <summary>AI Business focus</summary>
-        <div className="pt-5">
-          <Suspense fallback={<AdminSectionLoading label="Reading focus…" />}>
-            <FocusSection sources={sources} />
-          </Suspense>
-        </div>
-      </details>
-      <details className="admin-overview-extra">
-        <summary>Work in progress</summary>
-        <div className="pt-5">
-          <Suspense
-            fallback={<AdminSectionLoading label="Reading work in progress…" />}
-          >
-            <GrowthSection sources={sources} />
-          </Suspense>
-        </div>
-      </details>
-      <details className="admin-overview-extra">
-        <summary>Products & health</summary>
-        <div className="pt-5">
-          <ProductsSection sources={sources} />
-        </div>
-      </details>
+      <Suspense fallback={<AdminSectionLoading label="Reading focus…" />}>
+        <FocusSection sources={sources} />
+      </Suspense>
+      <Suspense
+        fallback={<AdminSectionLoading label="Reading work in progress…" />}
+      >
+        <GrowthSection sources={sources} />
+      </Suspense>
+      <ProductsSection sources={sources} />
       <p className="text-xs text-zinc-500">
         Read{" "}
         {now.toLocaleString("en-SG", {
@@ -457,11 +442,8 @@ function GrowthCard({
   detail: string;
 }) {
   return (
-    <Link
-      href={adminUrl(href)}
-      className="rounded-2xl border p-5 transition-colors hover:border-yellow-500"
-    >
-      <p className="text-3xl font-semibold">
+    <Link href={adminUrl(href)} className="admin-growth-link">
+      <p className="text-3xl font-normal tabular-nums">
         {source.status === "ready" ? source.data : "—"}
       </p>
       <h3 className="mt-2 font-medium">{title} →</h3>

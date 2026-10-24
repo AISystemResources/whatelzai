@@ -120,11 +120,13 @@ function emdeeMock(existing: boolean, hash = "1".repeat(16)) {
             args.path === parent ||
             args.path === paths.branchParent(parent, "morning")
               ? { doc_content_hash: "parent-hash", sections: [] }
-              : {
-                  content: `# Brief\n\n## Notes\n\n${body}\n`,
-                  sections: [{ heading: "Notes", content_hash: hash }],
-                  doc_content_hash: "doc-hash",
-                };
+              : !present
+                ? { error: "no_such_doc" }
+                : {
+                    content: `# Brief\n\n## Notes\n\n${body}\n`,
+                    sections: [{ heading: "Notes", content_hash: hash }],
+                    doc_content_hash: "doc-hash",
+                  };
         else if (name === "patch_section" || name === "create_child") {
           present = true;
           body = args.body;

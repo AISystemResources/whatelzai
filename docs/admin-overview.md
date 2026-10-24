@@ -60,3 +60,9 @@ Run the overview, owner, Daily and routing tests with the existing Node/tsx test
 runner, then typecheck, lint changed files and build. Verify the owner view,
 empty/partial states, clean Today deep links, anonymous protection and narrow
 screen width. No database migration or new credential is required.
+
+## Performance and freshness
+
+SPR-160 starts independent owner-authorized source promises, with per-section Suspense (including each brief/product), rather than blocking the page behind one aggregate. Attention remains loading until all sources resolve. Each request reuses the existing verified connection for its three EMDEE reads. Exact get_doc now takes one round trip; only explicit not_found/no_such_doc means absence, and auth/transport/other tool errors remain unavailable. Save version/readback checks are unchanged. Daily active/completed queries run concurrently.
+
+Only read-only product metrics use the owner-keyed Next Data Cache (60s revalidation). Fresh owner authorization precedes every access; credentials and authorization state are outside cache scope. Failed snapshots are not written as successful cache values. Last-good data may be returned during background revalidation/failure, with its original read time shown. Tasks and personal briefs remain uncached; no private offline/browser persistence is added. Overview previews stop at complete Markdown section boundaries; full documents remain in Today. Static source labels, elapsed milliseconds and ok/error outcomes are logged as admin-read without payloads, identifiers or exception details. This pass adds no precompute cron, region move or new infrastructure; measurements can justify those later.

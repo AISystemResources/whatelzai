@@ -12,27 +12,29 @@ export async function dailyOwner() {
 }
 export async function loadDailyTasks(day: string) {
   const owner = await dailyOwner();
-  const { data, error } = await supabaseAdmin
-    .from("daily_tasks")
-    .select("id,title,lane,due_on,status,revision,accepted_on,completed_at")
-    .eq("owner_id", owner)
-    .not("status", "in", "(done,dropped)")
-    .order("due_on")
-    .order("created_at")
-    .limit(100);
-  if (error)
-    throw new Error("Commitments could not be loaded. Please try again.");
-  const completed = await supabaseAdmin
-    .from("daily_tasks")
-    .select("id,title,lane,due_on,status,revision,accepted_on,completed_at")
-    .eq("owner_id", owner)
-    .eq("completed_on", day)
-    .order("completed_at")
-    .limit(100);
+  const [active, completed] = await Promise.all([
+    supabaseAdmin
+      .from("daily_tasks")
+      .select("id,title,lane,due_on,status,revision,accepted_on,completed_at")
+      .eq("owner_id", owner)
+      .not("status", "in", "(done,dropped)")
+      .order("due_on")
+      .order("created_at")
+      .limit(100),
+    supabaseAdmin
+      .from("daily_tasks")
+      .select("id,title,lane,due_on,status,revision,accepted_on,completed_at")
+      .eq("owner_id", owner)
+      .eq("completed_on", day)
+      .order("completed_at")
+      .limit(100),
+  ]);
+  if (active.error)
+    throw Error("Commitments could not be loaded. Please try again.");
   if (completed.error)
-    throw new Error("Completed commitments could not be loaded.");
+    throw Error("Completed commitments could not be loaded.");
   return {
-    active: (data ?? []) as Task[],
+    active: (active.data ?? []) as Task[],
     completed: (completed.data ?? []) as Task[],
   };
 }

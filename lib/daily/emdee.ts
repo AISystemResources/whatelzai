@@ -1,6 +1,6 @@
 import "server-only";
 import { dailyOwner } from "./server";
-import { emdeeConnection } from "./connections";
+import { emdeeConnection, type EmdeeConnection } from "./connections";
 import { emdeeCall, readEmdee, type Envelope } from "./emdee-client";
 import { branchParent, DAILY_PARENT, DAILY_TITLE } from "./paths";
 import { briefPath, type Brief, type BriefKind } from "./model";
@@ -9,7 +9,18 @@ export async function loadBrief(day: string, kind: BriefKind): Promise<Brief> {
   const connection = await emdeeConnection(await dailyOwner());
   if (!connection?.parentPath)
     throw new Error("Connect EMDEE before saving a brief.");
+  return loadBriefWithConnection(connection, day, kind);
+}
+
+// Server-only read capability: callers verify owner and connection once per request.
+export async function loadBriefWithConnection(
+  connection: EmdeeConnection,
+  day: string,
+  kind: BriefKind,
+): Promise<Brief> {
   const parent = connection.parentPath;
+  if (!parent || connection.expiresAt <= Date.now())
+    throw Error("Reconnect EMDEE before reading Daily.");
   const path = briefPath(parent, day, kind);
   const doc = await readEmdee(connection, path);
   const section = doc?.sections.find((s) => s.heading === "Notes");

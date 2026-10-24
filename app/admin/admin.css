@@ -1,0 +1,48 @@
+.admin-overview-grid {
+  display: grid;
+  gap: 2rem;
+  min-width: 0;
+}
+@media (min-width: 1024px) {
+  .admin-overview-grid {
+    grid-template-columns: minmax(0, 1.65fr) minmax(320px, 1fr);
+    align-items: start;
+    grid-template-areas: "timestamp timestamp" "focus attention" "daily products" "growth products";
+  }
+  .admin-overview-timestamp {
+    grid-area: timestamp;
+  }
+  .admin-overview-focus {
+    grid-area: focus;
+  }
+  .admin-overview-attention {
+    grid-area: attention;
+  }
+  .admin-overview-daily {
+    grid-area: daily;
+  }
+  .admin-overview-products {
+    grid-area: products;
+  }
+  .admin-overview-growth {
+    grid-area: growth;
+  }
+}
+
+@media (min-width: 1024px) {
+  .admin-overview-intro {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 2rem;
+  }
+  .admin-overview-intro > p,
+  .admin-overview-intro > h1 {
+    grid-column: 1;
+  }
+  .admin-overview-intro > div {
+    grid-column: 2;
+    grid-row: 1 / 4;
+    align-self: center;
+    margin-top: 0;
+  }
+}
